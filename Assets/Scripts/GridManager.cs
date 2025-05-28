@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UIElements;
 
 public class GridManager : MonoBehaviour
 {
@@ -14,6 +15,15 @@ public class GridManager : MonoBehaviour
     [Header("Grid Centering")]
     public bool centerGrid = true; // 그리드를 중앙에 배치할지 여부
     public Vector2 gridOffset = Vector2.zero; // 추가 오프셋
+
+    [Header("Camera Settings")]
+    public float cameraMargin = 1.5f; // 그리드 주변 여백
+    public float minCameraSize = 3f;   // 최소 카메라 크기
+    public float maxCameraSize = 10f;  // 최대 카메라 크기
+
+    [Header("UI Spacing")]
+    public float topUISpace = 2f;    // 상단 UI를 위한 여백
+    public float bottomUISpace = 1f; // 하단 UI를 위한 여백
 
     [Header("Block Settings")]
     public GameObject[] blockPrefabs;
@@ -187,10 +197,17 @@ public class GridManager : MonoBehaviour
             // 그리드의 중앙점 계산
             Vector3 gridCenter = GridToWorldPosition((int)(width / 2f), (int)(height / 2f));
 
+            // UI 간격을 고려한 카메라 위치 조정
+            Vector3 cameraPositionOffset = new Vector3(
+                0,
+                (topUISpace - bottomUISpace) * 0.5f, // UI 간격 차이만큼 조정
+                0
+            );
+
             // 카메라 위치 조정 (Z 좌표는 유지)
             Vector3 newCameraPosition = new Vector3(
-                gridCenter.x,
-                gridCenter.y,
+                gridCenter.x + cameraPositionOffset.x,
+                gridCenter.y + cameraPositionOffset.y,
                 mainCamera.transform.position.z
             );
 
@@ -202,12 +219,26 @@ public class GridManager : MonoBehaviour
                 float gridWorldWidth = width * cellSize;
                 float gridWorldHeight = height * cellSize;
 
-                // 그리드가 화면에 완전히 들어오도록 카메라 크기 조정
-                float requiredSize = Mathf.Max(gridWorldWidth, gridWorldHeight) * 0.6f;
-                mainCamera.orthographicSize = Mathf.Max(requiredSize, 3f); // 최소 크기 3
+                // UI 공간을 고려한 사용 가능한 화면 영역 계산
+                float availableHeight = gridWorldHeight + topUISpace + bottomUISpace;
+                float availableWidth = gridWorldWidth;
+
+                // 카메라 마진을 고려한 필요 크기 계산
+                float requiredSizeForWidth = (availableWidth + cameraMargin * 2) * 0.5f;
+                float requiredSizeForHeight = (availableHeight + cameraMargin * 2) * 0.5f;
+
+                // 더 큰 값을 선택하여 모든 요소가 화면에 들어오도록 함
+                float requiredSize = Mathf.Max(requiredSizeForWidth, requiredSizeForHeight);
+
+                // 최소/최대 크기 제한 적용
+                requiredSize = Mathf.Clamp(requiredSize, minCameraSize, maxCameraSize);
+
+                mainCamera.orthographicSize = requiredSize;
             }
 
-            Debug.Log($"Camera adjusted to position: {newCameraPosition}, size: {mainCamera.orthographicSize}");
+            Debug.Log($"Camera adjusted to position: {newCameraPosition}");
+            Debug.Log($"Camera size: {mainCamera.orthographicSize}");
+            Debug.Log($"Grid size: {width}x{height}, UI spacing: top={topUISpace}, bottom={bottomUISpace}");
         }
     }
 
@@ -241,6 +272,63 @@ public class GridManager : MonoBehaviour
         }
 
         return newBlock;
+    }
+
+    // UI 요소들이 그리드와 겹치지 않도록 안전 영역 계산
+    public Vector2 GetSafeAreaBounds()
+    {
+        // 그리드 영역 계산
+        float gridWorldWidth = width * cellSize;
+        float gridWorldHeight = height * cellSize;
+
+        // 카메라 크기 고려
+        Camera mainCamera = Camera.main;
+        if (mainCamera != null && mainCamera.orthographic)
+        {
+            float cameraHeight = mainCamera.orthographicSize * 2;
+            float cameraWidth = cameraHeight * mainCamera.aspect;
+
+            // UI를 위한 안전 영역 계산
+            Vector2 safeArea = new Vector2(
+                (cameraWidth - gridWorldWidth) * 0.5f,
+                (cameraHeight - gridWorldHeight - topUISpace - bottomUISpace) * 0.5f
+            );
+
+            return safeArea;
+        }
+
+        return Vector2.zero;
+    }
+
+    // UI 요소를 적절한 위치에 배치하기 위한 도우미 메서드
+    public Vector3 GetUIPosition(UIPosition position)
+    {
+        Vector3 gridCenter = GridToWorldPosition((int)(width / 2f), (int)(height / 2f));
+        float gridWorldHeight = height * cellSize;
+
+        switch (position)
+        {
+            case UIPosition.TopCenter:
+                return new Vector3(gridCenter.x, gridCenter.y + gridWorldHeight * 0.5f + topUISpace * 0.5f, 0);
+
+            case UIPosition.BottomCenter:
+                return new Vector3(gridCenter.x, gridCenter.y - gridWorldHeight * 0.5f - bottomUISpace * 0.5f, 0);
+
+            case UIPosition.TopLeft:
+                return new Vector3(gridCenter.x - width * cellSize * 0.5f, gridCenter.y + gridWorldHeight * 0.5f + topUISpace * 0.5f, 0);
+
+            case UIPosition.TopRight:
+                return new Vector3(gridCenter.x + width * cellSize * 0.5f, gridCenter.y + gridWorldHeight * 0.5f + topUISpace * 0.5f, 0);
+
+            case UIPosition.BottomLeft:
+                return new Vector3(gridCenter.x - width * cellSize * 0.5f, gridCenter.y - gridWorldHeight * 0.5f - bottomUISpace * 0.5f, 0);
+
+            case UIPosition.BottomRight:
+                return new Vector3(gridCenter.x + width * cellSize * 0.5f, gridCenter.y - gridWorldHeight * 0.5f - bottomUISpace * 0.5f, 0);
+
+            default:
+                return gridCenter;
+        }
     }
 
     // 승리 조건 체크 시 스테이지 매니저에게 알림
@@ -462,5 +550,16 @@ public class GridManager : MonoBehaviour
         Vector3 centerPoint = GridToWorldPosition((int)(width / 2f), (int)(height / 2f));
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(centerPoint, 0.2f);
+    }
+
+    // UI 위치를 지정하기 위한 열거형
+    public enum UIPosition
+    {
+        TopCenter,
+        TopLeft,
+        TopRight,
+        BottomCenter,
+        BottomLeft,
+        BottomRight
     }
 }
