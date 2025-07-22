@@ -194,12 +194,22 @@ public class InfiniteModeManager : MonoBehaviour
 
     void CreateEmptyGrid()
     {
-        // GridManager의 중앙 정렬 계산 먼저 수행
+        // GridManager를 통해 중앙 정렬과 카메라 설정을 먼저 수행
         if (gridManager != null)
         {
-            gridManager.CalculateGridCenterOffset();
-            gridManager.CalculateOptimalCameraSize();
-            gridManager.AdjustCameraPosition();
+            // GridLayoutManager에 그리드 크기와 셀 크기 설정
+            if (gridManager.layoutManager != null)
+            {
+                gridManager.layoutManager.SetupLayout(settings.gridWidth, settings.gridHeight, 1.0f);
+            }
+
+            // CameraController를 통해 카메라 조정
+            if (gridManager.cameraController != null && gridManager.layoutManager != null)
+            {
+                gridManager.cameraController.AdjustCameraForGrid(settings.gridWidth, settings.gridHeight, gridManager.layoutManager.cellSize);
+                Vector3 gridCenter = gridManager.layoutManager.GetGridCenter();
+                gridManager.cameraController.CenterCameraOnGrid(gridCenter);
+            }
         }
 
         for (int x = 0; x < settings.gridWidth; x++)
