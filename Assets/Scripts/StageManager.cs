@@ -1,8 +1,9 @@
-// StageManager.cs - 스테이지 관리 및 로드
+// StageManager.cs - 스테이지 관리 및 새로운 클리어 조건 지원
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class StageManager : MonoBehaviour
 {
@@ -21,7 +22,12 @@ public class StageManager : MonoBehaviour
     public GameObject stageCompletePanel;
 
     [Header("Game References")]
-    public GridManager gridManager;
+    public GridManagerRefactored gridManager;
+
+    [Header("Test Level Support")]
+    public GameObject testPanel;
+    public bool isTestLevel = false;
+    private TestStageData currentTestStage;
 
     private int currentStageIndex = 0;
     private int movesUsed = 0;
@@ -44,7 +50,8 @@ public class StageManager : MonoBehaviour
 
     void Start()
     {
-        LoadStage(0); // 첫 번째 스테이지 로드
+        LoadStage(0);
+        CheckForTestLevel();
     }
 
     void Update()
@@ -61,27 +68,39 @@ public class StageManager : MonoBehaviour
         }
     }
 
+    void CheckForTestLevel()
+    {
+        if (PlayerPrefs.GetInt("IsTestLevel", 0) == 1)
+        {
+            Debug.Log("Test level detected, TestStageLoader will handle initialization");
+            if (testPanel != null)
+                testPanel.SetActive(true);
+        }
+    }
+
     public void LoadStage(int stageIndex)
     {
+        if (isTestLevel)
+        {
+            Debug.Log("Test level is active, skipping normal stage load");
+            return;
+        }
+
         if (stageIndex < 0 || stageIndex >= allStages.Count)
         {
             Debug.LogError("Invalid stage index: " + stageIndex);
             return;
         }
 
+        Debug.Log("start LoadStage()");
+
         currentStageIndex = stageIndex;
         currentStage = allStages[stageIndex];
 
-        // 스테이지 정보 UI 업데이트
         UpdateStageUI();
-
-        // 그리드 매니저 설정 업데이트
         UpdateGridManagerSettings();
-
-        // 게임 상태 초기화
         ResetGameState();
 
-        // 그리드 생성
         if (gridManager != null)
         {
             gridManager.InitializeStageGrid(currentStage);
@@ -90,39 +109,72 @@ public class StageManager : MonoBehaviour
         Debug.Log($"Loaded Stage {currentStage.stageNumber}: {currentStage.stageName}");
     }
 
+    public void LoadTestStage(TestStageData testStage)
+    {
+        if (testStage == null)
+        {
+            Debug.LogError("Test stage data is null!");
+            return;
+        }
+
+        isTimerActive = false;
+        currentTestStage = testStage;
+        isTestLevel = true;
+
+        Debug.Log($"Loading test stage: {testStage.stageName} ({testStage.width}x{testStage.height})");
+
+        ApplyTestStageToGrid();
+        UpdateStageUI();
+    }
+
     void UpdateStageUI()
     {
-        if (stageNumberText != null)
-            stageNumberText.text = $"STAGE {currentStage.stageNumber}";
-
-        if (stageNameText != null)
-            stageNameText.text = currentStage.stageName;
-
-        if (stageDescriptionText != null)
-            stageDescriptionText.text = currentStage.stageDescription;
-
-        UpdateMovesUI();
-
-        // 타이머 설정
-        if (currentStage.hasTimeLimit)
+        if (!isTestLevel && currentStage != null)
         {
-            timeRemaining = currentStage.timeLimit;
-            isTimerActive = true;
-            UpdateTimerUI();
-            if (timerText != null)
-                timerText.gameObject.SetActive(true);
+            if (stageNumberText != null)
+                stageNumberText.text = $"STAGE {currentStage.stageNumber}";
+
+            if (stageNameText != null)
+                stageNameText.text = currentStage.stageName;
+
+            if (stageDescriptionText != null)
+                stageDescriptionText.text = currentStage.stageDescription;
+
+            UpdateMovesUI();
+
+            if (currentStage.hasTimeLimit)
+            {
+                timeRemaining = currentStage.timeLimit;
+                isTimerActive = true;
+                UpdateTimerUI();
+                if (timerText != null)
+                    timerText.gameObject.SetActive(true);
+            }
+            else
+            {
+                isTimerActive = false;
+                if (timerText != null)
+                    timerText.gameObject.SetActive(false);
+            }
         }
-        else
+
+        if (isTestLevel && currentTestStage != null)
         {
-            isTimerActive = false;
-            if (timerText != null)
-                timerText.gameObject.SetActive(false);
+            if (stageNumberText != null)
+            {
+                stageNumberText.text = $"Test Level: {currentTestStage.stageName}";
+            }
+
+            if (movesLeftText != null)
+            {
+                movesLeftText.text = $"Move Left: {currentTestStage.maxMoves}";
+            }
         }
     }
 
     void UpdateGridManagerSettings()
     {
-        if (gridManager != null)
+        if (gridManager != null && currentStage != null)
         {
             gridManager.width = currentStage.gridWidth;
             gridManager.height = currentStage.gridHeight;
@@ -130,11 +182,33 @@ public class StageManager : MonoBehaviour
         }
     }
 
+    void ApplyTestStageToGrid()
+    {
+        if (gridManager == null || currentTestStage == null)
+        {
+            Debug.LogError("GridManager or test stage is null!");
+            return;
+        }
+
+        gridManager.width = currentTestStage.width;
+        gridManager.height = currentTestStage.height;
+        gridManager.targetScore = currentTestStage.targetScore;
+
+        gridManager.ClearGrid();
+        gridManager.InitializeGridWithPattern(currentTestStage.pattern);
+
+        Debug.Log($"Test stage applied: {currentTestStage.width}x{currentTestStage.height}, Target: {currentTestStage.targetScore}");
+    }
+
     void ResetGameState()
     {
         movesUsed = 0;
-        timeRemaining = currentStage.timeLimit;
-        isTimerActive = currentStage.hasTimeLimit;
+
+        if (currentStage != null)
+        {
+            timeRemaining = currentStage.timeLimit;
+            isTimerActive = currentStage.hasTimeLimit;
+        }
 
         if (stageCompletePanel != null)
             stageCompletePanel.SetActive(false);
@@ -145,8 +219,7 @@ public class StageManager : MonoBehaviour
         movesUsed++;
         UpdateMovesUI();
 
-        // 최대 이동 횟수 체크
-        if (currentStage.maxMoves > 0 && movesUsed >= currentStage.maxMoves)
+        if (currentStage != null && currentStage.maxMoves > 0 && movesUsed >= currentStage.maxMoves)
         {
             CheckGameOver();
         }
@@ -154,7 +227,7 @@ public class StageManager : MonoBehaviour
 
     void UpdateMovesUI()
     {
-        if (movesLeftText != null && currentStage.maxMoves > 0)
+        if (movesLeftText != null && currentStage != null && currentStage.maxMoves > 0)
         {
             int movesLeft = currentStage.maxMoves - movesUsed;
             movesLeftText.text = $"Move left: {movesLeft}";
@@ -178,8 +251,7 @@ public class StageManager : MonoBehaviour
 
     void CheckGameOver()
     {
-        // 더 이상 이동할 수 없거나 시간이 다 된 경우
-        if ((currentStage.maxMoves > 0 && movesUsed >= currentStage.maxMoves) ||
+        if ((currentStage != null && currentStage.maxMoves > 0 && movesUsed >= currentStage.maxMoves) ||
             (isTimerActive && timeRemaining <= 0))
         {
             GameOver();
@@ -189,27 +261,25 @@ public class StageManager : MonoBehaviour
     void GameOver()
     {
         Debug.Log("Game Over!");
-        // 게임 오버 처리
         isTimerActive = false;
-        // 게임 오버 패널 표시 등
     }
 
     public void OnStageComplete()
     {
-        Debug.Log($"Stage {currentStage.stageNumber} Complete!");
+        Debug.Log($"Stage {(currentStage != null ? currentStage.stageNumber.ToString() : "Test")} Complete!");
         isTimerActive = false;
 
         if (stageCompletePanel != null)
             stageCompletePanel.SetActive(true);
 
-        // 다음 스테이지 버튼 활성화
-        if (nextStageButton != null)
+        if (nextStageButton != null && !isTestLevel)
         {
             bool hasNextStage = currentStageIndex + 1 < allStages.Count;
             nextStageButton.interactable = hasNextStage;
         }
     }
 
+    // 나머지 메서드들...
     public void LoadNextStage()
     {
         if (currentStageIndex + 1 < allStages.Count)
@@ -219,7 +289,6 @@ public class StageManager : MonoBehaviour
         else
         {
             Debug.Log("All stages completed!");
-            // 모든 스테이지 완료 처리
         }
     }
 
@@ -231,5 +300,15 @@ public class StageManager : MonoBehaviour
     public void GoToMainMenu()
     {
         UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+    }
+
+    public int GetCurrentStageNumber()
+    {
+        return currentStage != null ? currentStage.stageNumber : 1;
+    }
+
+    public bool IsTestLevel()
+    {
+        return isTestLevel;
     }
 }

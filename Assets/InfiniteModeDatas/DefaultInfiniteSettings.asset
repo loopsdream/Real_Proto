@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6a3c26e01ce44345b4094a477fa45c9, type: 3}
+  m_Name: DefaultInfiniteSettings
+  m_EditorClassIdentifier: 
+  gridWidth: 9
+  gridHeight: 9
+  initialTimeLimit: 60
+  easyDuration: 30
+  mediumDuration: 60
+  easyMoveInterval: 6
+  easyBlockSpawnChance: 0.4
+  easyCornerMode: 1
+  mediumMoveInterval: 6
+  mediumBlockSpawnChance: 0.6
+  mediumCornerMode: 1
+  hardMoveInterval: 5
+  hardBlockSpawnChance: 0.6
+  hardCornerMode: 0
+  score2Blocks: 10
+  score3Blocks: 25
+  score4Blocks: 50
+  timeBonus2Blocks: 1
+  timeBonus3Blocks: 2
+  timeBonus4Blocks: 3
+  timePenalty: 2
+  comboBonusScores: 050000000a000000140000002300000037000000500000006e00000091000000b9000000

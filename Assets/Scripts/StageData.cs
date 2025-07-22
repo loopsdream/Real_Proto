@@ -1,4 +1,4 @@
-// StageData.cs - ½ºÅ×ÀÌÁö µ¥ÀÌÅÍ¸¦ ÀúÀåÇÏ´Â ScriptableObject
+// StageData.cs - ìŠ¤í…Œì´ì§€ ì •ë³´ë¥¼ ë‹´ëŠ” ScriptableObject
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -19,20 +19,34 @@ public class StageData : ScriptableObject
     public int[] blockPattern;
 
     [Header("Victory Conditions")]
+    [System.Obsolete("targetScore is no longer used - stage clears when all blocks are destroyed")]
     public int targetScore = 100;
-    public int maxMoves = 10; // ÃÖ´ë ÀÌµ¿ È½¼ö (¼±ÅÃ»çÇ×)
-    public bool hasTimeLimit = false;
-    public float timeLimit = 60f;
+    public int maxMoves = 10; // ìµœëŒ€ ì›€ì§ì„ ìˆ˜ (ì„ íƒì )
+    public bool hasTimeLimit = true;
+    public float timeLimit = 180f; // 3ë¶„ ê¸°ë³¸ ì‹œê°„ ì œí•œ
+
+    [Header("Shuffle & Conversion Settings")]
+    [Range(1, 10)]
+    public int maxShuffleAttempts = 5; // ìµœëŒ€ ì…”í”Œ ì‹œë„ íšŸìˆ˜
+    public float shuffleAnimationDuration = 1.0f;
+    public float blockConversionDuration = 0.8f;
 
     [Header("Difficulty")]
-    public float emptyBlockChance = 0.3f; // ºó ºí·Ï »ı¼º È®·ü
+    public float emptyBlockChance = 0.3f; // ë¹ˆ ë¸”ë¡ ìƒì„± í™•ë¥ 
 
-    // ÆĞÅÏ °ËÁõ
+    // ìœ íš¨ì„± ê²€ì‚¬
     void OnValidate()
     {
         if (blockPattern != null && blockPattern.Length != gridWidth * gridHeight)
         {
             Debug.LogWarning($"Block pattern length ({blockPattern.Length}) doesn't match grid size ({gridWidth * gridHeight})");
+        }
+        
+        // ì‹œê°„ ì œí•œ ìµœì†Œê°’ ì„¤ì •
+        if (hasTimeLimit && timeLimit < 30f)
+        {
+            timeLimit = 30f;
+            Debug.LogWarning("Time limit cannot be less than 30 seconds");
         }
     }
 }

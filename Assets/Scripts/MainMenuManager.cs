@@ -10,6 +10,7 @@ public class MainMenuManager : MonoBehaviour
 {
     [Header("Menu Panels")]
     public GameObject mainMenuPanel;
+    public GameObject modeSelectPanel;
     public GameObject optionsPanel;
     public GameObject creditsPanel;
 
@@ -40,12 +41,22 @@ public class MainMenuManager : MonoBehaviour
         SceneManager.LoadScene("GameScene");
     }
 
+    // 모드 선택 메뉴 열기
+    public void OpenModeSelect()
+    {
+        mainMenuPanel.SetActive(false);
+        optionsPanel.SetActive(false);
+        creditsPanel.SetActive(false);
+        modeSelectPanel.SetActive(true);
+    }
+
     // 옵션 메뉴 열기
     public void OpenOptions()
     {
         mainMenuPanel.SetActive(false);
         optionsPanel.SetActive(true);
         creditsPanel.SetActive(false);
+        modeSelectPanel.SetActive(false);
     }
 
     // 크레딧 메뉴 열기
@@ -54,6 +65,7 @@ public class MainMenuManager : MonoBehaviour
         mainMenuPanel.SetActive(false);
         optionsPanel.SetActive(false);
         creditsPanel.SetActive(true);
+        modeSelectPanel.SetActive(false);
     }
 
     // 메인 메뉴로 돌아가기
@@ -62,6 +74,7 @@ public class MainMenuManager : MonoBehaviour
         mainMenuPanel.SetActive(true);
         optionsPanel.SetActive(false);
         creditsPanel.SetActive(false);
+        modeSelectPanel.SetActive(false);
     }
 
     // 게임 종료 버튼
@@ -101,6 +114,19 @@ public class MainMenuManager : MonoBehaviour
         // 슬라이더 상호작용 활성화/비활성화
         bgmSlider.interactable = !isMuted;
         sfxSlider.interactable = !isMuted;
+    }
+
+    public void StartLevelDesign()
+    {
+        Debug.Log("Starting level design...");
+        // 레벨 디자인 씬 로드
+        SceneManager.LoadScene("LevelDesigner");
+    }
+
+    public void StartInfiniteMode()
+    {
+        Debug.Log("Starting Infinite Mode...");
+        SceneManager.LoadScene("InfiniteMode");
     }
 
     // 설정 불러오기

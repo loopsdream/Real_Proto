@@ -1,0 +1,298 @@
+fileFormatVersion: 2
+guid: 5193108a4dacaef4583b2fb0cd9560e8
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -4445227014129313664
+    second: warning_border_variants_0
+  - first:
+      213: 2801775163906629563
+    second: warning_border_variants_1
+  - first:
+      213: -305937918115915478
+    second: warning_border_variants_2
+  - first:
+      213: 7859233006453158186
+    second: warning_border_variants_3
+  - first:
+      213: -2214850583255183570
+    second: warning_border_variants_4
+  - first:
+      213: 1006742382755971124
+    second: warning_border_variants_5
+  - first:
+      213: 1284973578053484960
+    second: warning_border_variants_6
+  - first:
+      213: 6589741793338817837
+    second: warning_border_variants_7
+  - first:
+      213: -4358276151338999518
+    second: warning_border_variants_8
+  - first:
+      213: -2552736669495022957
+    second: warning_border_variants_9
+  - first:
+      213: 4095240411772800822
+    second: warning_border_variants_10
+  - first:
+      213: -1242943873315590149
+    second: warning_border_variants_11
+  - first:
+      213: 8393476623007200117
+    second: warning_border_variants_12
+  - first:
+      213: -8128912993137267601
+    second: warning_border_variants_13
+  - first:
+      213: 9108851383029235423
+    second: warning_border_variants_14
+  - first:
+      213: -3252830952982066516
+    second: warning_border_variants_15
+  - first:
+      213: 5248256110350630484
+    second: warning_border_variants_16
+  - first:
+      213: 1680149039541399681
+    second: warning_border_variants_17
+  - first:
+      213: 236511993556062721
+    second: warning_border_variants_18
+  - first:
+      213: 9159610487166276280
+    second: warning_border_variants_19
+  - first:
+      213: 5188073026199150667
+    second: warning_border_variants_20
+  - first:
+      213: -4348717709277638240
+    second: warning_border_variants_21
+  - first:
+      213: 4177640271747216190
+    second: warning_border_variants_22
+  - first:
+      213: -7449660194183385141
+    second: warning_border_variants_23
+  - first:
+      213: -1326309099174476781
+    second: warning_border_variants_24
+  - first:
+      213: -7302229965561724183
+    second: warning_border_variants_25
+  - first:
+      213: 3389634308746171508
+    second: warning_border_variants_26
+  - first:
+      213: -2782968685468699257
+    second: warning_border_variants_27
+  - first:
+      213: 2895391847458121265
+    second: warning_border_variants_28
+  - first:
+      213: 2174693159355728355
+    second: warning_border_variants_29
+  - first:
+      213: 2647858622759242002
+    second: warning_border_variants_30
+  - first:
+      213: -7915046251408277106
+    second: warning_border_variants_31
+  - first:
+      213: 5860985529969185536
+    second: warning_border_variants_32
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: warning_border_variants_16
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 1
+        width: 82
+        height: 81
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 45ef8bb302d85d840800000000000000
+      internalID: 5248256110350630484
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: warning_border_variants_17
+      rect:
+        serializedVersion: 2
+        x: 109
+        y: 0
+        width: 82
+        height: 81
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 180349f46a6115710800000000000000
+      internalID: 1680149039541399681
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: warning_border_variants_20
+      rect:
+        serializedVersion: 2
+        x: 309
+        y: 0
+        width: 82
+        height: 81
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b40e2630eecbff740800000000000000
+      internalID: 5188073026199150667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: ee07eb9c3a2e6e34c9fdb1f4cf4ec8c3
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      warning_border_variants_16: 5248256110350630484
+      warning_border_variants_17: 1680149039541399681
+      warning_border_variants_20: 5188073026199150667
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

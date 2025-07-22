@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "328897736133",
+    "project_id": "croxcro",
+    "storage_bucket": "croxcro.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:328897736133:android:9c29acc087385b7b46afac",
+        "android_client_info": {
+          "package_name": "com.neptunestudio.croxcro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB64MBbp9w7GAVVJiG6A01GIsxAKu1MgNs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

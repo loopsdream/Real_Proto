@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@string/gcm_defaultSenderId,@string/google_storage_bucket,@string/project_id,@string/google_api_key,@string/google_crash_reporting_api_key,@string/google_app_id">
+  <string name="gcm_defaultSenderId" translatable="false">328897736133</string>
+  <string name="google_storage_bucket" translatable="false">croxcro.firebasestorage.app</string>
+  <string name="project_id" translatable="false">croxcro</string>
+  <string name="google_api_key" translatable="false">AIzaSyB64MBbp9w7GAVVJiG6A01GIsxAKu1MgNs</string>
+  <string name="google_crash_reporting_api_key" translatable="false">AIzaSyB64MBbp9w7GAVVJiG6A01GIsxAKu1MgNs</string>
+  <string name="google_app_id" translatable="false">1:328897736133:android:9c29acc087385b7b46afac</string>
+</resources>
