@@ -24,6 +24,15 @@ public class StageManager : MonoBehaviour
     [Header("Game References")]
     public GridManagerRefactored gridManager;
 
+    [Header("Stage Failure Detection")]
+    public GridManagerRefactored gridManagerRef; // GridManager 참조
+    public MatchingSystem matchingSystemRef; // MatchingSystem 참조
+
+    [Header("Game State")]
+    private float gameStartTime;
+    private bool isGameActive = false;
+    private bool hasFailedOnce = false; // 셔플로도 해결 불가능한 상황 감지용
+
     [Header("Test Level Support")]
     public GameObject testPanel;
     public bool isTestLevel = false;
@@ -46,6 +55,16 @@ public class StageManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        if (gridManagerRef == null)
+        {
+            gridManagerRef = gridManager;  // 이미 있는 gridManager 참조 사용
+        }
+
+        if (matchingSystemRef == null)
+        {
+            matchingSystemRef = FindFirstObjectByType<MatchingSystem>();
+        }
     }
 
     void Start()
@@ -64,6 +83,12 @@ public class StageManager : MonoBehaviour
             if (timeRemaining <= 0)
             {
                 GameOver();
+            }
+
+            // 시간 제한 체크
+            if (isGameActive && currentStage != null && currentStage.hasTimeLimit)
+            {
+                CheckTimeLimit();
             }
         }
     }
@@ -100,6 +125,7 @@ public class StageManager : MonoBehaviour
         UpdateStageUI();
         UpdateGridManagerSettings();
         ResetGameState();
+        StartStageTimer();
 
         if (gridManager != null)
         {
@@ -310,5 +336,60 @@ public class StageManager : MonoBehaviour
     public bool IsTestLevel()
     {
         return isTestLevel;
+    }
+
+    private void StartStageTimer()
+    {
+        if (currentStage != null && currentStage.hasTimeLimit)
+        {
+            gameStartTime = Time.time;
+            isGameActive = true;
+            hasFailedOnce = false;
+
+            Debug.Log($"Stage timer started. Time limit: {currentStage.timeLimit} seconds");
+        }
+    }
+
+    // 셔플 실패 시 GridManagerRefactored에서 호출할 메서드
+    public void OnShuffleAttemptFailed()
+    {
+        Debug.Log("Shuffle attempt failed - no more matches possible!");
+        hasFailedOnce = true;
+
+        // 게임 오버 처리
+        OnStageFailed("No More Matching!");
+    }
+
+    // 스테이지 클리어 시 GridManagerRefactored에서 호출할 메서드  
+    public void OnStageCleared()
+    {
+        Debug.Log("All blocks destroyed - Stage cleared!");
+        OnStageComplete();  // 기존 메서드 활용
+    }
+
+    // 스테이지 실패 처리 메서드 추가
+    public void OnStageFailed(string reason)
+    {
+        isGameActive = false;
+        Debug.Log($"Stage failed: {reason}");
+
+        // TODO: 실패 UI 표시 (나중에 실패 전용 패널 추가)
+        // 임시로 게임 오버 처리
+        GameOver();
+    }
+
+    // 새로운 시간 체크 메서드 추가
+    private void CheckTimeLimit()
+    {
+        if (isTimerActive && timeRemaining > 0)
+        {
+            timeRemaining -= Time.deltaTime;
+            UpdateTimerUI();
+
+            if (timeRemaining <= 0)
+            {
+                OnStageFailed("Time Over!");
+            }
+        }
     }
 }

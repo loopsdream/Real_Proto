@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -26,12 +27,22 @@ public class GridManagerRefactored : MonoBehaviour
     public BlockFactory blockFactory;
     public MatchingSystem matchingSystem;
 
+    [Header("Shuffle Settings")]
+    private int shuffleAttemptCount = 0;
+    private const int MAX_SHUFFLE_ATTEMPTS = 3;
+
+    [Header("Stage Shuffle System")]
+    public StageShuffleSystem shuffleSystem;
+
     public int currentScore = 0;
     private GameObject[,] grid;
 
     void Awake()
     {
         InitializeComponents();
+
+        if (shuffleSystem == null)
+            shuffleSystem = GetComponent<StageShuffleSystem>();
     }
 
     void Start()
@@ -73,8 +84,14 @@ public class GridManagerRefactored : MonoBehaviour
     {
         if (stageData == null) return;
 
+        width = stageData.gridWidth;
+        height = stageData.gridHeight;
+        targetScore = stageData.targetScore;
+
+        // 기존 그리드 정리 전에 새 크기로 그리드 생성
         ClearGrid();
-        SetupGridFromStageData(stageData);
+        SetupGrid();  // 새로운 크기로 그리드 생성
+
         CreateBlocksFromPattern(stageData.blockPattern);
         SetupCameraAndLayout();
 
@@ -182,9 +199,12 @@ public class GridManagerRefactored : MonoBehaviour
     {
         if (grid != null)
         {
-            for (int x = 0; x < width; x++)
+            int gridWidth = grid.GetLength(0);
+            int gridHeight = grid.GetLength(1);
+
+            for (int x = 0; x < gridWidth; x++)
             {
-                for (int y = 0; y < height; y++)
+                for (int y = 0; y < gridHeight; y++)
                 {
                     if (grid[x, y] != null)
                     {
@@ -271,6 +291,27 @@ public class GridManagerRefactored : MonoBehaviour
 
     private void CheckWinCondition()
     {
+        // 기존 점수 기반 로직 제거하고 블록 파괴 기반으로 변경
+        int remainingBlocks = CountRemainingBlocks();
+
+        if (remainingBlocks == 0)
+        {
+            // 모든 블록이 파괴됨 - 승리!
+            if (winPanel != null)
+            {
+                winPanel.SetActive(true);
+            }
+            return;
+        }
+
+        // 매칭 가능한 조합이 있는지 확인
+        if (!CanMakeAnyMatch())
+        {
+            // 더 이상 매칭할 수 없는 상황 - 셔플 필요
+            HandleDeadlockSituation();
+        }
+
+        /*
         if (currentScore >= targetScore)
         {
             if (StageManager.Instance != null)
@@ -290,6 +331,76 @@ public class GridManagerRefactored : MonoBehaviour
 
             Debug.Log("스테이지 완료!");
         }
+        */
+    }
+
+    private int CountRemainingBlocks()
+    {
+        int count = 0;
+        if (grid == null) return 0;
+
+        int gridWidth = grid.GetLength(0);
+        int gridHeight = grid.GetLength(1);
+
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int y = 0; y < gridHeight; y++)
+            {
+                GameObject block = grid[x, y];
+                if (block != null)
+                {
+                    Block blockComponent = block.GetComponent<Block>();
+                    if (blockComponent != null && !blockComponent.isEmpty)
+                    {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
+    private bool CanMakeAnyMatch()
+    {
+        return matchingSystem.HasAnyPossibleMatch(grid);
+    }
+
+    private void HandleDeadlockSituation()
+    {
+        // 2개 이상인 색깔이 있는지 확인하고 셔플 실행
+        if (shuffleAttemptCount >= MAX_SHUFFLE_ATTEMPTS)
+        {
+            Debug.Log("Max shuffle attempts reached!");
+            shuffleAttemptCount = 0;
+            return;
+        }
+
+        if (HasMatchableColorGroups())
+        {
+            shuffleAttemptCount++;
+            StartCoroutine(ShuffleRemainingBlocks());
+        }
+        else
+        {
+            shuffleAttemptCount = 0;
+            Debug.Log("No shuffleable blocks available!");
+        }
+    }
+
+    private bool HasMatchableColorGroups()
+    {
+        if (grid == null) return false;
+
+        Dictionary<string, int> colorCounts = matchingSystem.CountBlocksByColor(grid);
+
+        // 2개 이상인 색깔이 하나라도 있는지 확인
+        foreach (var count in colorCounts.Values)
+        {
+            if (count >= 2)
+                return true;
+        }
+
+        return false;
     }
 
     public void InitializeGridWithPattern(int[,] pattern)
@@ -319,6 +430,13 @@ public class GridManagerRefactored : MonoBehaviour
 
     public void OnEmptyBlockClicked(int x, int y)
     {
+        // 범위 체크 추가
+        if (grid == null || x < 0 || x >= grid.GetLength(0) || y < 0 || y >= grid.GetLength(1))
+        {
+            Debug.LogWarning($"Invalid click position: ({x}, {y})");
+            return;
+        }
+
         Debug.Log($"Empty block clicked at ({x}, {y})");
 
         // 무한모드 콜백 처리
@@ -371,6 +489,29 @@ public class GridManagerRefactored : MonoBehaviour
         if (scoreText != null)
         {
             scoreText.text = $"Score: {currentScore} / {targetScore}";
+        }
+    }
+
+    private System.Collections.IEnumerator ShuffleRemainingBlocks()
+    {
+        Debug.Log("Shuffling remaining blocks...");
+
+        // StageShuffleSystem 사용하도록 변경
+        StageShuffleSystem shuffleSystem = GetComponent<StageShuffleSystem>();
+        if (shuffleSystem != null)
+        {
+            yield return StartCoroutine(shuffleSystem.ExecuteShuffle(grid, width, height));
+
+            // 셔플 후 다시 매칭 가능한지 확인
+            if (!matchingSystem.HasAnyPossibleMatch(grid))
+            {
+                Debug.Log("Still no matches after shuffle!");
+                HandleDeadlockSituation(); // 재귀적으로 다시 시도
+            }
+        }
+        else
+        {
+            Debug.LogError("StageShuffleSystem not found!");
         }
     }
 

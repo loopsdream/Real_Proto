@@ -196,4 +196,116 @@ public class MatchingSystem : MonoBehaviour
         minimumMatchCount = Mathf.Max(2, count);
         Debug.Log($"Minimum match count set to: {minimumMatchCount}");
     }
+
+    public List<Vector2Int> GetAllPossibleMatches(GameObject[,] grid)
+    {
+        List<Vector2Int> possibleMatchPositions = new List<Vector2Int>();
+
+        int gridWidth = grid.GetLength(0);
+        int gridHeight = grid.GetLength(1);
+
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int y = 0; y < gridHeight; y++)
+            {
+                GameObject block = grid[x, y];
+                if (block != null)
+                {
+                    Block blockComponent = block.GetComponent<Block>();
+                    if (blockComponent != null && blockComponent.isEmpty)
+                    {
+                        if (HasValidMatches(x, y, grid))
+                        {
+                            possibleMatchPositions.Add(new Vector2Int(x, y));
+                        }
+                    }
+                }
+            }
+        }
+
+        return possibleMatchPositions;
+    }
+
+    public bool HasAnyPossibleMatch(GameObject[,] grid)
+    {
+        int gridWidth = grid.GetLength(0);
+        int gridHeight = grid.GetLength(1);
+
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int y = 0; y < gridHeight; y++)
+            {
+                GameObject block = grid[x, y];
+                if (block != null)
+                {
+                    Block blockComponent = block.GetComponent<Block>();
+                    if (blockComponent != null && blockComponent.isEmpty)
+                    {
+                        if (HasValidMatches(x, y, grid))
+                        {
+                            return true; // 하나라도 찾으면 바로 리턴
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public Dictionary<string, int> CountBlocksByColor(GameObject[,] grid)
+    {
+        Dictionary<string, int> colorCounts = new Dictionary<string, int>();
+
+        int gridWidth = grid.GetLength(0);
+        int gridHeight = grid.GetLength(1);
+
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int y = 0; y < gridHeight; y++)
+            {
+                GameObject block = grid[x, y];
+                if (block != null)
+                {
+                    Block blockComponent = block.GetComponent<Block>();
+                    if (blockComponent != null && !blockComponent.isEmpty)
+                    {
+                        string blockTag = block.tag;
+                        if (colorCounts.ContainsKey(blockTag))
+                            colorCounts[blockTag]++;
+                        else
+                            colorCounts[blockTag] = 1;
+                    }
+                }
+            }
+        }
+
+        return colorCounts;
+    }
+
+    public List<Vector2Int> GetRemainingBlocks(GameObject[,] grid)
+    {
+        List<Vector2Int> remainingBlocks = new List<Vector2Int>();
+
+        int gridWidth = grid.GetLength(0);
+        int gridHeight = grid.GetLength(1);
+
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int y = 0; y < gridHeight; y++)
+            {
+                GameObject block = grid[x, y];
+                if (block != null)
+                {
+                    Block blockComponent = block.GetComponent<Block>();
+                    if (blockComponent != null && !blockComponent.isEmpty)
+                    {
+                        remainingBlocks.Add(new Vector2Int(x, y));
+                    }
+                }
+            }
+        }
+
+        return remainingBlocks;
+    }
 }
