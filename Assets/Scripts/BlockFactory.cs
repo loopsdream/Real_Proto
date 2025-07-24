@@ -183,4 +183,17 @@ public class BlockFactory : MonoBehaviour
         
         return true;
     }
+
+    public string GetTagFromBlockType(int blockType)
+    {
+        switch (blockType)
+        {
+            case 1: return "RedBlock";
+            case 2: return "BlueBlock";
+            case 3: return "YellowBlock";
+            case 4: return "GreenBlock";
+            case 5: return "PurpleBlock";
+            default: return "EmptyBlock";
+        }
+    }
 }
