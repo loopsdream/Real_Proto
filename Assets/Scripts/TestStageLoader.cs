@@ -48,7 +48,6 @@ public class TestStageLoader : MonoBehaviour
             // 중요: cellSize를 올바르게 설정
             float worldCellSize = cellSize / 100f; // 픽셀을 월드 유닛으로 변환
             gridManager.cellSize = worldCellSize;
-            gridManager.targetScore = targetScore;
 
             Debug.Log($"GridManager settings updated - cellSize: {worldCellSize} (from {cellSize} pixels)");
 
@@ -215,7 +214,6 @@ public class TestStageLoader : MonoBehaviour
             // GridManager 설정 적용
             gridManager.width = testStage.width;
             gridManager.height = testStage.height;
-            gridManager.targetScore = testStage.targetScore;
 
             // 기존 그리드 삭제 후 새로 생성
             //if (gridManager.ClearGrid != null)

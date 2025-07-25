@@ -204,7 +204,6 @@ public class StageManager : MonoBehaviour
         {
             gridManager.width = currentStage.gridWidth;
             gridManager.height = currentStage.gridHeight;
-            gridManager.targetScore = currentStage.targetScore;
         }
     }
 
@@ -218,7 +217,6 @@ public class StageManager : MonoBehaviour
 
         gridManager.width = currentTestStage.width;
         gridManager.height = currentTestStage.height;
-        gridManager.targetScore = currentTestStage.targetScore;
 
         gridManager.ClearGrid();
         gridManager.InitializeGridWithPattern(currentTestStage.pattern);
@@ -365,6 +363,18 @@ public class StageManager : MonoBehaviour
     {
         Debug.Log("All blocks destroyed - Stage cleared!");
         OnStageComplete();  // 기존 메서드 활용
+
+        // 보상 지급
+        if (currentStage != null && UserDataManager.Instance != null)
+        {
+            UserDataManager.Instance.AddGameCoins(currentStage.coinReward);
+            if (currentStage.diamondReward > 0)
+            {
+                UserDataManager.Instance.AddDiamonds(currentStage.diamondReward);
+            }
+            // 경험치 시스템이 있다면
+            // UserDataManager.Instance.AddExperience(currentStage.experienceReward);
+        }
     }
 
     // 스테이지 실패 처리 메서드 추가

@@ -15,7 +15,6 @@ public class GridManagerRefactored : MonoBehaviour
 
     [Header("Game Settings")]
     public int scorePerBlock = 10;
-    public int targetScore = 100;
 
     [Header("UI References")]
     public TextMeshProUGUI scoreText;
@@ -88,7 +87,6 @@ public class GridManagerRefactored : MonoBehaviour
 
         width = stageData.gridWidth;
         height = stageData.gridHeight;
-        targetScore = stageData.targetScore;
 
         // 기존 그리드 정리 전에 새 크기로 그리드 생성
         ClearGrid();
@@ -120,7 +118,6 @@ public class GridManagerRefactored : MonoBehaviour
     {
         width = stageData.gridWidth;
         height = stageData.gridHeight;
-        targetScore = stageData.targetScore;
 
         SetupGrid();
     }
@@ -1234,7 +1231,7 @@ public class GridManagerRefactored : MonoBehaviour
     {
         if (scoreText != null)
         {
-            scoreText.text = $"Score: {currentScore} / {targetScore}";
+            scoreText.text = $"Score: {currentScore}";
         }
     }
 

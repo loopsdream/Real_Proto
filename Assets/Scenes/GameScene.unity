@@ -2710,7 +2710,6 @@ MonoBehaviour:
   height: 8
   gridParent: {fileID: 1291168838}
   scorePerBlock: 10
-  targetScore: 100
   scoreText: {fileID: 993477583}
   winPanel: {fileID: 1615980661}
   cameraController: {fileID: 0}
@@ -2803,7 +2802,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allStages:
-  - {fileID: 11400000, guid: 3b8e6b2bf1ca29f4a85a1c4c60fa8534, type: 2}
+  - {fileID: 11400000, guid: ac65e0b1e596ab5438b2ec1c99c0fc5a, type: 2}
   - {fileID: 11400000, guid: 3b8e6b2bf1ca29f4a85a1c4c60fa8534, type: 2}
   currentStage: {fileID: 0}
   stageNumberText: {fileID: 0}
