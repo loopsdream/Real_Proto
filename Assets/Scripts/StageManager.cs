@@ -402,4 +402,13 @@ public class StageManager : MonoBehaviour
             }
         }
     }
+
+    public void ReturnToLevelDesigner()
+    {
+        isTestLevel = false;        // 플래그 초기화
+        currentTestStage = null;    // 테스트 데이터 정리
+
+        SceneManager.LoadScene("LevelDesigner");
+    }
+
 }
