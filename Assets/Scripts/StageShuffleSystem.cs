@@ -11,14 +11,12 @@ public class StageShuffleSystem : MonoBehaviour
 
     [Header("Shuffle Effects")]
     public ParticleSystem shuffleParticleEffect; // 추후 파티클 효과용
-
-    private GridManagerRefactored gridManager;
+    
     private BlockFactory blockFactory;
     private MatchingSystem matchingSystem;
 
     void Awake()
     {
-        gridManager = GetComponent<GridManagerRefactored>();
         blockFactory = GetComponent<BlockFactory>();
         matchingSystem = GetComponent<MatchingSystem>();
     }

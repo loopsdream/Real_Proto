@@ -22,10 +22,10 @@ public class StageManager : MonoBehaviour
     public GameObject stageCompletePanel;
 
     [Header("Game References")]
-    public GridManagerRefactored gridManager;
+    public StageGridManager gridManager;
 
     [Header("Stage Failure Detection")]
-    public GridManagerRefactored gridManagerRef; // GridManager 참조
+    public StageGridManager gridManagerRef; // GridManager 참조
     public MatchingSystem matchingSystemRef; // MatchingSystem 참조
 
     [Header("Game State")]
@@ -69,22 +69,20 @@ public class StageManager : MonoBehaviour
 
     void Start()
     {
-        LoadStage(0);
+        // 테스트 레벨 체크를 먼저
         CheckForTestLevel();
+
+        // 테스트 레벨이 아닐 때만 일반 스테이지 로드
+        if (!isTestLevel && PlayerPrefs.GetInt("IsTestLevel", 0) == 0)
+        {
+            LoadStage(0);
+        }
     }
 
     void Update()
     {
         if (isTimerActive && timeRemaining > 0)
         {
-            timeRemaining -= Time.deltaTime;
-            UpdateTimerUI();
-
-            if (timeRemaining <= 0)
-            {
-                GameOver();
-            }
-
             // 시간 제한 체크
             if (isGameActive && currentStage != null && currentStage.hasTimeLimit)
             {
@@ -97,9 +95,8 @@ public class StageManager : MonoBehaviour
     {
         if (PlayerPrefs.GetInt("IsTestLevel", 0) == 1)
         {
-            Debug.Log("Test level detected, TestStageLoader will handle initialization");
-            if (testPanel != null)
-                testPanel.SetActive(true);
+            Debug.Log("Test level detected, waiting for TestStageLoader");
+            isTestLevel = true;  // 플래그 설정
         }
     }
 
@@ -195,6 +192,9 @@ public class StageManager : MonoBehaviour
             {
                 movesLeftText.text = $"Move Left: {currentTestStage.maxMoves}";
             }
+
+            if (testPanel != null)
+                testPanel.SetActive(true);
         }
     }
 

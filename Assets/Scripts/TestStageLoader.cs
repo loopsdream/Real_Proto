@@ -4,7 +4,7 @@ using UnityEngine;
 public class TestStageLoader : MonoBehaviour
 {
     [Header("Grid Manager")]
-    public GridManagerRefactored gridManager;
+    public StageGridManager gridManager;  // GridManagerRefactored → StageGridManager로 변경
 
     void Start()
     {
@@ -20,6 +20,7 @@ public class TestStageLoader : MonoBehaviour
         try
         {
             Debug.Log("=== LoadTestLevel Started ===");
+            Debug.Log($"IsTestLevel flag: {PlayerPrefs.GetInt("IsTestLevel", 0)}");
 
             // 테스트 레벨 데이터 로드
             int width = PlayerPrefs.GetInt("TestLevel_Width", 6);
@@ -69,6 +70,7 @@ public class TestStageLoader : MonoBehaviour
             if (stageManager != null)
             {
                 Debug.Log($"StageManager found: {stageManager.name}");
+                Debug.Log($"Calling LoadTestStage with pattern length: {testStage.pattern.GetLength(0)}x{testStage.pattern.GetLength(1)}");
                 stageManager.LoadTestStage(testStage);
             }
             else
@@ -197,7 +199,7 @@ public class TestStageLoader : MonoBehaviour
     {
         if (gridManager == null)
         {
-            Debug.LogError("GridManager is null in ApplyTestStageToGridManager!");
+            Debug.LogError("StageGridManager is null in ApplyTestStageToGridManager!");
             return;
         }
 
@@ -215,29 +217,9 @@ public class TestStageLoader : MonoBehaviour
             gridManager.width = testStage.width;
             gridManager.height = testStage.height;
 
-            // 기존 그리드 삭제 후 새로 생성
-            //if (gridManager.ClearGrid != null)
-            //{
-                gridManager.ClearGrid();
-            //}
-            //else
-            //{
-            //    Debug.LogWarning("GridManager.ClearGrid method not found");
-            //}
-
-            //if (gridManager.InitializeGridWithPattern != null && testStage.pattern != null)
-            //{
-                gridManager.InitializeGridWithPattern(testStage.pattern);
-            //}
-            //else
-            //{
-                //Debug.LogError("GridManager.InitializeGridWithPattern method not found or pattern is null");
-                // 대체 방법: 기본 초기화
-                //if (gridManager.InitializeGrid != null)
-                //{
-                    gridManager.InitializeGrid();
-                //}
-            //}
+            // 기존 그리드 정리 후 새로 생성
+            gridManager.ClearGrid();
+            gridManager.InitializeGridWithPattern(testStage.pattern);
 
             Debug.Log($"Test stage applied to GridManager successfully");
         }

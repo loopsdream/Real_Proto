@@ -1,3 +1,4 @@
+/*
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -315,6 +316,8 @@ public class GridManagerRefactored : MonoBehaviour
 
         isCheckingWinCondition = false;
 
+        */
+
         /*
         if (currentScore >= targetScore)
         {
@@ -336,6 +339,7 @@ public class GridManagerRefactored : MonoBehaviour
             Debug.Log("스테이지 완료!");
         }
         */
+        /*
     }
 
     private int CountRemainingBlocks()
@@ -1450,3 +1454,4 @@ public class GridManagerRefactored : MonoBehaviour
         }
     }
 }
+*/

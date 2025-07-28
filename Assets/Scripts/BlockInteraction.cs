@@ -4,7 +4,7 @@ using UnityEngine.InputSystem; // 새 Input System 네임스페이스
 
 public class BlockInteraction : MonoBehaviour
 {
-    public GridManagerRefactored gridManager;
+    public BaseGridManager gridManager;
     private Block block;
     private Camera mainCamera;
 
@@ -23,7 +23,7 @@ public class BlockInteraction : MonoBehaviour
         block = GetComponent<Block>();
         if (gridManager == null)
         {
-            gridManager = Object.FindAnyObjectByType<GridManagerRefactored>();
+            gridManager = Object.FindAnyObjectByType<BaseGridManager>();
         }
         mainCamera = Camera.main;
     }

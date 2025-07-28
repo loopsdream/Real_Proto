@@ -1315,7 +1315,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea256f3902ade924f91766d262d9a549, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridManager: {fileID: 1362635012}
+  gridManager: {fileID: 1362635014}
 --- !u!4 &823020980
 Transform:
   m_ObjectHideFlags: 0
@@ -1880,7 +1880,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1176542622
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2585,12 +2585,12 @@ GameObject:
   m_Component:
   - component: {fileID: 1362635007}
   - component: {fileID: 1362635006}
-  - component: {fileID: 1362635012}
   - component: {fileID: 1362635011}
   - component: {fileID: 1362635010}
   - component: {fileID: 1362635009}
   - component: {fileID: 1362635008}
   - component: {fileID: 1362635013}
+  - component: {fileID: 1362635014}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2694,30 +2694,6 @@ MonoBehaviour:
   topUISpacePixels: 200
   bottomUISpacePixels: 150
   sideMarginPixels: 100
---- !u!114 &1362635012
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1362635005}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 294e25ed93b33ed4c8cbd7a11b363a00, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  width: 8
-  height: 8
-  gridParent: {fileID: 1291168838}
-  scorePerBlock: 10
-  scoreText: {fileID: 993477583}
-  winPanel: {fileID: 1615980661}
-  cameraController: {fileID: 0}
-  layoutManager: {fileID: 0}
-  blockFactory: {fileID: 0}
-  matchingSystem: {fileID: 0}
-  shuffleSystem: {fileID: 1362635013}
-  currentScore: 0
 --- !u!114 &1362635013
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2757,6 +2733,30 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   shuffleParticleEffect: {fileID: 0}
+--- !u!114 &1362635014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1362635005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b30963d46e76004f8ff1bac82a7e3da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  width: 8
+  height: 8
+  gridParent: {fileID: 1291168838}
+  cameraController: {fileID: 1362635011}
+  layoutManager: {fileID: 1362635008}
+  blockFactory: {fileID: 1362635010}
+  matchingSystem: {fileID: 1362635009}
+  scorePerBlock: 10
+  scoreText: {fileID: 993477583}
+  winPanel: {fileID: 1615980661}
+  shuffleSystem: {fileID: 1362635013}
+  currentScore: 0
 --- !u!1 &1448824125
 GameObject:
   m_ObjectHideFlags: 0
@@ -2813,9 +2813,9 @@ MonoBehaviour:
   nextStageButton: {fileID: 1289721041}
   restartStageButton: {fileID: 381267233}
   stageCompletePanel: {fileID: 1965132416}
-  gridManager: {fileID: 1362635012}
-  gridManagerRef: {fileID: 0}
-  matchingSystemRef: {fileID: 0}
+  gridManager: {fileID: 1362635014}
+  gridManagerRef: {fileID: 1362635014}
+  matchingSystemRef: {fileID: 1362635009}
   testPanel: {fileID: 1176542621}
   isTestLevel: 0
 --- !u!1 &1591731802

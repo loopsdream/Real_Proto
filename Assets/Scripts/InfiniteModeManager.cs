@@ -12,7 +12,7 @@ public class InfiniteModeManager : MonoBehaviour
     public InfiniteModeSettings settings;
 
     [Header("Game References")]
-    public GridManagerRefactored gridManager;
+    public InfiniteGridManager gridManager;
 
     [Header("UI References")]
     public TextMeshProUGUI timeText;
@@ -75,7 +75,7 @@ public class InfiniteModeManager : MonoBehaviour
 
     void Awake()
     {
-        gridManager = FindFirstObjectByType<GridManagerRefactored>();
+        gridManager = FindFirstObjectByType<InfiniteGridManager>();
     }
 
     void Start()
@@ -123,32 +123,37 @@ public class InfiniteModeManager : MonoBehaviour
             gridManager.width = settings.gridWidth;
             gridManager.height = settings.gridHeight;
 
-            // 기존 GridManager의 자동 초기화 방지
-            gridManager.enabled = false;
+            // InfiniteGridManager의 그리드 초기화
+            gridManager.InitializeInfiniteGrid();
 
-            // 기존 그리드 완전 삭제
-            gridManager.ClearGrid();
+            // 콜백 설정
+            gridManager.onEmptyBlockClicked = OnEmptyBlockClicked;
+        }
+        else
+        {
+            Debug.LogError("InfiniteGridManager not found!");
+            return;
         }
 
-        // 무한모드 그리드 초기화
+        // 자체 infiniteGrid를 gridManager의 grid와 동기화
         infiniteGrid = new GameObject[settings.gridWidth, settings.gridHeight];
 
-        // 가장자리 위치 계산 (모서리 제외)
+        // gridManager의 그리드를 infiniteGrid에 복사
+        for (int x = 0; x < settings.gridWidth; x++)
+        {
+            for (int y = 0; y < settings.gridHeight; y++)
+            {
+                infiniteGrid[x, y] = gridManager.GetBlockAt(x, y);
+            }
+        }
+
+        // 가장자리 위치 계산
         CalculateEdgePositions();
 
-        // 초기 상태 설정
+        // 초기 설정
         currentTimeLimit = settings.initialTimeLimit;
         currentScore = 0;
         currentCombo = 0;
-
-        // 빈 그리드로 시작
-        CreateEmptyGrid();
-
-        // GridManager 다시 활성화 (무한모드용으로만 사용)
-        if (gridManager != null)
-        {
-            gridManager.enabled = true;
-        }
 
         // 게임 시작
         StartGame();
@@ -190,61 +195,6 @@ public class InfiniteModeManager : MonoBehaviour
         }
 
         Debug.Log($"Edge positions calculated: {edgePositions.Count} positions (Corner mode: {currentDifficulty.cornerMode})");
-    }
-
-    void CreateEmptyGrid()
-    {
-        // GridManager를 통해 중앙 정렬과 카메라 설정을 먼저 수행
-        if (gridManager != null)
-        {
-            // GridLayoutManager에 그리드 크기와 셀 크기 설정
-            if (gridManager.layoutManager != null)
-            {
-                gridManager.layoutManager.SetupLayout(settings.gridWidth, settings.gridHeight, 1.0f);
-            }
-
-            // CameraController를 통해 카메라 조정
-            if (gridManager.cameraController != null && gridManager.layoutManager != null)
-            {
-                gridManager.cameraController.AdjustCameraForGrid(settings.gridWidth, settings.gridHeight, gridManager.layoutManager.cellSize);
-                Vector3 gridCenter = gridManager.layoutManager.GetGridCenter();
-                gridManager.cameraController.CenterCameraOnGrid(gridCenter);
-            }
-        }
-
-        for (int x = 0; x < settings.gridWidth; x++)
-        {
-            for (int y = 0; y < settings.gridHeight; y++)
-            {
-                Vector3 worldPos = gridManager.GridToWorldPosition(x, y);
-                GameObject emptyBlock = Instantiate(emptyBlockPrefab, worldPos, Quaternion.identity);
-
-                // Block 컴포넌트 설정
-                Block blockComponent = emptyBlock.GetComponent<Block>();
-                if (blockComponent != null)
-                {
-                    blockComponent.x = x;
-                    blockComponent.y = y;
-                    blockComponent.isEmpty = true;
-                }
-
-                // BlockInteraction 설정
-                BlockInteraction interaction = emptyBlock.GetComponent<BlockInteraction>();
-                if (interaction != null)
-                {
-                    interaction.gridManager = gridManager;
-                }
-
-                infiniteGrid[x, y] = emptyBlock;
-
-                if (gridManager.gridParent != null)
-                {
-                    emptyBlock.transform.SetParent(gridManager.gridParent.transform);
-                }
-            }
-        }
-
-        Debug.Log($"Empty grid created at center with {settings.gridWidth}x{settings.gridHeight}");
     }
 
     void StartGame()
@@ -372,53 +322,31 @@ public class InfiniteModeManager : MonoBehaviour
         // 기존 빈 블록 제거
         if (infiniteGrid[x, y] != null)
         {
-            Destroy(infiniteGrid[x, y]);
+            gridManager.blockFactory.DestroyBlock(infiniteGrid[x, y]);
         }
 
         // 랜덤 블록 생성
         int randomBlockType = Random.Range(0, blockPrefabs.Length);
-        GameObject newBlock = Instantiate(blockPrefabs[randomBlockType],
-            gridManager.GridToWorldPosition(x, y), Quaternion.identity);
+        GameObject blockPrefab = blockPrefabs[randomBlockType];
 
-        // Block 컴포넌트 설정
-        Block blockComponent = newBlock.GetComponent<Block>();
-        if (blockComponent != null)
-        {
-            blockComponent.x = x;
-            blockComponent.y = y;
-            blockComponent.isEmpty = false;
-        }
-
-        // InfiniteBlock 컴포넌트 추가 (방향 정보 저장용)
-        InfiniteBlock infiniteBlockComponent = newBlock.AddComponent<InfiniteBlock>();
-
-        // 생성 위치에 따라 이동 방향 결정
+        // 이동 방향 결정
         Vector2Int moveDirection = Vector2Int.zero;
-
-        // 상단 가장자리 → 아래로
         if (y == settings.gridHeight - 1)
             moveDirection = Vector2Int.down;
-        // 하단 가장자리 → 위로
         else if (y == 0)
             moveDirection = Vector2Int.up;
-        // 좌측 가장자리 → 오른쪽으로
         else if (x == 0)
             moveDirection = Vector2Int.right;
-        // 우측 가장자리 → 왼쪽으로
         else if (x == settings.gridWidth - 1)
             moveDirection = Vector2Int.left;
 
-        infiniteBlockComponent.moveDirection = moveDirection;
+        // InfiniteGridManager를 통해 블록 생성
+        gridManager.CreateInfiniteBlock(blockPrefab, x, y, moveDirection);
 
-        infiniteGrid[x, y] = newBlock;
+        // 로컬 그리드 동기화
+        infiniteGrid[x, y] = gridManager.GetBlockAt(x, y);
 
-        if (gridManager.gridParent != null)
-        {
-            newBlock.transform.SetParent(gridManager.gridParent.transform);
-        }
-
-        // 새 블록은 즉시 최종 크기로 나타남 (페이드 인 없음)
-        Debug.Log($"Created {newBlock.tag} block at ({x}, {y}) with direction {moveDirection}");
+        Debug.Log($"Created {blockPrefab.tag} block at ({x}, {y}) with direction {moveDirection}");
     }
 
     // 애니메이션이 포함된 블록 이동 시퀀스 (위험 효과 추가)
@@ -532,10 +460,9 @@ public class InfiniteModeManager : MonoBehaviour
     {
         Debug.Log("=== Starting grid array update ===");
 
-        // 새로운 임시 그리드 생성
         GameObject[,] newGrid = new GameObject[settings.gridWidth, settings.gridHeight];
 
-        // 먼저 이동하지 않는 블록들을 새 그리드에 복사
+        // 이동하지 않는 블록들을 새 그리드에 복사
         for (int x = 0; x < settings.gridWidth; x++)
         {
             for (int y = 0; y < settings.gridHeight; y++)
@@ -543,14 +470,10 @@ public class InfiniteModeManager : MonoBehaviour
                 GameObject block = infiniteGrid[x, y];
                 if (block != null)
                 {
-                    // 이 블록이 이동하는 블록인지 확인
                     bool isMovingBlock = moves.Any(move => move.fromX == x && move.fromY == y);
-
                     if (!isMovingBlock)
                     {
-                        // 이동하지 않는 블록은 그대로 복사
                         newGrid[x, y] = block;
-                        Debug.Log($"Static block remains at ({x}, {y})");
                     }
                 }
             }
@@ -565,28 +488,29 @@ public class InfiniteModeManager : MonoBehaviour
                 Block blockComponent = movedBlock.GetComponent<Block>();
                 if (blockComponent != null && !blockComponent.isEmpty)
                 {
-                    // 새 그리드의 목적지에 블록 배치
                     newGrid[move.toX, move.toY] = movedBlock;
-                    Debug.Log($"Moved block from ({move.fromX}, {move.fromY}) to ({move.toX}, {move.toY})");
-
-                    // Block 컴포넌트의 좌표도 즉시 업데이트 (중요!)
                     blockComponent.x = move.toX;
                     blockComponent.y = move.toY;
+
+                    // gridManager에도 업데이트
+                    gridManager.MoveBlock(movedBlock, move.fromX, move.fromY, move.toX, move.toY);
                 }
-            }
-            else
-            {
-                Debug.LogWarning($"No block found at source position ({move.fromX}, {move.fromY})");
             }
         }
 
-        // 기존 그리드를 새 그리드로 교체
+        // 로컬 그리드 교체
         infiniteGrid = newGrid;
 
-        Debug.Log("=== Grid array update completed ===");
+        // gridManager 그리드와 동기화
+        for (int x = 0; x < settings.gridWidth; x++)
+        {
+            for (int y = 0; y < settings.gridHeight; y++)
+            {
+                gridManager.SetBlockAt(x, y, infiniteGrid[x, y]);
+            }
+        }
 
-        // 디버깅: 현재 그리드 상태 출력
-        DebugPrintGridState();
+        Debug.Log("=== Grid array update completed ===");
     }
 
     // 디버깅용 그리드 상태 출력
@@ -1045,33 +969,23 @@ public class InfiniteModeManager : MonoBehaviour
         // 기존 블록이 있다면 제거
         if (infiniteGrid[x, y] != null)
         {
-            Destroy(infiniteGrid[x, y]);
+            gridManager.blockFactory.DestroyBlock(infiniteGrid[x, y]);
             infiniteGrid[x, y] = null;
         }
 
-        Vector3 worldPos = gridManager.GridToWorldPosition(x, y);
-        GameObject emptyBlock = Instantiate(emptyBlockPrefab, worldPos, Quaternion.identity);
+        // gridManager를 통해 빈 블록 생성
+        GameObject emptyBlock = gridManager.blockFactory.CreateEmptyBlock(x, y);
+        gridManager.SetBlockAt(x, y, emptyBlock);
 
-        Block blockComponent = emptyBlock.GetComponent<Block>();
-        if (blockComponent != null)
-        {
-            blockComponent.x = x;
-            blockComponent.y = y;
-            blockComponent.isEmpty = true;
-        }
-
+        // BlockInteraction 설정
         BlockInteraction interaction = emptyBlock.GetComponent<BlockInteraction>();
         if (interaction != null)
         {
             interaction.gridManager = gridManager;
         }
 
+        // 로컬 그리드 동기화
         infiniteGrid[x, y] = emptyBlock;
-
-        if (gridManager.gridParent != null)
-        {
-            emptyBlock.transform.SetParent(gridManager.gridParent.transform);
-        }
 
         Debug.Log($"Empty block created at ({x}, {y})");
     }

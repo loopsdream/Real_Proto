@@ -353,7 +353,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   settings: {fileID: 11400000, guid: f435d368dd42c2742924a9f7a5e55a77, type: 2}
-  gridManager: {fileID: 0}
+  gridManager: {fileID: 206013276}
   timeText: {fileID: 1113651452}
   scoreText: {fileID: 1913073400}
   comboText: {fileID: 1947492510}
@@ -458,21 +458,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 206013270}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 294e25ed93b33ed4c8cbd7a11b363a00, type: 3}
+  m_Script: {fileID: 11500000, guid: 4a2c1617415b72847bd4bf7eb3bea83b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   width: 8
   height: 8
   gridParent: {fileID: 1242816597}
-  scorePerBlock: 10
-  targetScore: 100
-  scoreText: {fileID: 1913073400}
-  winPanel: {fileID: 0}
-  cameraController: {fileID: 0}
-  layoutManager: {fileID: 0}
-  blockFactory: {fileID: 0}
+  cameraController: {fileID: 206013275}
+  layoutManager: {fileID: 206013274}
+  blockFactory: {fileID: 206013273}
   matchingSystem: {fileID: 0}
-  currentScore: 0
 --- !u!1 &225010191
 GameObject:
   m_ObjectHideFlags: 0
