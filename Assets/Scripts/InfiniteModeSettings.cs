@@ -10,27 +10,14 @@ public class InfiniteModeSettings : ScriptableObject
     [Header("Time Settings")]
     public float initialTimeLimit = 60f;           // 초기 제한 시간 (초)
 
-    [Header("Difficulty Progression")]
-    [Tooltip("1단계 난이도 지속 시간 (초)")]
-    public float easyDuration = 30f;
-    [Tooltip("2단계 난이도 지속 시간 (초)")]
-    public float mediumDuration = 60f;
-    // 3단계는 그 이후 계속
-
-    [Header("Easy Difficulty (0-30초)")]
-    public float easyMoveInterval = 3f;            // 블록 이동/생성 간격
-    public float easyBlockSpawnChance = 0.3f;      // 블록 생성 확률 (30%)
-    public CornerBlockMode easyCornerMode = CornerBlockMode.SingleCorner;
-
-    [Header("Medium Difficulty (30-90초)")]
-    public float mediumMoveInterval = 2f;          // 블록 이동/생성 간격
-    public float mediumBlockSpawnChance = 0.5f;    // 블록 생성 확률 (50%)
-    public CornerBlockMode mediumCornerMode = CornerBlockMode.SingleCorner;
-
-    [Header("Hard Difficulty (90초 이후)")]
-    public float hardMoveInterval = 1.5f;          // 블록 이동/생성 간격
-    public float hardBlockSpawnChance = 0.7f;      // 블록 생성 확률 (70%)
-    public CornerBlockMode hardCornerMode = CornerBlockMode.FourCorners;
+    [Header("Difficulty Levels")]
+    public DifficultyLevel[] difficultyLevels = new DifficultyLevel[]
+    {
+        new DifficultyLevel { difficultyName = "1 Phase", startTime = 0f, moveInterval = 6f, minSpawnChance = 0.1f, maxSpawnChance = 0.2f, cornerMode = CornerBlockMode.SingleCorner, bonusScoreMultiplier = 1.0f },
+        new DifficultyLevel { difficultyName = "2 Phase", startTime = 30f, moveInterval = 6f, minSpawnChance = 0.2f, maxSpawnChance = 0.3f, cornerMode = CornerBlockMode.SingleCorner, bonusScoreMultiplier = 1.2f },
+        new DifficultyLevel { difficultyName = "3 Phase", startTime = 90f, moveInterval = 6f, minSpawnChance = 0.3f, maxSpawnChance = 0.4f, cornerMode = CornerBlockMode.FourCorners, bonusScoreMultiplier = 1.4f },
+        new DifficultyLevel { difficultyName = "4 Phase", startTime = 120f, moveInterval = 6f, minSpawnChance = 0.4f, maxSpawnChance = 0.5f, cornerMode = CornerBlockMode.FourCorners, bonusScoreMultiplier = 1.6f }
+    };
 
     [Header("Reward Settings")]
     [Tooltip("2개 블록 파괴 시 획득 점수")]
@@ -56,21 +43,42 @@ public class InfiniteModeSettings : ScriptableObject
     [Tooltip("콤보별 추가 점수 (2콤보~10콤보)")]
     public int[] comboBonusScores = new int[9] { 5, 10, 20, 35, 55, 80, 110, 145, 185 };
 
-    // 난이도별 설정 가져오기
-    public DifficultySettings GetCurrentDifficulty(float gameTime)
+    [System.Serializable]
+    public class DifficultyLevel
     {
-        if (gameTime <= easyDuration)
+        public string difficultyName = "Easy";
+        public float startTime = 0f;  // 이 난이도가 시작되는 시간 (초)
+        public float moveInterval = 3f;
+
+        [Header("Block Spawn Settings")]
+        [Range(0f, 1f)]
+        public float minSpawnChance = 0.25f;  // 최소 생성 확률
+        [Range(0f, 1f)]
+        public float maxSpawnChance = 0.5f;   // 최대 생성 확률
+
+        public CornerBlockMode cornerMode = CornerBlockMode.SingleCorner;
+
+        [Header("Score Bonus")]
+        public float bonusScoreMultiplier = 1.0f;  // 기본 점수에 곱해지는 보너스 배수
+    }
+
+    // 난이도별 설정 가져오기
+    public DifficultyLevel GetCurrentDifficulty(float gameTime)
+    {
+        // 역순으로 검사하여 가장 늦게 시작하는 난이도부터 확인
+        for (int i = difficultyLevels.Length - 1; i >= 0; i--)
         {
-            return new DifficultySettings(easyMoveInterval, easyBlockSpawnChance, easyCornerMode);
+            if (gameTime >= difficultyLevels[i].startTime)
+            {
+                Debug.Log($"Game time: {gameTime}s, Current difficulty: {difficultyLevels[i].difficultyName}");
+                return difficultyLevels[i];
+            }
         }
-        else if (gameTime <= easyDuration + mediumDuration)
-        {
-            return new DifficultySettings(mediumMoveInterval, mediumBlockSpawnChance, mediumCornerMode);
-        }
-        else
-        {
-            return new DifficultySettings(hardMoveInterval, hardBlockSpawnChance, hardCornerMode);
-        }
+
+        Debug.Log($"Game time: {gameTime}s, Current difficulty: {difficultyLevels[0].difficultyName}");
+
+        // 기본값으로 첫 번째 난이도 반환
+        return difficultyLevels[0];
     }
 
     // 유틸리티 메서드
@@ -113,18 +121,3 @@ public enum CornerBlockMode
     FourCorners     // 네 모서리 각 4칸씩 제외 (2x2 영역)
 }
 
-// 난이도별 설정 클래스
-[System.Serializable]
-public class DifficultySettings
-{
-    public float moveInterval;
-    public float blockSpawnChance;
-    public CornerBlockMode cornerMode;
-
-    public DifficultySettings(float moveInterval, float blockSpawnChance, CornerBlockMode cornerMode)
-    {
-        this.moveInterval = moveInterval;
-        this.blockSpawnChance = blockSpawnChance;
-        this.cornerMode = cornerMode;
-    }
-}

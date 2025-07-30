@@ -15,17 +15,49 @@ MonoBehaviour:
   gridWidth: 9
   gridHeight: 9
   initialTimeLimit: 60
-  easyDuration: 30
-  mediumDuration: 60
-  easyMoveInterval: 6
-  easyBlockSpawnChance: 0.4
-  easyCornerMode: 1
-  mediumMoveInterval: 6
-  mediumBlockSpawnChance: 0.6
-  mediumCornerMode: 1
-  hardMoveInterval: 5
-  hardBlockSpawnChance: 0.6
-  hardCornerMode: 0
+  difficultyLevels:
+  - difficultyName: 1 Phase
+    startTime: 0
+    moveInterval: 3
+    minSpawnChance: 0.1
+    maxSpawnChance: 0.2
+    cornerMode: 1
+    bonusScoreMultiplier: 1
+  - difficultyName: 2 Phase
+    startTime: 10
+    moveInterval: 3
+    minSpawnChance: 0.2
+    maxSpawnChance: 0.3
+    cornerMode: 1
+    bonusScoreMultiplier: 1
+  - difficultyName: 3 Phase
+    startTime: 20
+    moveInterval: 5
+    minSpawnChance: 0.2
+    maxSpawnChance: 0.3
+    cornerMode: 1
+    bonusScoreMultiplier: 1.2
+  - difficultyName: 4 Phase
+    startTime: 30
+    moveInterval: 5
+    minSpawnChance: 0.2
+    maxSpawnChance: 0.3
+    cornerMode: 1
+    bonusScoreMultiplier: 1.2
+  - difficultyName: 5 Phase
+    startTime: 40
+    moveInterval: 5
+    minSpawnChance: 0.3
+    maxSpawnChance: 0.4
+    cornerMode: 0
+    bonusScoreMultiplier: 1.4
+  - difficultyName: 4 Phase
+    startTime: 60
+    moveInterval: 5
+    minSpawnChance: 0.4
+    maxSpawnChance: 0.5
+    cornerMode: 0
+    bonusScoreMultiplier: 1.6
   score2Blocks: 10
   score3Blocks: 25
   score4Blocks: 50

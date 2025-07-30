@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
 using System.Linq;
+using static InfiniteModeSettings;
 
 public class InfiniteModeManager : MonoBehaviour
 {
@@ -22,6 +23,7 @@ public class InfiniteModeManager : MonoBehaviour
     public TextMeshProUGUI finalScoreText;
     public TextMeshProUGUI highScoreText;
     public TextMeshProUGUI difficultyText;
+    public TextMeshProUGUI elapsedTimeText;
     public GameObject newHighScoreText;
     public Button restartButton;
     public Button menuButton;
@@ -51,6 +53,7 @@ public class InfiniteModeManager : MonoBehaviour
     private int currentScore = 0;
     private int currentCombo = 0;
     private float gameStartTime;
+    private float elapsedTime;
 
     // 타이머 (통합된 하나의 타이머)
     private float moveAndGenerateTimer = 0f;
@@ -69,9 +72,7 @@ public class InfiniteModeManager : MonoBehaviour
     private Dictionary<GameObject, GameObject> warningBorders = new Dictionary<GameObject, GameObject>();
     private Coroutine warningEffectCoroutine;
 
-    // 레벨 디자인 관련 (상용 시 삭제)
-    private float currentInterval;
-    private float currentChance;
+    private DifficultyLevel currentDifficulty;
 
     void Awake()
     {
@@ -165,7 +166,7 @@ public class InfiniteModeManager : MonoBehaviour
 
         // 현재 난이도 설정 가져오기
         float gameTime = Time.time - gameStartTime;
-        DifficultySettings currentDifficulty = settings.GetCurrentDifficulty(gameTime);
+        DifficultyLevel currentDifficulty = settings.GetCurrentDifficulty(gameTime);
 
         // 제외할 모서리 칸 수 결정
         int excludeCornerSize = (currentDifficulty.cornerMode == CornerBlockMode.FourCorners) ? 2 : 1;
@@ -201,8 +202,13 @@ public class InfiniteModeManager : MonoBehaviour
     {
         isGameActive = true;
 
-        // 첫 블록 생성은 3초 후로 고정
-        moveAndGenerateTimer = 3f;
+        // 첫 블록들을 즉시 생성
+        float gameTime = Time.time - gameStartTime;
+        DifficultyLevel currentDifficulty = settings.GetCurrentDifficulty(gameTime);
+        GenerateNewBlocks(currentDifficulty);
+
+        // 다음 이동/생성을 위한 타이머 설정
+        moveAndGenerateTimer = currentDifficulty.moveInterval;
 
         // GridManager에 무한모드 콜백 등록
         if (gridManager != null)
@@ -242,7 +248,7 @@ public class InfiniteModeManager : MonoBehaviour
 
         // 현재 난이도 설정 가져오기
         float gameTime = Time.time - gameStartTime;
-        DifficultySettings currentDifficulty = settings.GetCurrentDifficulty(gameTime);
+        currentDifficulty = settings.GetCurrentDifficulty(gameTime);
 
         // 통합된 블록 이동/생성 타이머
         moveAndGenerateTimer -= Time.deltaTime;
@@ -263,26 +269,96 @@ public class InfiniteModeManager : MonoBehaviour
             CalculateEdgePositions();
         }
 
-        // 테스트용
-        currentInterval = currentDifficulty.moveInterval;
-        currentChance = currentDifficulty.blockSpawnChance;
-
         UpdateUI();
+        UpdateDebugUI(currentDifficulty);
     }
 
-    void GenerateNewBlocks(float spawnChance)
+    void GenerateNewBlocks(DifficultyLevel difficulty)
     {
-        foreach (Vector2Int pos in edgePositions)
+        // 모서리 제외 크기 계산
+        int excludeCornerSize = (difficulty.cornerMode == CornerBlockMode.FourCorners) ? 2 : 1;
+
+        // 1. 상단 라인 처리
+        GenerateBlocksOnLine(
+            excludeCornerSize,  // 왼쪽 모서리 제외
+            settings.gridWidth - excludeCornerSize - 1,  // 오른쪽 모서리 제외 (인덱스이므로 -1 추가)
+            settings.gridHeight - 1,
+            settings.gridHeight - 1,
+            difficulty
+        );
+
+        // 2. 하단 라인 처리
+        GenerateBlocksOnLine(
+            excludeCornerSize,  // 왼쪽 모서리 제외
+            settings.gridWidth - excludeCornerSize - 1,  // 오른쪽 모서리 제외 (인덱스이므로 -1 추가)
+            0,
+            0,
+            difficulty
+        );
+
+        // 3. 왼쪽 라인 처리 (상하단 모서리 제외)
+        GenerateBlocksOnLine(
+            0,
+            0,
+            excludeCornerSize,  // 하단 모서리 제외
+            settings.gridHeight - excludeCornerSize - 1,  // 상단 모서리 제외 (인덱스이므로 -1 추가)
+            difficulty
+        );
+
+        // 4. 오른쪽 라인 처리 (상하단 모서리 제외)
+        GenerateBlocksOnLine(
+            settings.gridWidth - 1,
+            settings.gridWidth - 1,
+            excludeCornerSize,  // 하단 모서리 제외
+            settings.gridHeight - excludeCornerSize - 1,  // 상단 모서리 제외 (인덱스이므로 -1 추가)
+            difficulty
+        );
+    }
+
+    // 새로운 헬퍼 메서드 추가
+    void GenerateBlocksOnLine(int startX, int endX, int startY, int endY, DifficultyLevel difficulty)
+    {
+        // 해당 라인의 빈 위치들 찾기
+        List<Vector2Int> availablePositions = new List<Vector2Int>();
+
+        for (int x = startX; x <= endX; x++)
         {
-            // 해당 위치가 비어있는지 확인
-            if (IsPositionEmpty(pos.x, pos.y))
+            for (int y = startY; y <= endY; y++)
             {
-                // 설정된 확률로 블록 생성
-                if (Random.Range(0f, 1f) < spawnChance)
+                if (IsPositionEmpty(x, y))
                 {
-                    CreateRandomBlock(pos.x, pos.y);
+                    availablePositions.Add(new Vector2Int(x, y));
                 }
             }
+        }
+
+        if (availablePositions.Count == 0) return;
+
+        // 이 라인에서 생성할 블록 개수 계산
+        int minBlocks = Mathf.Max(1, Mathf.RoundToInt(availablePositions.Count * difficulty.minSpawnChance));
+        int maxBlocks = Mathf.RoundToInt(availablePositions.Count * difficulty.maxSpawnChance);
+        int blocksToSpawn = Random.Range(minBlocks, maxBlocks + 1);
+
+        // 디버그 로그
+        string lineType = "";
+        if (startY == settings.gridHeight - 1) lineType = "Top";
+        else if (startY == 0 && endY == 0) lineType = "Bottom";
+        else if (startX == 0) lineType = "Left";
+        else lineType = "Right";
+
+        Debug.Log($"{lineType} line: {availablePositions.Count} available positions, spawning {blocksToSpawn} blocks (min: {minBlocks}, max: {maxBlocks})");
+
+        // 랜덤 위치 선택
+        List<Vector2Int> tempPositions = new List<Vector2Int>(availablePositions);
+
+        for (int i = 0; i < blocksToSpawn && tempPositions.Count > 0; i++)
+        {
+            int randomIndex = Random.Range(0, tempPositions.Count);
+            Vector2Int selectedPos = tempPositions[randomIndex];
+            tempPositions.RemoveAt(randomIndex);
+
+            // 블록 생성
+            CreateRandomBlock(selectedPos.x, selectedPos.y);
         }
     }
 
@@ -350,7 +426,7 @@ public class InfiniteModeManager : MonoBehaviour
     }
 
     // 애니메이션이 포함된 블록 이동 시퀀스 (위험 효과 추가)
-    System.Collections.IEnumerator AnimatedBlockMove(DifficultySettings difficulty)
+    System.Collections.IEnumerator AnimatedBlockMove(DifficultyLevel difficulty)
     {
         // 1단계: 이동할 블록들의 fade out 애니메이션
         List<BlockMoveData> allMoves = CalculateBlockMoves();
@@ -371,7 +447,7 @@ public class InfiniteModeManager : MonoBehaviour
         CreateEmptyBlocksAtVacatedPositions(allMoves);
 
         // 5단계: 새 블록 생성
-        GenerateNewBlocks(difficulty.blockSpawnChance);
+        GenerateNewBlocks(difficulty);
 
         // 6단계: 위험 효과 표시
         PredictAndShowCollisions();
@@ -1341,9 +1417,12 @@ public class InfiniteModeManager : MonoBehaviour
         int baseScore = settings.GetScoreForBlockCount(blockCount);
         int comboBonus = settings.GetComboBonusScore(currentCombo);
 
-        currentScore += baseScore + comboBonus;
+        // 현재 난이도의 보너스 배수 적용
+        float gameTime = Time.time - gameStartTime;
+        DifficultyLevel currentDifficulty = settings.GetCurrentDifficulty(gameTime);
+        int difficultyBonus = (int)((float)baseScore * (currentDifficulty.bonusScoreMultiplier - 1.0f));
 
-        Debug.Log($"Score added: {baseScore} + {comboBonus} (combo) = {baseScore + comboBonus}");
+        currentScore += baseScore + comboBonus + difficultyBonus;
     }
 
     void AddTime(int blockCount)
@@ -1364,6 +1443,8 @@ public class InfiniteModeManager : MonoBehaviour
         // 위험 효과 제거
         ClearWarningEffects();
 
+        elapsedTime = Time.time - gameStartTime;
+
         Debug.Log($"Game Over: {reason}, Final Score: {currentScore}");
 
         // UI 업데이트
@@ -1375,6 +1456,11 @@ public class InfiniteModeManager : MonoBehaviour
         if (finalScoreText != null)
         {
             finalScoreText.text = $"Final Score: {currentScore}";
+        }
+
+        if (elapsedTimeText != null)
+        {
+            elapsedTimeText.text = $"Elapsed Time: {elapsedTime}s";
         }
 
         SaveHighScore();
@@ -1415,9 +1501,12 @@ public class InfiniteModeManager : MonoBehaviour
             else
                 comboText.text = "";
         }
+    }
 
+    void UpdateDebugUI(DifficultyLevel difficulty)
+    {
         if (difficultyText != null)
-            difficultyText.text = $"Difficulty: interval({currentInterval}) / chance({currentChance})";
+            difficultyText.text = $"Difficulty: {difficulty.difficultyName}";
     }
 
     void SaveHighScore()
