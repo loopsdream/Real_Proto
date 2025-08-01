@@ -323,7 +323,7 @@ public class StageManager : MonoBehaviour
 
     public void GoToMainMenu()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("LobbyScene");
     }
 
     public int GetCurrentStageNumber()

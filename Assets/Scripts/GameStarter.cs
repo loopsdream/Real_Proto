@@ -27,7 +27,7 @@ public class GameStarter : MonoBehaviour
             if (UserDataManager.Instance.SpendEnergy(energyCostPerGame))
             {
                 Debug.Log($"Game started! Energy spent: {energyCostPerGame}");
-                SceneManager.LoadScene("GameScene");
+                SceneManager.LoadScene("StageModeScene");
             }
         }
         else

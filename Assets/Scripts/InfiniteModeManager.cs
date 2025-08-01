@@ -1321,7 +1321,7 @@ public class InfiniteModeManager : MonoBehaviour
         Time.timeScale = 1f;
 
         // 메뉴로 이동
-        SceneManager.LoadScene("MainMenu");
+        SceneManager.LoadScene("LobbyScene");
     }
 
     // 일시정지 UI 표시
@@ -1549,7 +1549,7 @@ public class InfiniteModeManager : MonoBehaviour
     public void ReturnToMenu()
     {
         Time.timeScale = 1f; // Time.timeScale 복원
-        SceneManager.LoadScene("MainMenu");
+        SceneManager.LoadScene("LobbyScene");
     }
 }
 

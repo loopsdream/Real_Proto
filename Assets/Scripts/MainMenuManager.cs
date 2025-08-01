@@ -37,8 +37,8 @@ public class MainMenuManager : MonoBehaviour
     public void StartGame()
     {
         Debug.Log("Starting the game...");
-        // 게임 씬 로드 (게임 씬의 이름을 "GameScene"으로 가정)
-        SceneManager.LoadScene("GameScene");
+        // 게임 씬 로드
+        SceneManager.LoadScene("StageModeScene");
     }
 
     // 모드 선택 메뉴 열기
@@ -126,7 +126,7 @@ public class MainMenuManager : MonoBehaviour
     public void StartInfiniteMode()
     {
         Debug.Log("Starting Infinite Mode...");
-        SceneManager.LoadScene("InfiniteMode");
+        SceneManager.LoadScene("InfiniteModeScene");
     }
 
     // 설정 불러오기

@@ -423,7 +423,7 @@ public class LevelDesigner : MonoBehaviour
         CreateTestStageData();
 
         // 게임 씬으로 전환
-        SceneManager.LoadScene("GameScene");
+        SceneManager.LoadScene("StageModeScene");
     }
 
     void CreateTestStageData()
@@ -467,7 +467,7 @@ public class LevelDesigner : MonoBehaviour
         SaveDesignerState();
 
         // 메인 메뉴로 돌아가기
-        SceneManager.LoadScene("MainMenu");
+        SceneManager.LoadScene("LobbyScene");
     }
 
     // 레벨 디자이너 상태 저장

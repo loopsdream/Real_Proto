@@ -63,16 +63,16 @@ public class SceneTransitionManager : MonoBehaviour
     // 편의 메서드들
     public void LoadMainMenu()
     {
-        LoadScene("MainMenu");
+        LoadScene("LobbyScene");
     }
 
     public void LoadGameScene()
     {
-        LoadScene("GameScene");
+        LoadScene("StageModeScene");
     }
 
     public void LoadStageSelect()
     {
-        LoadScene("StageSelect");
+        LoadScene("StageSelect"); //TODO
     }
 }
