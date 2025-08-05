@@ -36,7 +36,7 @@ public class MainMenuManager : MonoBehaviour
     // 게임 시작 버튼
     public void StartGame()
     {
-        Debug.Log("Starting the game...");
+        Debug.Log("Starting Stage Mode...");
         // 게임 씬 로드
         SceneManager.LoadScene("StageModeScene");
     }
@@ -127,6 +127,13 @@ public class MainMenuManager : MonoBehaviour
     {
         Debug.Log("Starting Infinite Mode...");
         SceneManager.LoadScene("InfiniteModeScene");
+    }
+
+    // 로고 씬으로 돌아가기 (새로 추가) - 거의 사용하지 않을 것 같지만 추가
+    public void GoToLogoScene()
+    {
+        Debug.Log("Going to Logo Scene...");
+        SceneManager.LoadScene("LogoScene");
     }
 
     // 설정 불러오기
