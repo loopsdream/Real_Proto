@@ -21,6 +21,8 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        AudioManager.Instance.PlaySceneBGM("StageModeScene");
     }
 
     public void RestartGame()
@@ -30,6 +32,7 @@ public class GameManager : MonoBehaviour
 
     public void LoadMainMenu()
     {
+        AudioManager.Instance.StopBGM();
         SceneManager.LoadScene("LobbyScene");
     }
 

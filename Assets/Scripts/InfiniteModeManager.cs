@@ -85,6 +85,7 @@ public class InfiniteModeManager : MonoBehaviour
         InitializeInfiniteMode();
         SetupUI();
         SetupPauseSystem(); // 일시정지 시스템 초기화
+        AudioManager.Instance.PlaySceneBGM("InfiniteModeScene");
     }
 
     void SetupPauseSystem()
@@ -1081,6 +1082,11 @@ public class InfiniteModeManager : MonoBehaviour
             AddTime(matchedBlocks.Count);
             currentCombo++;
 
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayUI("BlockDestroy");
+            }
+
             Debug.Log($"Destroyed {matchedBlocks.Count} blocks, Combo: {currentCombo}");
 
             // 블록이 파괴되었으므로 위험 상황이 변경될 수 있음 - 위험 효과 재계산
@@ -1320,6 +1326,8 @@ public class InfiniteModeManager : MonoBehaviour
         // Time.timeScale 복원
         Time.timeScale = 1f;
 
+        AudioManager.Instance.StopBGM();
+
         // 메뉴로 이동
         SceneManager.LoadScene("LobbyScene");
     }
@@ -1549,6 +1557,7 @@ public class InfiniteModeManager : MonoBehaviour
     public void ReturnToMenu()
     {
         Time.timeScale = 1f; // Time.timeScale 복원
+        AudioManager.Instance.StopBGM();
         SceneManager.LoadScene("LobbyScene");
     }
 }

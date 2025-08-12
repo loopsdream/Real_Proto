@@ -1,4 +1,4 @@
-// MainMenuManager.cs - ¸ŞÀÎ ¸Ş´º °ü¸® ½ºÅ©¸³Æ®
+// MainMenuManager.cs - ë©”ì¸ ë©”ë‰´ ê´€ë¦¬ ìŠ¤í¬ë¦½íŠ¸ (AudioManager ì—°ë™ ë²„ì „)
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,63 +23,75 @@ public class MainMenuManager : MonoBehaviour
     public float transitionSpeed = 0.5f;
     public AnimationCurve transitionCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
-    // ½ÃÀÛ ½Ã ±âº» ¼³Á¤
+    // ê²Œì„ ì‹œì‘ ì‹œ ê¸°ë³¸ ì„¤ì •
     void Start()
     {
-        // ÆĞ³Î ÃÊ±â »óÅÂ ¼³Á¤
+        // íŒ¨ë„ ì´ˆê¸° ìƒíƒœ ì„¤ì •
         ShowMainMenu();
 
-        // ÀúÀåµÈ ¼³Á¤°ª ºÒ·¯¿À±â
+        // ì‚¬ìš´ë“œ ì„¤ì •ì„ ë¶ˆëŸ¬ì˜¤ê¸°
         LoadSettings();
+        
+        // ë¡œë¹„ BGM ì¬ìƒ
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySceneBGM("LobbyScene");
+        }
     }
 
-    // °ÔÀÓ ½ÃÀÛ ¹öÆ°
+    // ìŠ¤í…Œì´ì§€ ëª¨ë“œ ì‹œì‘ ë²„íŠ¼
     public void StartGame()
     {
+        PlayUISound("ButtonClick");
+        AudioManager.Instance.StopBGM();
         Debug.Log("Starting Stage Mode...");
-        // °ÔÀÓ ¾À ·Îµå
         SceneManager.LoadScene("StageModeScene");
     }
 
-    // ¸ğµå ¼±ÅÃ ¸Ş´º ¿­±â
+    // ê²Œì„ ëª¨ë“œ ë©”ë‰´ ì—´ê¸°
     public void OpenModeSelect()
     {
+        PlayUISound("ButtonClick");
         mainMenuPanel.SetActive(false);
         optionsPanel.SetActive(false);
         creditsPanel.SetActive(false);
         modeSelectPanel.SetActive(true);
     }
 
-    // ¿É¼Ç ¸Ş´º ¿­±â
+    // ì˜µì…˜ ë©”ë‰´ ì—´ê¸°
     public void OpenOptions()
     {
+        PlayUISound("ButtonClick");
         mainMenuPanel.SetActive(false);
         optionsPanel.SetActive(true);
         creditsPanel.SetActive(false);
         modeSelectPanel.SetActive(false);
     }
 
-    // Å©·¹µ÷ ¸Ş´º ¿­±â
+    // í¬ë ˆë”§ ë©”ë‰´ ì—´ê¸°
     public void OpenCredits()
     {
+        PlayUISound("ButtonClick");
         mainMenuPanel.SetActive(false);
         optionsPanel.SetActive(false);
         creditsPanel.SetActive(true);
         modeSelectPanel.SetActive(false);
     }
 
-    // ¸ŞÀÎ ¸Ş´º·Î µ¹¾Æ°¡±â
+    // ë©”ì¸ ë©”ë‰´ë¡œ ëŒì•„ê°€ê¸°
     public void ShowMainMenu()
     {
+        PlayUISound("ButtonClick");
         mainMenuPanel.SetActive(true);
         optionsPanel.SetActive(false);
         creditsPanel.SetActive(false);
         modeSelectPanel.SetActive(false);
     }
 
-    // °ÔÀÓ Á¾·á ¹öÆ°
+    // ê²Œì„ ì¢…ë£Œ ë²„íŠ¼
     public void QuitGame()
     {
+        PlayUISound("ButtonClick");
         Debug.Log("Quitting the game...");
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
@@ -88,77 +100,154 @@ public class MainMenuManager : MonoBehaviour
 #endif
     }
 
-    // BGM º¼·ı º¯°æ
+    // BGM ë³¼ë¥¨ ì„¤ì •
     public void SetBGMVolume(float volume)
     {
-        PlayerPrefs.SetFloat("BGMVolume", volume);
-        // ¿©±â¿¡ ½ÇÁ¦ BGM º¼·ı Á¶Àı ÄÚµå Ãß°¡
-        Debug.Log("BGM Volume set to: " + volume);
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SetBGMVolume(volume);
+        }
+        else
+        {
+            // í´ë°±: PlayerPrefsì—ë§Œ ì €ì¥
+            PlayerPrefs.SetFloat("BGMVolume", volume);
+            Debug.Log("BGM Volume set to: " + volume);
+        }
     }
 
-    // È¿°úÀ½ º¼·ı º¯°æ
+    // íš¨ê³¼ìŒ ë³¼ë¥¨ ì„¤ì •
     public void SetSFXVolume(float volume)
     {
-        PlayerPrefs.SetFloat("SFXVolume", volume);
-        // ¿©±â¿¡ ½ÇÁ¦ È¿°úÀ½ º¼·ı Á¶Àı ÄÚµå Ãß°¡
-        Debug.Log("SFX Volume set to: " + volume);
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SetSFXVolume(volume);
+        }
+        else
+        {
+            // í´ë°±: PlayerPrefsì—ë§Œ ì €ì¥
+            PlayerPrefs.SetFloat("SFXVolume", volume);
+            Debug.Log("SFX Volume set to: " + volume);
+        }
     }
 
-    // À½¼Ò°Å Åä±Û
+    // ìŒì†Œê±° í† ê¸€
     public void ToggleMute(bool isMuted)
     {
-        PlayerPrefs.SetInt("Muted", isMuted ? 1 : 0);
-        // ¿©±â¿¡ ½ÇÁ¦ À½¼Ò°Å ÄÚµå Ãß°¡
-        Debug.Log("Mute set to: " + isMuted);
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SetMute(isMuted);
+        }
+        else
+        {
+            // í´ë°±: PlayerPrefsì—ë§Œ ì €ì¥
+            PlayerPrefs.SetInt("Muted", isMuted ? 1 : 0);
+            Debug.Log("Mute set to: " + isMuted);
+        }
 
-        // ½½¶óÀÌ´õ »óÈ£ÀÛ¿ë È°¼ºÈ­/ºñÈ°¼ºÈ­
-        bgmSlider.interactable = !isMuted;
-        sfxSlider.interactable = !isMuted;
+        // ìŠ¬ë¼ì´ë” ë¹„í™œì„±í™”/í™œì„±í™”
+        if (bgmSlider != null) bgmSlider.interactable = !isMuted;
+        if (sfxSlider != null) sfxSlider.interactable = !isMuted;
     }
 
+    // ë ˆë²¨ ë””ìì´ë„ˆ ì‹œì‘
     public void StartLevelDesign()
     {
+        PlayUISound("ButtonClick");
         Debug.Log("Starting level design...");
-        // ·¹º§ µğÀÚÀÎ ¾À ·Îµå
         SceneManager.LoadScene("LevelDesigner");
     }
 
+    // ë¬´í•œ ëª¨ë“œ ì‹œì‘
     public void StartInfiniteMode()
     {
+        PlayUISound("ButtonClick");
+        AudioManager.Instance.StopBGM();
         Debug.Log("Starting Infinite Mode...");
         SceneManager.LoadScene("InfiniteModeScene");
     }
 
-    // ·Î°í ¾ÀÀ¸·Î µ¹¾Æ°¡±â (»õ·Î Ãß°¡) - °ÅÀÇ »ç¿ëÇÏÁö ¾ÊÀ» °Í °°Áö¸¸ Ãß°¡
+    // íƒ€ì´í‹€ ì”¬ìœ¼ë¡œ ëŒì•„ê°€ê¸°
+    public void GoToTitleScene()
+    {
+        PlayUISound("ButtonClick");
+        Debug.Log("Going to Title Scene...");
+        SceneManager.LoadScene("TitleScene");
+    }
+
+    // ë¡œê³  ì”¬ìœ¼ë¡œ ëŒì•„ê°€ê¸°
     public void GoToLogoScene()
     {
+        PlayUISound("ButtonClick");
         Debug.Log("Going to Logo Scene...");
         SceneManager.LoadScene("LogoScene");
     }
 
-    // ¼³Á¤ ºÒ·¯¿À±â
+    // UI ì‚¬ìš´ë“œ ì¬ìƒ í—¬í¼ ë©”ì„œë“œ
+    void PlayUISound(string soundName)
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayUI(soundName);
+        }
+    }
+
+    // ì„¤ì • ë¶ˆëŸ¬ì˜¤ê¸°
     void LoadSettings()
     {
-        // ÀúÀåµÈ °ªÀÌ ¾øÀ¸¸é ±âº»°ª »ç¿ë
+        // ê¸°ë³¸ê°’ ì„¤ì • (ì—†ìœ¼ë©´ ê¸°ë³¸ê°’ ì‚¬ìš©)
         float bgmVolume = PlayerPrefs.GetFloat("BGMVolume", 0.75f);
         float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1.0f);
         bool isMuted = PlayerPrefs.GetInt("Muted", 0) == 1;
 
-        // UI ¿ä¼Ò¿¡ °ª Àû¿ë
-        if (bgmSlider != null) bgmSlider.value = bgmVolume;
-        if (sfxSlider != null) sfxSlider.value = sfxVolume;
-        if (muteToggle != null) muteToggle.isOn = isMuted;
+        // UI ìš”ì†Œì— ê°’ ì ìš©
+        if (bgmSlider != null) 
+        {
+            bgmSlider.value = bgmVolume;
+            bgmSlider.onValueChanged.RemoveAllListeners();
+            bgmSlider.onValueChanged.AddListener(SetBGMVolume);
+        }
+        
+        if (sfxSlider != null) 
+        {
+            sfxSlider.value = sfxVolume;
+            sfxSlider.onValueChanged.RemoveAllListeners();
+            sfxSlider.onValueChanged.AddListener(SetSFXVolume);
+        }
+        
+        if (muteToggle != null) 
+        {
+            muteToggle.isOn = isMuted;
+            muteToggle.onValueChanged.RemoveAllListeners();
+            muteToggle.onValueChanged.AddListener(ToggleMute);
+        }
 
-        // ½ÇÁ¦ ¿Àµğ¿À ¼³Á¤¿¡ Àû¿ë
-        ToggleMute(isMuted);
-        SetBGMVolume(bgmVolume);
-        SetSFXVolume(sfxVolume);
+        // AudioManagerê°€ ìˆìœ¼ë©´ ì‹¤ì œ ì‚¬ìš´ë“œ ì„¤ì •ì— ì ìš©
+        if (AudioManager.Instance != null)
+        {
+            // AudioManagerê°€ ìì²´ì ìœ¼ë¡œ LoadAudioSettings()ë¥¼ í˜¸ì¶œí•˜ë¯€ë¡œ 
+            // ì—¬ê¸°ì„œëŠ” UIë§Œ ë™ê¸°í™”
+        }
+        else
+        {
+            // í´ë°±: AudioManagerê°€ ì—†ìœ¼ë©´ ê¸°ë³¸ ë™ì‘
+            ToggleMute(isMuted);
+        }
     }
 
-    // ¼³Á¤ ÀúÀåÇÏ±â
+    // ì„¤ì • ì €ì¥í•˜ê¸°
     public void SaveSettings()
     {
-        PlayerPrefs.Save();
+        PlayUISound("ButtonClick");
+        
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SaveAudioSettings();
+        }
+        else
+        {
+            PlayerPrefs.Save();
+        }
+        
         ShowMainMenu();
     }
 }

@@ -1,4 +1,4 @@
-// TitleSceneManager.cs - Å¸ÀÌÆ² ¾À °ü¸® ½ºÅ©¸³Æ® (·Î±×ÀÎ, ÆĞÄ¡ µî)
+// TitleSceneManager.cs - íƒ€ì´í‹€ ì”¬ ê´€ë¦¬ ìŠ¤í¬ë¦½íŠ¸ (ì‚¬ìš´ë“œ ì¶”ê°€ ë²„ì „)
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -13,20 +13,20 @@ public class TitleSceneManager : MonoBehaviour
     public Button startButton;
     public Button loginButton;
     public GameObject loadingPanel;
-
+    
     [Header("Loading UI")]
     public Slider progressBar;
     public TextMeshProUGUI statusText;
     public TextMeshProUGUI progressText;
-
+    
     [Header("Settings")]
     public string gameVersion = "1.0.0";
-    public float minLoadingTime = 2.0f; // ÃÖ¼Ò ·Îµù ½Ã°£
-
+    public float minLoadingTime = 2.0f;
+    
     [Header("Animation")]
     public CanvasGroup titleCanvasGroup;
     public float titleFadeInDuration = 1.5f;
-
+    
     private bool isInitialized = false;
     private bool isLoading = false;
 
@@ -37,28 +37,34 @@ public class TitleSceneManager : MonoBehaviour
 
     void InitializeTitle()
     {
-        // ¹öÀü Á¤º¸ ¼³Á¤
+        // ë²„ì „ ì •ë³´ ì„¤ì •
         if (versionText != null)
         {
             versionText.text = $"v{gameVersion}";
         }
 
-        // Å¸ÀÌÆ² ÅØ½ºÆ® ¼³Á¤
+        // íƒ€ì´í‹€ í…ìŠ¤íŠ¸ ì„¤ì •
         if (titleText != null)
         {
             titleText.text = "CROxCRO";
         }
 
-        // ·Îµù ÆĞ³Î ºñÈ°¼ºÈ­
+        // ë¡œë”© íŒ¨ë„ ë¹„í™œì„±í™”
         if (loadingPanel != null)
         {
             loadingPanel.SetActive(false);
         }
 
-        // Å¸ÀÌÆ² ÆäÀÌµå ÀÎ
+        // íƒ€ì´í‹€ í˜ì´ë“œ ì¸
         StartCoroutine(FadeInTitle());
 
-        // ÃÊ±âÈ­ ¿Ï·á
+        // BGM ì¬ìƒ
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySceneBGM("TitleScene");
+        }
+
+        // ì´ˆê¸°í™” ì™„ë£Œ
         isInitialized = true;
     }
 
@@ -79,23 +85,26 @@ public class TitleSceneManager : MonoBehaviour
         titleCanvasGroup.alpha = 1f;
     }
 
-    // °ÔÀÓ ½ÃÀÛ ¹öÆ°
+    // ê²Œì„ ì‹œì‘ ë²„íŠ¼
     public void OnStartButtonClicked()
     {
         if (!isInitialized || isLoading) return;
 
+        PlayUISound("ButtonClick");
         StartCoroutine(StartGameSequence());
     }
 
-    // ·Î±×ÀÎ ¹öÆ° (Firebase ¿¬µ¿ ¿¹Á¤)
+    // ë¡œê·¸ì¸ ë²„íŠ¼
     public void OnLoginButtonClicked()
     {
         if (!isInitialized || isLoading) return;
 
-        // TODO: Firebase ·Î±×ÀÎ ¿¬µ¿
+        PlayUISound("ButtonClick");
+        
+        // TODO: Firebase ë¡œê·¸ì¸ ì—°ë™
         Debug.Log("Login functionality will be implemented with Firebase");
-
-        // ÀÓ½Ã·Î ¹Ù·Î °ÔÀÓ ½ÃÀÛ
+        
+        // ì„ì‹œë¡œ ë°”ë¡œ ê²Œì„ ì‹œì‘
         OnStartButtonClicked();
     }
 
@@ -103,50 +112,50 @@ public class TitleSceneManager : MonoBehaviour
     {
         isLoading = true;
 
-        // ·Îµù UI È°¼ºÈ­
+        // ë¡œë”© UI í™œì„±í™”
         if (loadingPanel != null)
         {
             loadingPanel.SetActive(true);
         }
 
-        // ¹öÆ° ºñÈ°¼ºÈ­
+        // ë²„íŠ¼ ë¹„í™œì„±í™”
         if (startButton != null) startButton.interactable = false;
         if (loginButton != null) loginButton.interactable = false;
 
-        // ÆĞÄ¡ Ã¼Å© ½Ã¹Ä·¹ÀÌ¼Ç
+        // íŒ¨ì¹˜ ì²´í¬ ì‹œë®¬ë ˆì´ì…˜
         yield return StartCoroutine(CheckForUpdates());
 
-        // °ÔÀÓ µ¥ÀÌÅÍ ·Îµå ½Ã¹Ä·¹ÀÌ¼Ç
+        // ê²Œì„ ë°ì´í„° ë¡œë“œ ì‹œë®¬ë ˆì´ì…˜
         yield return StartCoroutine(LoadGameData());
 
-        // ÃÖ¼Ò ·Îµù ½Ã°£ º¸Àå
+        // ìµœì†Œ ë¡œë”© ì‹œê°„ ë³´ì¥
         yield return new WaitForSeconds(minLoadingTime);
 
-        // ·Îºñ ¾ÀÀ¸·Î ÀÌµ¿
+        // ë¡œë¹„ ì”¬ìœ¼ë¡œ ì´ë™
         GoToLobbyScene();
     }
 
     IEnumerator CheckForUpdates()
     {
-        UpdateStatus("ÆĞÄ¡ ÆÄÀÏÀ» È®ÀÎÇÏ´Â Áß...", 0f);
+        UpdateStatus("íŒ¨ì¹˜ íŒŒì¼ì„ í™•ì¸í•˜ëŠ” ì¤‘...", 0f);
         yield return new WaitForSeconds(0.5f);
 
-        UpdateStatus("ÃÖ½Å ¹öÀüÀÔ´Ï´Ù.", 0.3f);
+        UpdateStatus("ìµœì‹  ë²„ì „ì…ë‹ˆë‹¤.", 0.3f);
         yield return new WaitForSeconds(0.5f);
     }
 
     IEnumerator LoadGameData()
     {
-        UpdateStatus("°ÔÀÓ µ¥ÀÌÅÍ¸¦ ·ÎµåÇÏ´Â Áß...", 0.4f);
+        UpdateStatus("ê²Œì„ ë°ì´í„°ë¥¼ ë¡œë“œí•˜ëŠ” ì¤‘...", 0.4f);
         yield return new WaitForSeconds(0.5f);
 
-        UpdateStatus("»ç¿ëÀÚ µ¥ÀÌÅÍ¸¦ ·ÎµåÇÏ´Â Áß...", 0.6f);
+        UpdateStatus("ì‚¬ìš©ì ë°ì´í„°ë¥¼ ë¡œë“œí•˜ëŠ” ì¤‘...", 0.6f);
         yield return new WaitForSeconds(0.5f);
 
-        UpdateStatus("¿¡¼ÂÀ» ·ÎµåÇÏ´Â Áß...", 0.8f);
+        UpdateStatus("ì—ì…‹ì„ ë¡œë“œí•˜ëŠ” ì¤‘...", 0.8f);
         yield return new WaitForSeconds(0.5f);
 
-        UpdateStatus("·Îµå ¿Ï·á!", 1.0f);
+        UpdateStatus("ë¡œë“œ ì™„ë£Œ!", 1.0f);
         yield return new WaitForSeconds(0.3f);
     }
 
@@ -172,13 +181,15 @@ public class TitleSceneManager : MonoBehaviour
 
     void GoToLobbyScene()
     {
+        PlayUISound("MenuTransition");
         Debug.Log("Moving to Lobby Scene...");
         SceneManager.LoadScene("LobbyScene");
     }
 
-    // °ÔÀÓ Á¾·á
+    // ê²Œì„ ì¢…ë£Œ
     public void QuitGame()
     {
+        PlayUISound("ButtonClick");
         Debug.Log("Quitting the game...");
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
@@ -187,12 +198,22 @@ public class TitleSceneManager : MonoBehaviour
 #endif
     }
 
-    // µğ¹ö±×¿ë: Á÷Á¢ ·Îºñ·Î ÀÌµ¿
+    // ë””ë²„ê·¸ìš©: ì§ì ‘ ë¡œë¹„ë¡œ ì´ë™
     public void SkipToLobby()
     {
         if (isLoading) return;
-
+        
+        PlayUISound("ButtonClick");
         Debug.Log("Skipping to Lobby Scene...");
         SceneManager.LoadScene("LobbyScene");
+    }
+
+    // UI ì‚¬ìš´ë“œ ì¬ìƒ í—¬í¼ ë©”ì„œë“œ
+    void PlayUISound(string soundName)
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayUI(soundName);
+        }
     }
 }
