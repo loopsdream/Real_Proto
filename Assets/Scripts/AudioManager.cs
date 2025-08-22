@@ -51,13 +51,22 @@ public class AudioManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            
+            // Application.isPlaying 체크로 DontDestroyOnLoad 오류 방지
+            if (Application.isPlaying)
+            {
+                DontDestroyOnLoad(gameObject);
+            }
+            
             InitializeAudioSources();
             LoadAudioSettings();
         }
         else
         {
-            Destroy(gameObject);
+            if (Application.isPlaying)
+            {
+                Destroy(gameObject);
+            }
         }
     }
 

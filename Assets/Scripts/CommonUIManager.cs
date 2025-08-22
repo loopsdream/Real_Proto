@@ -1,4 +1,4 @@
-// CommonUIManager.cs - ¿ÏÀüÇÑ °øÅë UI °ü¸® ½Ã½ºÅÛ
+// CommonUIManager.cs - ì”¬ ê°„ ê³µí†µ UI ê´€ë¦¬ ì‹œìŠ¤í…œ
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -34,33 +34,41 @@ public class CommonUIManager : MonoBehaviour
 
     void Awake()
     {
-        // ½Ì±ÛÅæ ÆĞÅÏ
+        // ì‹±ê¸€í†¤ íŒ¨í„´
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            
+            // Application.isPlaying ì²´í¬ë¡œ DontDestroyOnLoad ì˜¤ë¥˜ ë°©ì§€
+            if (Application.isPlaying)
+            {
+                DontDestroyOnLoad(gameObject);
+            }
 
-            // Canvas ¼³Á¤
+            // Canvas ì„¤ì •
             SetupCanvas();
 
-            // ¾À º¯°æ ÀÌº¥Æ® ±¸µ¶
+            // ì”¬ ë¡œë“œ ì´ë²¤íŠ¸ ë“±ë¡
             SceneManager.sceneLoaded += OnSceneLoaded;
 
             Debug.Log("CommonUIManager initialized");
         }
         else
         {
-            Destroy(gameObject);
+            if (Application.isPlaying)
+            {
+                Destroy(gameObject);
+            }
         }
     }
 
     void Start()
     {
-        // ÃÊ±â ¾À ¼³Á¤
+        // ì´ˆê¸° ì”¬ ì„¤ì •
         currentSceneName = SceneManager.GetActiveScene().name;
         AdjustUIForScene(currentSceneName);
 
-        // ¹öÆ° ÀÌº¥Æ® ¿¬°á
+        // ë²„íŠ¼ ì´ë²¤íŠ¸ ì„¤ì •
         SetupButtonEvents();
     }
 
@@ -79,7 +87,7 @@ public class CommonUIManager : MonoBehaviour
             commonCanvas = commonUICanvas.GetComponent<Canvas>();
             if (commonCanvas != null)
             {
-                // ÃÖ»óÀ§ ·»´õ¸µ ¼ø¼­ ¼³Á¤
+                // ìµœìƒìœ„ ë ˆì´ì–´ ìˆœì„œ ì„¤ì •
                 commonCanvas.sortingOrder = 100;
                 commonCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
             }
@@ -106,7 +114,7 @@ public class CommonUIManager : MonoBehaviour
         currentSceneName = scene.name;
         Debug.Log($"CommonUI: Scene loaded - {currentSceneName}");
 
-        // ¾À ·Îµù ¿Ï·á ÈÄ UI Á¶Á¤
+        // ì”¬ ë¡œë“œ ì™„ë£Œ í›„ UI ì„¤ì •
         Invoke(nameof(DelayedSceneSetup), 0.1f);
     }
 
@@ -114,7 +122,7 @@ public class CommonUIManager : MonoBehaviour
     {
         AdjustUIForScene(currentSceneName);
 
-        // UserDataManager Àç¿¬°á (ÇÊ¿äÇÑ °æ¿ì)
+        // UserDataManager ì¬ì—°ê²° (í•„ìš”í•œ ê²½ìš°)
         if (currencyUI != null && UserDataManager.Instance != null)
         {
             currencyUI.RefreshAllDisplays();
@@ -144,14 +152,14 @@ public class CommonUIManager : MonoBehaviour
     {
         Debug.Log("Setting up UI for Main Menu");
 
-        // ¸ŞÀÎ ¸Ş´º¿¡¼­ÀÇ UI Ç¥½Ã ¼³Á¤
+        // ë©”ì¸ ë©”ë‰´ì—ì„œì˜ UI í‘œì‹œ ì„¤ì •
         SetUIVisibility(
             showTopUI: showTopUIInMainMenu,
             showSettings: showSettingsInAllScenes,
             showPause: false
         );
 
-        // À§Ä¡ Á¶Á¤
+        // ìœ„ì¹˜ ì„¤ì •
         if (topUIPanel != null)
         {
             SetTopUIPosition(topUIPositionMainMenu);
@@ -162,14 +170,14 @@ public class CommonUIManager : MonoBehaviour
     {
         Debug.Log("Setting up UI for Game Scene");
 
-        // °ÔÀÓ ¾À¿¡¼­ÀÇ UI Ç¥½Ã ¼³Á¤
+        // ê²Œì„ ì”¬ì—ì„œì˜ UI í‘œì‹œ ì„¤ì •
         SetUIVisibility(
             showTopUI: showTopUIInGameScene,
             showSettings: showSettingsInAllScenes,
             showPause: true
         );
 
-        // À§Ä¡ Á¶Á¤
+        // ìœ„ì¹˜ ì„¤ì •
         if (topUIPanel != null)
         {
             SetTopUIPosition(topUIPositionGame);
@@ -180,14 +188,14 @@ public class CommonUIManager : MonoBehaviour
     {
         Debug.Log("Setting up UI for Stage Select");
 
-        // ½ºÅ×ÀÌÁö ¼±ÅÃ¿¡¼­ÀÇ UI Ç¥½Ã ¼³Á¤
+        // ìŠ¤í…Œì´ì§€ ì„ íƒì—ì„œì˜ UI í‘œì‹œ ì„¤ì •
         SetUIVisibility(
             showTopUI: showTopUIInStageSelect,
             showSettings: showSettingsInAllScenes,
             showPause: false
         );
 
-        // À§Ä¡ Á¶Á¤
+        // ìœ„ì¹˜ ì„¤ì •
         if (topUIPanel != null)
         {
             SetTopUIPosition(topUIPositionStageSelect);
@@ -198,7 +206,7 @@ public class CommonUIManager : MonoBehaviour
     {
         Debug.Log("Setting up UI with default settings");
 
-        // ±âº» ¼³Á¤
+        // ê¸°ë³¸ ì„¤ì •
         SetUIVisibility(
             showTopUI: true,
             showSettings: true,
@@ -235,7 +243,7 @@ public class CommonUIManager : MonoBehaviour
         }
     }
 
-    // °ø°³ ¸Ş¼­µåµé
+    // ê³µìš© ë©”ì„œë“œë“¤
     public void ShowLoadingScreen()
     {
         if (loadingScreen != null)
@@ -261,7 +269,7 @@ public class CommonUIManager : MonoBehaviour
             notificationText.text = message;
             notificationPanel.SetActive(true);
 
-            // duration ÈÄ ÀÚµ¿ ¼û±è
+            // duration í›„ ìë™ ìˆ¨ê¹€
             CancelInvoke(nameof(HideNotification));
             Invoke(nameof(HideNotification), duration);
 
@@ -279,10 +287,10 @@ public class CommonUIManager : MonoBehaviour
 
     public void OpenSettings()
     {
-        // ¼³Á¤ Ã¢ ¿­±â ·ÎÁ÷
+        // ì„¤ì • ì°½ ì—´ê¸° ë¡œì§
         Debug.Log("Opening settings");
 
-        // ¼³Á¤ ¸Å´ÏÀú°¡ ÀÖ´Ù¸é È£Ãâ
+        // ì„¤ì • ë§¤ë‹ˆì €ê°€ ìˆë‹¤ë©´ í˜¸ì¶œ
         //SettingsManager settingsManager = FindObjectOfType<SettingsManager>();
         //if (settingsManager != null)
         //{
@@ -290,20 +298,20 @@ public class CommonUIManager : MonoBehaviour
         //}
         //else
         //{
-        //    ShowNotification("¼³Á¤ Ã¢À» ÁØºñ ÁßÀÔ´Ï´Ù...");
+        //    ShowNotification("ì„¤ì • ì°½ì´ ì¤€ë¹„ ì¤‘ì…ë‹ˆë‹¤...");
         //}
     }
 
     public void PauseGame()
     {
-        // °ÔÀÓ ÀÏ½ÃÁ¤Áö ·ÎÁ÷
+        // ê²Œì„ ì¼ì‹œì •ì§€ ë¡œì§
         Debug.Log("Game paused");
 
         if (currentSceneName.ToLower() == "gamescene")
         {
             Time.timeScale = Time.timeScale == 0 ? 1 : 0;
 
-            string message = Time.timeScale == 0 ? "°ÔÀÓ ÀÏ½ÃÁ¤Áö" : "°ÔÀÓ Àç°³";
+            string message = Time.timeScale == 0 ? "ê²Œì„ ì¼ì‹œì •ì§€" : "ê²Œì„ ì¬ì‹œì‘";
             ShowNotification(message, 2f);
         }
     }

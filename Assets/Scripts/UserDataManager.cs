@@ -1,4 +1,4 @@
-// UserDataManager.cs - À¯Àú µ¥ÀÌÅÍ °ü¸® ½Ã½ºÅÛ
+// UserDataManager.cs - Firebase ì—°ë™ì´ í¬í•¨ëœ ì‚¬ìš©ì ë°ì´í„° ê´€ë¦¬ ì‹œìŠ¤í…œ
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,13 +9,19 @@ public class UserDataManager : MonoBehaviour
 
     [Header("Energy Settings")]
     public int maxEnergy = 5;
-    public int energyRechargeTimeMinutes = 30; // 30ºĞ¸¶´Ù 1 ¿¡³ÊÁö ÃæÀü
+    public int energyRechargeTimeMinutes = 30; // 30ë¶„ë§ˆë‹¤ 1 ì—ë„ˆì§€ ì¶©ì „
+
+    [Header("Firebase Integration")]
+    public bool firebaseIntegrationEnabled = true;
 
     [Header("Events")]
     public System.Action<int> OnGameCoinsChanged;
     public System.Action<int> OnDiamondsChanged;
     public System.Action<int> OnEnergyChanged;
     public System.Action<int> OnPlayerLevelChanged;
+    
+    // Firebase ì—°ë™ì„ ìœ„í•œ ì´ë²¤íŠ¸
+    public event Action<string> OnDataChanged;
 
     private UserData currentUserData;
     private const string SAVE_KEY = "UserData";
@@ -25,25 +31,34 @@ public class UserDataManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            
+            // Application.isPlaying ì²´í¬ë¡œ DontDestroyOnLoad ì˜¤ë¥˜ ë°©ì§€
+            if (Application.isPlaying)
+            {
+                DontDestroyOnLoad(gameObject);
+            }
+            
             LoadUserData();
         }
         else
         {
-            Destroy(gameObject);
+            if (Application.isPlaying)
+            {
+                Destroy(gameObject);
+            }
         }
     }
 
     void Start()
     {
-        // °ÔÀÓ ½ÃÀÛ ½Ã ¿¡³ÊÁö ÀÚµ¿ ÃæÀü È®ÀÎ
+        // ê²Œì„ ì‹œì‘ ì‹œ ì—ë„ˆì§€ ìë™ ì¶©ì „ í™•ì¸
         UpdateEnergyFromTime();
 
-        // ÁÖ±âÀûÀ¸·Î ¿¡³ÊÁö ¾÷µ¥ÀÌÆ® (1ºĞ¸¶´Ù)
+        // ì£¼ê¸°ì ìœ¼ë¡œ ì—ë„ˆì§€ ì—…ë°ì´íŠ¸ (1ë¶„ë§ˆë‹¤)
         InvokeRepeating(nameof(UpdateEnergyFromTime), 60f, 60f);
     }
 
-    #region µ¥ÀÌÅÍ ·Îµå/ÀúÀå
+    #region ë°ì´í„° ë¡œë“œ/ì €ì¥
 
     void LoadUserData()
     {
@@ -66,7 +81,7 @@ public class UserDataManager : MonoBehaviour
             CreateNewUserData();
         }
 
-        // ·Îµå ÈÄ ÀÌº¥Æ® ¹ß»ı
+        // ë¡œë“œ í›„ ì´ë²¤íŠ¸ ë°œìƒ
         InvokeAllEvents();
     }
 
@@ -99,12 +114,14 @@ public class UserDataManager : MonoBehaviour
 
     #endregion
 
-    #region °ÔÀÓ ÄÚÀÎ °ü¸®
+    #region ê²Œì„ ì½”ì¸ ê´€ë¦¬
 
     public int GetGameCoins()
     {
         return currentUserData.currencies.gameCoins;
     }
+    
+    public int GetCoins() => GetGameCoins(); // Firebase ì—°ë™ìš© ë³„ì¹­
 
     public bool SpendGameCoins(int amount)
     {
@@ -112,6 +129,7 @@ public class UserDataManager : MonoBehaviour
         {
             currentUserData.currencies.gameCoins -= amount;
             OnGameCoinsChanged?.Invoke(currentUserData.currencies.gameCoins);
+            OnDataChanged?.Invoke("coins");
             SaveUserData();
             return true;
         }
@@ -122,13 +140,22 @@ public class UserDataManager : MonoBehaviour
     {
         currentUserData.currencies.gameCoins += amount;
         OnGameCoinsChanged?.Invoke(currentUserData.currencies.gameCoins);
+        OnDataChanged?.Invoke("coins");
         SaveUserData();
         Debug.Log($"Added {amount} game coins. Total: {currentUserData.currencies.gameCoins}");
+    }
+    
+    public void SetCoins(int amount)
+    {
+        currentUserData.currencies.gameCoins = amount;
+        OnGameCoinsChanged?.Invoke(amount);
+        OnDataChanged?.Invoke("coins");
+        SaveUserData();
     }
 
     #endregion
 
-    #region ´ÙÀÌ¾Æ¸óµå °ü¸®
+    #region ë‹¤ì´ì•„ëª¬ë“œ ê´€ë¦¬
 
     public int GetDiamonds()
     {
@@ -141,6 +168,7 @@ public class UserDataManager : MonoBehaviour
         {
             currentUserData.currencies.diamonds -= amount;
             OnDiamondsChanged?.Invoke(currentUserData.currencies.diamonds);
+            OnDataChanged?.Invoke("diamonds");
             SaveUserData();
             return true;
         }
@@ -151,13 +179,22 @@ public class UserDataManager : MonoBehaviour
     {
         currentUserData.currencies.diamonds += amount;
         OnDiamondsChanged?.Invoke(currentUserData.currencies.diamonds);
+        OnDataChanged?.Invoke("diamonds");
         SaveUserData();
         Debug.Log($"Added {amount} diamonds. Total: {currentUserData.currencies.diamonds}");
+    }
+    
+    public void SetDiamonds(int amount)
+    {
+        currentUserData.currencies.diamonds = amount;
+        OnDiamondsChanged?.Invoke(amount);
+        OnDataChanged?.Invoke("diamonds");
+        SaveUserData();
     }
 
     #endregion
 
-    #region ¿¡³ÊÁö °ü¸®
+    #region ì—ë„ˆì§€ ê´€ë¦¬
 
     public int GetEnergy()
     {
@@ -168,6 +205,18 @@ public class UserDataManager : MonoBehaviour
     {
         return currentUserData.currencies.maxEnergy;
     }
+    
+    public long GetLastEnergyTime()
+    {
+        try
+        {
+            return Convert.ToInt64(currentUserData.currencies.lastEnergyTime);
+        }
+        catch
+        {
+            return DateTime.UtcNow.ToBinary();
+        }
+    }
 
     public bool SpendEnergy(int amount = 1)
     {
@@ -175,6 +224,7 @@ public class UserDataManager : MonoBehaviour
         {
             currentUserData.currencies.energy -= amount;
             OnEnergyChanged?.Invoke(currentUserData.currencies.energy);
+            OnDataChanged?.Invoke("energy");
             SaveUserData();
             return true;
         }
@@ -188,8 +238,24 @@ public class UserDataManager : MonoBehaviour
             currentUserData.currencies.maxEnergy
         );
         OnEnergyChanged?.Invoke(currentUserData.currencies.energy);
+        OnDataChanged?.Invoke("energy");
         SaveUserData();
         Debug.Log($"Added {amount} energy. Current: {currentUserData.currencies.energy}");
+    }
+    
+    public void SetEnergy(int amount)
+    {
+        currentUserData.currencies.energy = Mathf.Min(amount, maxEnergy);
+        OnEnergyChanged?.Invoke(currentUserData.currencies.energy);
+        OnDataChanged?.Invoke("energy");
+        SaveUserData();
+    }
+    
+    public void SetLastEnergyTime(long binaryTime)
+    {
+        currentUserData.currencies.lastEnergyTime = binaryTime.ToString();
+        OnDataChanged?.Invoke("energy_time");
+        SaveUserData();
     }
 
     public void UpdateEnergyFromTime()
@@ -217,11 +283,12 @@ public class UserDataManager : MonoBehaviour
                 {
                     currentUserData.currencies.energy = newEnergy;
 
-                    // ¸¶Áö¸· ¿¡³ÊÁö ½Ã°£ ¾÷µ¥ÀÌÆ®
+                    // ë§ˆì§€ë§‰ ì—ë„ˆì§€ ì‹œê°„ ì—…ë°ì´íŠ¸
                     DateTime newLastEnergyTime = lastEnergyTime.AddMinutes(energyToAdd * energyRechargeTimeMinutes);
                     currentUserData.currencies.lastEnergyTime = newLastEnergyTime.ToBinary().ToString();
 
                     OnEnergyChanged?.Invoke(currentUserData.currencies.energy);
+                    OnDataChanged?.Invoke("energy");
                     SaveUserData();
 
                     Debug.Log($"Energy recharged: +{energyToAdd}, Current: {currentUserData.currencies.energy}");
@@ -231,7 +298,7 @@ public class UserDataManager : MonoBehaviour
         catch (System.Exception e)
         {
             Debug.LogError("Error updating energy from time: " + e.Message);
-            // ¿¡·¯ ¹ß»ı ½Ã ÇöÀç ½Ã°£À¸·Î ¸®¼Â
+            // ì˜¤ë¥˜ ë°œìƒ ì‹œ í˜„ì¬ ì‹œê°„ìœ¼ë¡œ ì„¤ì •
             currentUserData.currencies.lastEnergyTime = DateTime.Now.ToBinary().ToString();
             SaveUserData();
         }
@@ -263,7 +330,7 @@ public class UserDataManager : MonoBehaviour
 
     #endregion
 
-    #region ÇÃ·¹ÀÌ¾î Á¤º¸ °ü¸®
+    #region í”Œë ˆì´ì–´ ì •ë³´ ê´€ë¦¬
 
     public string GetPlayerName()
     {
@@ -273,6 +340,7 @@ public class UserDataManager : MonoBehaviour
     public void SetPlayerName(string name)
     {
         currentUserData.playerInfo.playerName = name;
+        OnDataChanged?.Invoke("player_info");
         SaveUserData();
     }
 
@@ -285,6 +353,7 @@ public class UserDataManager : MonoBehaviour
     {
         currentUserData.playerInfo.level = level;
         OnPlayerLevelChanged?.Invoke(level);
+        OnDataChanged?.Invoke("player_info");
         SaveUserData();
     }
 
@@ -296,12 +365,151 @@ public class UserDataManager : MonoBehaviour
     public void SetCurrentStage(int stage)
     {
         currentUserData.playerInfo.currentStage = Mathf.Max(currentUserData.playerInfo.currentStage, stage);
+        OnDataChanged?.Invoke("stage_progress");
         SaveUserData();
     }
 
     #endregion
 
-    #region ½ºÅ×ÀÌÁö ÁøÇàµµ °ü¸®
+    #region Firebase ì—°ë™ ì¶”ê°€ ë©”ì„œë“œë“¤
+
+    public int GetHighestStage()
+    {
+        int highest = 1;
+        foreach (var progress in currentUserData.stageProgress.Values)
+        {
+            if (progress.completed && progress.stageNumber > highest)
+            {
+                highest = progress.stageNumber;
+            }
+        }
+        return highest;
+    }
+
+    public void SetHighestStage(int stage)
+    {
+        // ìƒˆë¡œìš´ ìµœê³  ìŠ¤í…Œì´ì§€ë¥¼ ìŠ¤í…Œì´ì§€ ì§„í–‰ë„ì— ë°˜ì˜
+        string stageKey = "stage" + stage;
+        if (!currentUserData.stageProgress.ContainsKey(stageKey))
+        {
+            currentUserData.stageProgress[stageKey] = new StageProgress();
+        }
+        currentUserData.stageProgress[stageKey].completed = true;
+        currentUserData.stageProgress[stageKey].stageNumber = stage;
+
+        OnDataChanged?.Invoke("stage_progress");
+        SaveUserData();
+    }
+
+    public long GetTotalScore()
+    {
+        long total = 0;
+        foreach (var progress in currentUserData.stageProgress.Values)
+        {
+            total += progress.bestScore;
+        }
+        return total;
+    }
+
+    public long GetInfiniteBestScore()
+    {
+        return currentUserData.gameStats?.infiniteBestScore ?? 0;
+    }
+
+    public int GetInfiniteBestTime()
+    {
+        return currentUserData.gameStats?.infiniteBestTime ?? 0;
+    }
+
+    public void SetInfiniteBestScore(long score)
+    {
+        if (currentUserData.gameStats == null)
+        {
+            currentUserData.gameStats = new GameStats();
+        }
+
+        if (score > currentUserData.gameStats.infiniteBestScore)
+        {
+            currentUserData.gameStats.infiniteBestScore = score;
+            OnDataChanged?.Invoke("infinite_best");
+            SaveUserData();
+        }
+    }
+
+    public void SetInfiniteBestTime(int time)
+    {
+        if (currentUserData.gameStats == null)
+        {
+            currentUserData.gameStats = new GameStats();
+        }
+
+        if (time > currentUserData.gameStats.infiniteBestTime)
+        {
+            currentUserData.gameStats.infiniteBestTime = time;
+            OnDataChanged?.Invoke("infinite_best");
+            SaveUserData();
+        }
+    }
+
+    // ì„¤ì • ê´€ë ¨ ë©”ì„œë“œë“¤
+    public bool IsSoundEnabled() => currentUserData.settings?.soundEnabled ?? true;
+    public bool IsMusicEnabled() => currentUserData.settings?.musicEnabled ?? true;
+    public bool IsVibrationEnabled() => currentUserData.settings?.vibrationEnabled ?? true;
+    public float GetMasterVolume() => currentUserData.settings?.masterVolume ?? 1.0f;
+    public float GetMusicVolume() => currentUserData.settings?.musicVolume ?? 0.7f;
+    public float GetSFXVolume() => currentUserData.settings?.sfxVolume ?? 1.0f;
+
+    public void SetSoundEnabled(bool enabled)
+    {
+        if (currentUserData.settings == null) currentUserData.settings = new GameSettings();
+        currentUserData.settings.soundEnabled = enabled;
+        OnDataChanged?.Invoke("settings");
+        SaveUserData();
+    }
+
+    public void SetMusicEnabled(bool enabled)
+    {
+        if (currentUserData.settings == null) currentUserData.settings = new GameSettings();
+        currentUserData.settings.musicEnabled = enabled;
+        OnDataChanged?.Invoke("settings");
+        SaveUserData();
+    }
+
+    public void SetVibrationEnabled(bool enabled)
+    {
+        if (currentUserData.settings == null) currentUserData.settings = new GameSettings();
+        currentUserData.settings.vibrationEnabled = enabled;
+        OnDataChanged?.Invoke("settings");
+        SaveUserData();
+    }
+
+    public void SetMasterVolume(float volume)
+    {
+        if (currentUserData.settings == null) currentUserData.settings = new GameSettings();
+        currentUserData.settings.masterVolume = Mathf.Clamp01(volume);
+        OnDataChanged?.Invoke("settings");
+        SaveUserData();
+    }
+
+    public void SetMusicVolume(float volume)
+    {
+        if (currentUserData.settings == null) currentUserData.settings = new GameSettings();
+        currentUserData.settings.musicVolume = Mathf.Clamp01(volume);
+        OnDataChanged?.Invoke("settings");
+        SaveUserData();
+    }
+
+    public void SetSFXVolume(float volume)
+    {
+        if (currentUserData.settings == null) currentUserData.settings = new GameSettings();
+        currentUserData.settings.sfxVolume = Mathf.Clamp01(volume);
+        OnDataChanged?.Invoke("settings");
+        SaveUserData();
+    }
+
+    #endregion
+
+    #region ìŠ¤í…Œì´ì§€ ì§„í–‰ë„ ê´€ë¦¬
 
     public StageProgress GetStageProgress(int stageNumber)
     {
@@ -324,16 +532,18 @@ public class UserDataManager : MonoBehaviour
         }
 
         StageProgress progress = currentUserData.stageProgress[stageKey];
+        progress.stageNumber = stageNumber;
         progress.bestScore = Mathf.Max(progress.bestScore, score);
 
         if (completed && !progress.completed)
         {
             progress.completed = true;
+            progress.completedTime = DateTime.UtcNow.Ticks;
 
-            // »õ ½ºÅ×ÀÌÁö Å¬¸®¾î ½Ã ´ÙÀ½ ½ºÅ×ÀÌÁö ÇØ±İ
+            // ë‹¤ìŒ ìŠ¤í…Œì´ì§€ í´ë¦¬ì–´ ì‹œ ë‹¤ìŒ ìŠ¤í…Œì´ì§€ í•´ê¸ˆ
             SetCurrentStage(stageNumber + 1);
 
-            // ·¹º§¾÷ ·ÎÁ÷ (¿¹: 5½ºÅ×ÀÌÁö¸¶´Ù ·¹º§¾÷)
+            // ë ˆë²¨ì—… ì¡°ê±´ (ì˜ˆ: 5ìŠ¤í…Œì´ì§€ë§ˆë‹¤ ë ˆë²¨ì—…)
             if (stageNumber % 5 == 0)
             {
                 SetPlayerLevel(GetPlayerLevel() + 1);
@@ -341,6 +551,7 @@ public class UserDataManager : MonoBehaviour
         }
 
         currentUserData.stageProgress[stageKey] = progress;
+        OnDataChanged?.Invoke("stage_progress");
         SaveUserData();
 
         Debug.Log($"Stage {stageNumber} progress updated: Score={score}, Completed={completed}");
@@ -348,22 +559,60 @@ public class UserDataManager : MonoBehaviour
 
     #endregion
 
-    #region ½ºÅ×ÀÌÁö ¿Ï·á º¸»ó
+    #region ë¬´í•œëª¨ë“œ ê¸°ë¡ ì—…ë°ì´íŠ¸
+
+    public void UpdateInfiniteModeRecord(long score, int timeSeconds)
+    {
+        if (currentUserData.gameStats == null)
+        {
+            currentUserData.gameStats = new GameStats();
+        }
+
+        bool newRecord = false;
+
+        if (score > currentUserData.gameStats.infiniteBestScore)
+        {
+            currentUserData.gameStats.infiniteBestScore = score;
+            newRecord = true;
+        }
+
+        if (timeSeconds > currentUserData.gameStats.infiniteBestTime)
+        {
+            currentUserData.gameStats.infiniteBestTime = timeSeconds;
+            newRecord = true;
+        }
+
+        if (newRecord)
+        {
+            OnDataChanged?.Invoke("infinite_best");
+            SaveUserData();
+
+            // Firebaseì— ë¦¬ë”ë³´ë“œ ì—…ë¡œë“œ
+            if (firebaseIntegrationEnabled && FirebaseDataManager.Instance != null)
+            {
+                _ = FirebaseDataManager.Instance.UploadLeaderboardScore((int)score, "infinite");
+            }
+        }
+    }
+
+    #endregion
+
+    #region ìŠ¤í…Œì´ì§€ ì™„ë£Œ ë³´ìƒ
 
     public void GiveStageReward(int stageNumber, int score)
     {
-        // ±âº» ÄÚÀÎ º¸»ó (Á¡¼ö ±â¹İ)
+        // ê¸°ë³¸ ì ìˆ˜ ë³´ìƒ (ì ìˆ˜ ê¸°ë°˜)
         int coinReward = score / 10;
         AddGameCoins(coinReward);
 
-        // Ã¹ Å¬¸®¾î º¸³Ê½º
+        // ì²« í´ë¦¬ì–´ ë³´ë„ˆìŠ¤
         if (!GetStageProgress(stageNumber).completed)
         {
-            int bonusCoins = 50; // Ã¹ Å¬¸®¾î º¸³Ê½º
+            int bonusCoins = 50; // ì²« í´ë¦¬ì–´ ë³´ë„ˆìŠ¤
             AddGameCoins(bonusCoins);
 
-            // Æ¯Á¤ ½ºÅ×ÀÌÁö¿¡¼­ ´ÙÀÌ¾Æ¸óµå º¸»ó
-            if (stageNumber % 10 == 0) // 10, 20, 30... ½ºÅ×ÀÌÁö
+            // íŠ¹ì • ìŠ¤í…Œì´ì§€ë§ˆë‹¤ ë‹¤ì´ì•„ëª¬ë“œ ë³´ìƒ
+            if (stageNumber % 10 == 0) // 10, 20, 30... ìŠ¤í…Œì´ì§€
             {
                 AddDiamonds(1);
             }
@@ -372,11 +621,11 @@ public class UserDataManager : MonoBehaviour
 
     #endregion
 
-    #region ±¸¸Å °ü·Ã (IAP ¿¬µ¿ ÁØºñ)
+    #region ê²Œì„ êµ¬ë§¤ (IAP ì—°ë™ ì¤€ë¹„)
 
     public void PurchaseDiamonds(int amount)
     {
-        // ½ÇÁ¦ IAP °ËÁõ ÈÄ È£ÃâµÉ ¸Ş¼­µå
+        // ì‹¤ì œ IAP ì—°ë™ ì‹œ í˜¸ì¶œë  ë©”ì„œë“œ
         AddDiamonds(amount);
         Debug.Log($"Purchased {amount} diamonds via IAP");
     }
@@ -393,7 +642,32 @@ public class UserDataManager : MonoBehaviour
 
     #endregion
 
-    #region À¯Æ¿¸®Æ¼
+    #region Firebase ë™ê¸°í™” ë©”ì„œë“œë“¤
+
+    /// <summary>
+    /// Firebaseì™€ ê°•ì œ ë™ê¸°í™”
+    /// </summary>
+    public void SyncWithFirebase()
+    {
+        if (firebaseIntegrationEnabled && FirebaseDataManager.Instance != null)
+        {
+            FirebaseDataManager.Instance.ForceSyncNow();
+        }
+    }
+
+    /// <summary>
+    /// Firebase ì—°ê²° ìƒíƒœ í™•ì¸
+    /// </summary>
+    public bool IsConnectedToFirebase()
+    {
+        return firebaseIntegrationEnabled && 
+               FirebaseDataManager.Instance != null && 
+               FirebaseDataManager.Instance.IsConnected;
+    }
+
+    #endregion
+
+    #region ìœ í‹¸ë¦¬í‹°
 
     void InvokeAllEvents()
     {

@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.justinpbarnett.unity-mcp": "https://github.com/justinpbarnett/unity-mcp.git?path=/UnityMcpBridge",
+    "com.ivanmurzak.unity.mcp": "0.10.0",
     "com.unity.adaptiveperformance.google.android": "5.1.4",
     "com.unity.adaptiveperformance.samsung.android": "5.0.0",
     "com.unity.collab-proxy": "2.8.1",
@@ -46,8 +46,7 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0",
-    "com.ivanmurzak.unity.mcp": "0.10.0"
+    "com.unity.modules.xr": "1.0.0"
   },
   "scopedRegistries": [
     {
