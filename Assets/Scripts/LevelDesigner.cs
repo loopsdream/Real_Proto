@@ -54,12 +54,17 @@ public class LevelDesigner : MonoBehaviour
     public int defaultTargetScore = 100;
     public int defaultMaxMoves = 20;
 
+    [Header("Grid Center Lines")]
+    public Color centerLineColor = Color.white;
+    public float centerLineWidth = 2f;
+
     private int currentWidth;
     private int currentHeight;
     private float currentCellSize;
     private int selectedBlockType = 0; // 0: 빈 블록, 1-5: 각 색상 블록
     private DesignerBlock[,] designerGrid;
     private List<GameObject> gridButtons = new List<GameObject>();
+    private List<GameObject> centerLineObjects = new List<GameObject>(); // 중앙선 오브젝트들
 
     void Start()
     {
@@ -395,6 +400,7 @@ public class LevelDesigner : MonoBehaviour
     void GenerateDesignerGrid()
     {
         ClearGridButtons();
+        ClearCenterLines(); // 기존 중앙선 제거
 
         if (!int.TryParse(widthInput.text, out currentWidth)) currentWidth = defaultWidth;
         if (!int.TryParse(heightInput.text, out currentHeight)) currentHeight = defaultHeight;
@@ -407,6 +413,7 @@ public class LevelDesigner : MonoBehaviour
         designerGrid = new DesignerBlock[currentWidth, currentHeight];
 
         CreateUIGrid();
+        CreateCenterLines(); // 중앙선 생성
         AdjustScrollArea();
 
         Debug.Log($"Designer grid created: {currentWidth}x{currentHeight}, cell size: {currentCellSize}");
@@ -435,6 +442,7 @@ public class LevelDesigner : MonoBehaviour
         contentFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
         contentFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
+        // 정확히 설정된 개수만큼만 생성
         for (int y = currentHeight - 1; y >= 0; y--)
         {
             for (int x = 0; x < currentWidth; x++)
@@ -442,6 +450,8 @@ public class LevelDesigner : MonoBehaviour
                 CreateGridButton(x, y);
             }
         }
+
+        Debug.Log($"Created exactly {currentWidth * currentHeight} grid buttons");
     }
 
     void CreateGridButton(int x, int y)
@@ -714,6 +724,91 @@ public class LevelDesigner : MonoBehaviour
         {
             Debug.LogError($"Failed to restore grid pattern: {e.Message}");
         }
+    }
+
+    // 중앙선 생성
+    void CreateCenterLines()
+    {
+        // 한 프레임 기다린 후 실행
+        Invoke(nameof(CreateCenterLinesDelayed), 0.1f);
+    }
+
+    void CreateCenterLinesDelayed()
+    {
+        // 항상 십자선 표시 (홀수/짝수 관계없이)
+        CreateHorizontalCenterLine();
+        CreateVerticalCenterLine();
+
+        Debug.Log($"Center lines created for {currentWidth}x{currentHeight} grid");
+    }
+
+    void CreateHorizontalCenterLine()
+    {
+        GameObject horizontalLine = new GameObject("HorizontalCenterLine");
+        horizontalLine.transform.SetParent(gridContainer, false);
+
+        RectTransform lineRect = horizontalLine.AddComponent<RectTransform>();
+        Image lineImage = horizontalLine.AddComponent<Image>();
+
+        lineImage.color = centerLineColor;
+        lineImage.raycastTarget = false;
+
+        // GridLayoutGroup에서 완전히 제외
+        LayoutElement layoutElement = horizontalLine.AddComponent<LayoutElement>();
+        layoutElement.ignoreLayout = true;
+
+        // 전체 그리드의 실제 폭 계산
+        float totalWidth = currentWidth * currentCellSize + (currentWidth - 1) * 2f;
+        lineRect.sizeDelta = new Vector2(totalWidth, centerLineWidth);
+
+        // 정확히 중앙에 위치 (Y축 중앙)
+        lineRect.anchoredPosition = new Vector2(0, 0);
+        lineRect.anchorMin = new Vector2(0.5f, 0.5f);
+        lineRect.anchorMax = new Vector2(0.5f, 0.5f);
+        lineRect.pivot = new Vector2(0.5f, 0.5f);
+
+        horizontalLine.transform.SetAsLastSibling();
+        centerLineObjects.Add(horizontalLine);
+    }
+
+    void CreateVerticalCenterLine()
+    {
+        GameObject verticalLine = new GameObject("VerticalCenterLine");
+        verticalLine.transform.SetParent(gridContainer, false);
+
+        RectTransform lineRect = verticalLine.AddComponent<RectTransform>();
+        Image lineImage = verticalLine.AddComponent<Image>();
+
+        lineImage.color = centerLineColor;
+        lineImage.raycastTarget = false;
+
+        // GridLayoutGroup에서 완전히 제외
+        LayoutElement layoutElement = verticalLine.AddComponent<LayoutElement>();
+        layoutElement.ignoreLayout = true;
+
+        // 전체 그리드의 실제 높이 계산
+        float totalHeight = currentHeight * currentCellSize + (currentHeight - 1) * 2f;
+        lineRect.sizeDelta = new Vector2(centerLineWidth, totalHeight);
+
+        // 정확히 중앙에 위치 (X축 중앙)
+        lineRect.anchoredPosition = new Vector2(0, 0);
+        lineRect.anchorMin = new Vector2(0.5f, 0.5f);
+        lineRect.anchorMax = new Vector2(0.5f, 0.5f);
+        lineRect.pivot = new Vector2(0.5f, 0.5f);
+
+        verticalLine.transform.SetAsLastSibling();
+        centerLineObjects.Add(verticalLine);
+    }
+
+    // 중앙선 제거
+    void ClearCenterLines()
+    {
+        foreach (GameObject line in centerLineObjects)
+        {
+            if (line != null)
+                DestroyImmediate(line);
+        }
+        centerLineObjects.Clear();
     }
 
     public void ClearSavedState()

@@ -2083,6 +2083,8 @@ MonoBehaviour:
   defaultCellSize: 80
   defaultTargetScore: 100
   defaultMaxMoves: 30
+  centerLineColor: {r: 1, g: 0, b: 1, a: 1}
+  centerLineWidth: 3
 --- !u!4 &512737342
 Transform:
   m_ObjectHideFlags: 0
@@ -4789,8 +4791,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 372369857}
   m_HandleRect: {fileID: 372369856}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1
+  m_Size: 0.9999684
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -5958,7 +5960,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.00069068425}
+  m_AnchoredPosition: {x: 0, y: -0.000054610966}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1575986573
