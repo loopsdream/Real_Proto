@@ -1,9 +1,13 @@
-// LevelDesigner.cs - ÀÎ°ÔÀÓ ·¹º§ µğÀÚÀÎ ½Ã½ºÅÛ
+// LevelDesigner.cs - ë ˆë²¨ ë””ìì¸ í¸ì§‘ê¸° ì‹œìŠ¤í…œ (ì™„ì„±)
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using System.Collections.Generic;
+#if UNITY_EDITOR
+using UnityEditor;
+using System.IO;
+#endif
 
 public class LevelDesigner : MonoBehaviour
 {
@@ -19,9 +23,16 @@ public class LevelDesigner : MonoBehaviour
     public Button backButton;
 
     [Header("Additional UI")]
-    public Button newLevelButton;    // »õ ·¹º§ ½ÃÀÛ ¹öÆ°
-    public Button saveLevelButton;   // ·¹º§ ÀúÀå ¹öÆ°
-    public Button loadLevelButton;   // ·¹º§ ºÒ·¯¿À±â ¹öÆ°
+    public Button newLevelButton;    // ìƒˆ ë ˆë²¨ ì‹œì‘ ë²„íŠ¼
+    public Button saveLevelButton;   // ë ˆë²¨ ì €ì¥ ë²„íŠ¼
+    public Button loadLevelButton;   // ë ˆë²¨ ë¶ˆëŸ¬ì˜¤ê¸° ë²„íŠ¼
+
+    [Header("StageData Creation - NEW")]
+    public Button createStageDataButton;  // StageData ìƒì„± ë²„íŠ¼
+    public TMP_InputField stageNumberInput;
+    public TMP_InputField stageNameInput;
+    public TMP_InputField timeLimitInput;
+    public TMP_Text feedbackText; // í”¼ë“œë°± ë©”ì‹œì§€ í‘œì‹œ
 
     [Header("Block Selection")]
     public Button[] blockTypeButtons;
@@ -33,7 +44,7 @@ public class LevelDesigner : MonoBehaviour
     public ScrollRect gridScrollRect;
 
     [Header("Block Prefabs")]
-    public GameObject[] blockPrefabs; // °¢ »ö»óº° ºí·Ï ÇÁ¸®ÆÕ
+    public GameObject[] blockPrefabs; // ê° ìƒ‰ìƒ ë¸”ë¡ í”„ë¦¬íŒ¹
     public GameObject emptyBlockPrefab;
 
     [Header("Designer Settings")]
@@ -46,7 +57,7 @@ public class LevelDesigner : MonoBehaviour
     private int currentWidth;
     private int currentHeight;
     private float currentCellSize;
-    private int selectedBlockType = 0; // 0: ºó ºí·Ï, 1-5: °¢ »ö»ó ºí·Ï
+    private int selectedBlockType = 0; // 0: ë¹ˆ ë¸”ë¡, 1-5: ê° ìƒ‰ìƒ ë¸”ë¡
     private DesignerBlock[,] designerGrid;
     private List<GameObject> gridButtons = new List<GameObject>();
 
@@ -56,19 +67,19 @@ public class LevelDesigner : MonoBehaviour
         SetupButtonEvents();
         SetDefaultValues();
 
-        // ÀÌÀü¿¡ ÀÛ¾÷ÇÏ´ø µ¥ÀÌÅÍ º¹¿ø
+        // ì´ì „ì— ì‘ì—…í•˜ë˜ ë‚´ìš©ì´ ìˆë‹¤ë©´ ë³µì›
         LoadDesignerState();
     }
 
     void InitializeDesigner()
     {
-        // ¹öÆ° ÀÌº¥Æ® ¼³Á¤
+        // ë²„íŠ¼ ì´ë²¤íŠ¸ ì„¤ì •
         generateGridButton.onClick.AddListener(GenerateDesignerGrid);
         testLevelButton.onClick.AddListener(TestLevel);
         clearGridButton.onClick.AddListener(ClearGrid);
         backButton.onClick.AddListener(BackToMenu);
 
-        // ºí·Ï Å¸ÀÔ ¼±ÅÃ ¹öÆ° ¼³Á¤
+        // ë¸”ë¡ íƒ€ì… ì„ íƒ ë²„íŠ¼ ì„¤ì •
         for (int i = 0; i < blockTypeButtons.Length; i++)
         {
             int blockIndex = i;
@@ -77,10 +88,10 @@ public class LevelDesigner : MonoBehaviour
 
         emptyBlockButton.onClick.AddListener(() => SelectBlockType(0));
 
-        // ±âº» ¼±ÅÃ: ºó ºí·Ï
+        // ê¸°ë³¸ ì„ íƒ: ë¹ˆ ë¸”ë¡
         SelectBlockType(0);
 
-        // Ãß°¡ ¹öÆ° ÀÌº¥Æ® ¼³Á¤
+        // ì¶”ê°€ ë²„íŠ¼ ì´ë²¤íŠ¸ ì„¤ì •
         if (newLevelButton != null)
             newLevelButton.onClick.AddListener(StartNewLevel);
 
@@ -89,34 +100,30 @@ public class LevelDesigner : MonoBehaviour
 
         if (loadLevelButton != null)
             loadLevelButton.onClick.AddListener(LoadSavedLevel);
+
+        // NEW: StageData ìƒì„± ë²„íŠ¼
+        if (createStageDataButton != null)
+            createStageDataButton.onClick.AddListener(CreateStageDataFromCurrentDesign);
     }
 
-    // »õ ·¹º§ ½ÃÀÛ (±âÁ¸ ÀÛ¾÷ »èÁ¦)
+    // ìƒˆ ë ˆë²¨ ì‹œì‘ (í˜„ì¬ ì‘ì—… ì´ˆê¸°í™”)
     void StartNewLevel()
     {
-        // È®ÀÎ ´ëÈ­»óÀÚ Ç¥½Ã (°£´ÜÇÑ ¹æ¹ı)
         if (designerGrid != null)
         {
             Debug.Log("Starting new level (clearing current work)");
         }
 
-        // ÀúÀåµÈ »óÅÂ »èÁ¦
         ClearSavedState();
-
-        // UI ÃÊ±âÈ­
         SetDefaultValues();
-
-        // ±âÁ¸ ±×¸®µå »èÁ¦
         ClearGridButtons();
         designerGrid = null;
-
-        // ±âº» ºí·Ï Å¸ÀÔ ¼±ÅÃ
         SelectBlockType(0);
 
         Debug.Log("New level started");
     }
 
-    // ÇöÀç ·¹º§ ÀúÀå (PlayerPrefs ¿Ü¿¡ ÆÄÀÏ·Îµµ ÀúÀå °¡´É)
+    // í˜„ì¬ ë ˆë²¨ ì €ì¥
     void SaveCurrentLevel()
     {
         if (designerGrid == null)
@@ -125,10 +132,8 @@ public class LevelDesigner : MonoBehaviour
             return;
         }
 
-        // ÇöÀç »óÅÂ¸¦ º°µµ ½½·Ô¿¡ ÀúÀå
         SaveDesignerState();
 
-        // Ãß°¡·Î Å¸ÀÓ½ºÅÆÇÁ¿Í ÇÔ²² ÀúÀå
         string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
         PlayerPrefs.SetString($"SavedLevel_{timestamp}_Pattern", PlayerPrefs.GetString("DesignerState_Pattern"));
         PlayerPrefs.SetInt($"SavedLevel_{timestamp}_Width", currentWidth);
@@ -137,18 +142,209 @@ public class LevelDesigner : MonoBehaviour
         Debug.Log($"Level saved with timestamp: {timestamp}");
     }
 
-    // ÀúÀåµÈ ·¹º§ ºÒ·¯¿À±â
+    // ì €ì¥ëœ ë ˆë²¨ ë¶ˆëŸ¬ì˜¤ê¸°
     void LoadSavedLevel()
     {
-        // °¡Àå ÃÖ±Ù ÀúÀåµÈ »óÅÂ ºÒ·¯¿À±â
         LoadDesignerState();
-
         Debug.Log("Saved level loaded");
+    }
+
+    // NEW: StageData ìƒì„± ê¸°ëŠ¥
+    void CreateStageDataFromCurrentDesign()
+    {
+        #if UNITY_EDITOR
+        if (designerGrid == null)
+        {
+            ShowFeedback("ê·¸ë¦¬ë“œê°€ ìƒì„±ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!", Color.red);
+            return;
+        }
+
+        try
+        {
+            StageData newStageData = CreateStageDataAsset();
+            
+            if (newStageData != null)
+            {
+                ShowFeedback($"StageData '{newStageData.name}' ìƒì„± ì™„ë£Œ!", Color.green);
+                
+                // ìŠ¤í…Œì´ì§€ ë²ˆí˜¸ ìë™ ì¦ê°€
+                int nextStageNumber = GetNextStageNumber() + 1;
+                if (stageNumberInput)
+                    stageNumberInput.text = nextStageNumber.ToString();
+                if (stageNameInput)
+                    stageNameInput.text = $"Stage {nextStageNumber}";
+            }
+        }
+        catch (System.Exception e)
+        {
+            ShowFeedback($"StageData ìƒì„± ì‹¤íŒ¨: {e.Message}", Color.red);
+            Debug.LogError($"StageData creation failed: {e}");
+        }
+        #else
+        ShowFeedback("StageData ìƒì„±ì€ ì—ë””í„°ì—ì„œë§Œ ê°€ëŠ¥í•©ë‹ˆë‹¤.", Color.yellow);
+        #endif
+    }
+
+    #if UNITY_EDITOR
+    private StageData CreateStageDataAsset()
+    {
+        StageData stageData = ScriptableObject.CreateInstance<StageData>();
+        
+        int stageNumber = GetStageNumber();
+        string stageName = GetStageName();
+        float timeLimit = GetTimeLimit();
+        
+        stageData.stageNumber = stageNumber;
+        stageData.stageName = stageName;
+        stageData.gridWidth = currentWidth;
+        stageData.gridHeight = currentHeight;
+        stageData.blockPattern = GetCurrentBlockPattern();
+        stageData.timeLimit = timeLimit;
+        stageData.coinReward = CalculateCoinReward(stageNumber);
+        stageData.experienceReward = 10;
+        stageData.difficultyLevel = CalculateDifficulty(stageNumber);
+        stageData.allowColorTransform = true;
+        stageData.showHints = true;
+        
+        string fileName = $"Stage_{stageNumber:D3}.asset";
+        string assetPath = $"Assets/StageData/{fileName}";
+        
+        string directory = Path.GetDirectoryName(assetPath);
+        if (!Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+        
+        if (File.Exists(assetPath))
+        {
+            bool overwrite = EditorUtility.DisplayDialog(
+                "íŒŒì¼ ë®ì–´ì“°ê¸°", 
+                $"{fileName}ì´ ì´ë¯¸ ì¡´ì¬í•©ë‹ˆë‹¤. ë®ì–´ì“°ì‹œê² ìŠµë‹ˆê¹Œ?", 
+                "ë®ì–´ì“°ê¸°", "ì·¨ì†Œ");
+                
+            if (!overwrite)
+            {
+                return null;
+            }
+        }
+        
+        AssetDatabase.CreateAsset(stageData, assetPath);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        
+        EditorUtility.FocusProjectWindow();
+        Selection.activeObject = stageData;
+        
+        Debug.Log($"StageData created: {assetPath}");
+        return stageData;
+    }
+    #endif
+
+    private int[] GetCurrentBlockPattern()
+    {
+        int width = currentWidth;
+        int height = currentHeight;
+        int[] pattern = new int[width * height];
+        
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (designerGrid != null && x < designerGrid.GetLength(0) && y < designerGrid.GetLength(1))
+                {
+                    pattern[y * width + x] = designerGrid[x, y].blockType;
+                }
+                else
+                {
+                    pattern[y * width + x] = 0;
+                }
+            }
+        }
+        
+        return pattern;
+    }
+
+    private int GetStageNumber()
+    {
+        if (stageNumberInput && int.TryParse(stageNumberInput.text, out int number))
+            return number;
+        return GetNextStageNumber();
+    }
+    
+    private string GetStageName()
+    {
+        if (stageNameInput && !string.IsNullOrEmpty(stageNameInput.text))
+            return stageNameInput.text;
+        return $"Stage {GetStageNumber()}";
+    }
+    
+    private float GetTimeLimit()
+    {
+        if (timeLimitInput && float.TryParse(timeLimitInput.text, out float time))
+            return time;
+        return 180f;
+    }
+    
+    private int GetNextStageNumber()
+    {
+        #if UNITY_EDITOR
+        string[] stageDataGuids = AssetDatabase.FindAssets("t:StageData", new[] { "Assets/StageData" });
+        int maxStageNumber = 0;
+        
+        foreach (string guid in stageDataGuids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            StageData stageData = AssetDatabase.LoadAssetAtPath<StageData>(path);
+            if (stageData != null && stageData.stageNumber > maxStageNumber)
+            {
+                maxStageNumber = stageData.stageNumber;
+            }
+        }
+        
+        return maxStageNumber + 1;
+        #else
+        return 1;
+        #endif
+    }
+    
+    private int CalculateCoinReward(int stageNumber)
+    {
+        return Mathf.Max(50, 100 + (stageNumber * 10));
+    }
+    
+    private int CalculateDifficulty(int stageNumber)
+    {
+        if (stageNumber <= 10) return 1;
+        if (stageNumber <= 30) return 2;
+        if (stageNumber <= 60) return 3;
+        if (stageNumber <= 100) return 4;
+        return 5;
+    }
+    
+    private void ShowFeedback(string message, Color color)
+    {
+        if (feedbackText)
+        {
+            feedbackText.text = message;
+            feedbackText.color = color;
+            
+            CancelInvoke(nameof(ClearFeedback));
+            Invoke(nameof(ClearFeedback), 3f);
+        }
+        
+        Debug.Log(message);
+    }
+    
+    private void ClearFeedback()
+    {
+        if (feedbackText)
+        {
+            feedbackText.text = "";
+        }
     }
 
     void SetupButtonEvents()
     {
-        // ÀÔ·Â ÇÊµå °ËÁõ
         widthInput.onEndEdit.AddListener(ValidateWidthInput);
         heightInput.onEndEdit.AddListener(ValidateHeightInput);
         cellSizeInput.onEndEdit.AddListener(ValidateCellSizeInput);
@@ -163,6 +359,13 @@ public class LevelDesigner : MonoBehaviour
         cellSizeInput.text = defaultCellSize.ToString();
         targetScoreInput.text = defaultTargetScore.ToString();
         maxMovesInput.text = defaultMaxMoves.ToString();
+
+        if (stageNumberInput)
+            stageNumberInput.text = GetNextStageNumber().ToString();
+        if (stageNameInput)
+            stageNameInput.text = $"Stage {GetNextStageNumber()}";
+        if (timeLimitInput)
+            timeLimitInput.text = "180";
     }
 
     void SelectBlockType(int blockType)
@@ -173,46 +376,37 @@ public class LevelDesigner : MonoBehaviour
         }
         selectedBlockType = blockType;
 
-        // ¸ğµç ¹öÆ° ±âº» »ö»óÀ¸·Î º¯°æ
         for (int i = 0; i < blockTypeButtons.Length; i++)
         {
             blockTypeButtons[i].GetComponent<Image>().color = Color.white;
         }
         emptyBlockButton.GetComponent<Image>().color = Color.white;
 
-        // ¼±ÅÃµÈ ¹öÆ° ÇÏÀÌ¶óÀÌÆ®
         if (blockType == 0)
         {
-            emptyBlockButton.GetComponent<Image>().color = Color.pink;
+            emptyBlockButton.GetComponent<Image>().color = Color.cyan;
         }
         else
         {
-            blockTypeButtons[blockType - 1].GetComponent<Image>().color = Color.pink;
+            blockTypeButtons[blockType - 1].GetComponent<Image>().color = Color.cyan;
         }
     }
 
     void GenerateDesignerGrid()
     {
-        // ±âÁ¸ ±×¸®µå »èÁ¦
         ClearGridButtons();
 
-        // ÀÔ·Â°ª °¡Á®¿À±â
         if (!int.TryParse(widthInput.text, out currentWidth)) currentWidth = defaultWidth;
         if (!int.TryParse(heightInput.text, out currentHeight)) currentHeight = defaultHeight;
         if (!float.TryParse(cellSizeInput.text, out currentCellSize)) currentCellSize = defaultCellSize;
 
-        // °ª Á¦ÇÑ
         currentWidth = Mathf.Clamp(currentWidth, 3, 15);
         currentHeight = Mathf.Clamp(currentHeight, 3, 20);
         currentCellSize = Mathf.Clamp(currentCellSize, 40f, 120f);
 
-        // ±×¸®µå µ¥ÀÌÅÍ ÃÊ±âÈ­
         designerGrid = new DesignerBlock[currentWidth, currentHeight];
 
-        // UI ±×¸®µå »ı¼º
         CreateUIGrid();
-
-        // ½ºÅ©·Ñ ¿µ¿ª Å©±â Á¶Á¤
         AdjustScrollArea();
 
         Debug.Log($"Designer grid created: {currentWidth}x{currentHeight}, cell size: {currentCellSize}");
@@ -220,7 +414,6 @@ public class LevelDesigner : MonoBehaviour
 
     void CreateUIGrid()
     {
-        // Grid Layout Group ¼³Á¤
         GridLayoutGroup gridLayout = gridContainer.GetComponent<GridLayoutGroup>();
         if (gridLayout == null)
         {
@@ -234,7 +427,6 @@ public class LevelDesigner : MonoBehaviour
         gridLayout.startAxis = GridLayoutGroup.Axis.Horizontal;
         gridLayout.childAlignment = TextAnchor.MiddleCenter;
 
-        // Content Size Fitter Ãß°¡ (ÀÚµ¿ Å©±â Á¶Á¤)
         ContentSizeFitter contentFitter = gridContainer.GetComponent<ContentSizeFitter>();
         if (contentFitter == null)
         {
@@ -243,10 +435,9 @@ public class LevelDesigner : MonoBehaviour
         contentFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
         contentFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-        // ±×¸®µå ¹öÆ° »ı¼º
-        for (int y = currentHeight - 1; y >= 0; y--) // À§¿¡¼­ ¾Æ·¡·Î
+        for (int y = currentHeight - 1; y >= 0; y--)
         {
-            for (int x = 0; x < currentWidth; x++) // ¿ŞÂÊ¿¡¼­ ¿À¸¥ÂÊÀ¸·Î
+            for (int x = 0; x < currentWidth; x++)
             {
                 CreateGridButton(x, y);
             }
@@ -255,36 +446,28 @@ public class LevelDesigner : MonoBehaviour
 
     void CreateGridButton(int x, int y)
     {
-        // ¹öÆ° »ı¼º
         GameObject buttonObj = new GameObject($"GridButton_{x}_{y}");
         buttonObj.transform.SetParent(gridContainer);
 
-        // ¹öÆ° ÄÄÆ÷³ÍÆ® Ãß°¡
         Button button = buttonObj.AddComponent<Button>();
         Image buttonImage = buttonObj.AddComponent<Image>();
 
-        // ¹öÆ° ½ºÅ¸ÀÏ ¼³Á¤
         buttonImage.color = Color.gray;
         buttonImage.sprite = null;
 
-        // ¹öÆ° Å©±â ¼³Á¤
         RectTransform rect = buttonObj.GetComponent<RectTransform>();
-        rect.localScale = Vector3.one; // ½ºÄÉÀÏ °íÁ¤
+        rect.localScale = Vector3.one;
 
-        // Layout Element Ãß°¡ (Å©±â °­Á¦ ÁöÁ¤)
         LayoutElement layoutElement = buttonObj.AddComponent<LayoutElement>();
         layoutElement.preferredWidth = currentCellSize;
         layoutElement.preferredHeight = currentCellSize;
         layoutElement.flexibleWidth = 0;
         layoutElement.flexibleHeight = 0;
 
-        // ¹öÆ° ÀÌº¥Æ® ¼³Á¤
         button.onClick.AddListener(() => OnGridButtonClicked(x, y));
 
-        // ±×¸®µå µ¥ÀÌÅÍ ÃÊ±âÈ­
-        designerGrid[x, y] = new DesignerBlock(x, y, 0); // 0: ºó ºí·Ï
+        designerGrid[x, y] = new DesignerBlock(x, y, 0);
 
-        // ¹öÆ° ¸®½ºÆ®¿¡ Ãß°¡
         gridButtons.Add(buttonObj);
     }
 
@@ -292,10 +475,7 @@ public class LevelDesigner : MonoBehaviour
     {
         if (designerGrid == null) return;
 
-        // ±×¸®µå µ¥ÀÌÅÍ ¾÷µ¥ÀÌÆ®
         designerGrid[x, y].blockType = selectedBlockType;
-
-        // ¹öÆ° ½Ã°¢ ¾÷µ¥ÀÌÆ®
         UpdateGridButtonVisual(x, y);
 
         Debug.Log($"Grid button clicked: ({x}, {y}) - Block type: {selectedBlockType}");
@@ -303,36 +483,20 @@ public class LevelDesigner : MonoBehaviour
 
     void UpdateGridButtonVisual(int x, int y)
     {
-        // ÇØ´ç À§Ä¡ÀÇ ¹öÆ° Ã£±â
         int buttonIndex = (currentHeight - 1 - y) * currentWidth + x;
         if (buttonIndex >= 0 && buttonIndex < gridButtons.Count)
         {
             Image buttonImage = gridButtons[buttonIndex].GetComponent<Image>();
 
-            // ºí·Ï Å¸ÀÔ¿¡ µû¸¥ »ö»ó ¼³Á¤
             switch (designerGrid[x, y].blockType)
             {
-                case 0: // ºó ºí·Ï
-                    buttonImage.color = Color.gray;
-                    break;
-                case 1: // »¡°­
-                    buttonImage.color = Color.red;
-                    break;
-                case 2: // ÆÄ¶û
-                    buttonImage.color = Color.blue;
-                    break;
-                case 3: // ³ë¶û
-                    buttonImage.color = Color.yellow;
-                    break;
-                case 4: // ÃÊ·Ï
-                    buttonImage.color = Color.green;
-                    break;
-                case 5: // º¸¶ó
-                    buttonImage.color = Color.magenta;
-                    break;
-                default:
-                    buttonImage.color = Color.white;
-                    break;
+                case 0: buttonImage.color = Color.gray; break;
+                case 1: buttonImage.color = Color.red; break;
+                case 2: buttonImage.color = Color.blue; break;
+                case 3: buttonImage.color = Color.yellow; break;
+                case 4: buttonImage.color = Color.green; break;
+                case 5: buttonImage.color = Color.magenta; break;
+                default: buttonImage.color = Color.white; break;
             }
         }
     }
@@ -341,7 +505,6 @@ public class LevelDesigner : MonoBehaviour
     {
         if (designerGrid == null) return;
 
-        // ¸ğµç ±×¸®µå¸¦ ºó ºí·ÏÀ¸·Î ÃÊ±âÈ­
         for (int x = 0; x < currentWidth; x++)
         {
             for (int y = 0; y < currentHeight; y++)
@@ -366,39 +529,20 @@ public class LevelDesigner : MonoBehaviour
 
     void AdjustScrollArea()
     {
-        // Content Å©±â Á¶Á¤
-        //RectTransform contentRect = gridContainer.GetComponent<RectTransform>();
-        //float contentHeight = currentHeight * (currentCellSize + 2f) + 20f; // ¿©¹é Æ÷ÇÔ
-        //float contentWidth = currentWidth * (currentCellSize + 2f) + 20f;
-
-        //contentRect.sizeDelta = new Vector2(contentWidth, contentHeight);
-
-        // ½ºÅ©·Ñ À§Ä¡ ÃÊ±âÈ­
-        //if (gridScrollRect != null)
-        //{
-        //    gridScrollRect.verticalNormalizedPosition = 1f;
-        //    gridScrollRect.horizontalNormalizedPosition = 0.5f;
-        //}
-
-        // Grid Layout Group ¼³Á¤ ¿Ï·á ÈÄ Àá±ñ ´ë±â
         StartCoroutine(AdjustScrollAreaDelayed());
     }
 
     System.Collections.IEnumerator AdjustScrollAreaDelayed()
     {
-        // ÇÑ ÇÁ·¹ÀÓ ´ë±â (Layout °è»ê ¿Ï·á ´ë±â)
         yield return null;
 
-        // Content Å©±â´Â ContentSizeFitter°¡ ÀÚµ¿À¸·Î Á¶Á¤
         RectTransform contentRect = gridContainer.GetComponent<RectTransform>();
 
-        // ½ºÅ©·Ñ À§Ä¡ ÃÊ±âÈ­
         if (gridScrollRect != null)
         {
             gridScrollRect.verticalNormalizedPosition = 1f;
             gridScrollRect.horizontalNormalizedPosition = 0.5f;
 
-            // Viewport Å©±â È®ÀÎ ¹× Á¶Á¤
             RectTransform viewport = gridScrollRect.viewport;
             if (viewport != null)
             {
@@ -416,33 +560,25 @@ public class LevelDesigner : MonoBehaviour
             return;
         }
 
-        // ÇöÀç ÀÛ¾÷ »óÅÂ ÀúÀå
         SaveDesignerState();
-
-        // Å×½ºÆ®¿ë ½ºÅ×ÀÌÁö µ¥ÀÌÅÍ »ı¼º
         CreateTestStageData();
-
-        // °ÔÀÓ ¾ÀÀ¸·Î ÀüÈ¯
         SceneManager.LoadScene("StageModeScene");
     }
 
     void CreateTestStageData()
     {
-        // ÀÔ·Â°ª °¡Á®¿À±â
         int targetScore = defaultTargetScore;
         int maxMoves = defaultMaxMoves;
 
         if (!int.TryParse(targetScoreInput.text, out targetScore)) targetScore = defaultTargetScore;
         if (!int.TryParse(maxMovesInput.text, out maxMoves)) maxMoves = defaultMaxMoves;
 
-        // ÀÓ½Ã ½ºÅ×ÀÌÁö µ¥ÀÌÅÍ¸¦ PlayerPrefs¿¡ ÀúÀå
         PlayerPrefs.SetInt("TestLevel_Width", currentWidth);
         PlayerPrefs.SetInt("TestLevel_Height", currentHeight);
         PlayerPrefs.SetInt("TestLevel_TargetScore", targetScore);
         PlayerPrefs.SetInt("TestLevel_MaxMoves", maxMoves);
         PlayerPrefs.SetFloat("TestLevel_CellSize", currentCellSize);
 
-        // ±×¸®µå ÆĞÅÏ ÀúÀå
         string gridPattern = "";
         for (int y = 0; y < currentHeight; y++)
         {
@@ -463,21 +599,16 @@ public class LevelDesigner : MonoBehaviour
 
     void BackToMenu()
     {
-        // ÇöÀç ÀÛ¾÷ »óÅÂ ÀúÀå
         SaveDesignerState();
-
-        // ¸ŞÀÎ ¸Ş´º·Î µ¹¾Æ°¡±â
         SceneManager.LoadScene("LobbyScene");
     }
 
-    // ·¹º§ µğÀÚÀÌ³Ê »óÅÂ ÀúÀå
     void SaveDesignerState()
     {
         if (designerGrid == null) return;
 
         try
         {
-            // ±âº» ¼³Á¤ ÀúÀå
             PlayerPrefs.SetInt("DesignerState_Width", currentWidth);
             PlayerPrefs.SetInt("DesignerState_Height", currentHeight);
             PlayerPrefs.SetFloat("DesignerState_CellSize", currentCellSize);
@@ -485,7 +616,6 @@ public class LevelDesigner : MonoBehaviour
             PlayerPrefs.SetString("DesignerState_MaxMoves", maxMovesInput.text);
             PlayerPrefs.SetInt("DesignerState_SelectedBlockType", selectedBlockType);
 
-            // ±×¸®µå ÆĞÅÏ ÀúÀå
             string gridPattern = "";
             for (int y = 0; y < currentHeight; y++)
             {
@@ -498,7 +628,7 @@ public class LevelDesigner : MonoBehaviour
             }
 
             PlayerPrefs.SetString("DesignerState_Pattern", gridPattern);
-            PlayerPrefs.SetInt("DesignerState_HasData", 1); // µ¥ÀÌÅÍ Á¸Àç ÇÃ·¡±×
+            PlayerPrefs.SetInt("DesignerState_HasData", 1);
 
             Debug.Log("Designer state saved successfully");
         }
@@ -508,19 +638,16 @@ public class LevelDesigner : MonoBehaviour
         }
     }
 
-    // ·¹º§ µğÀÚÀÌ³Ê »óÅÂ º¹¿ø
     void LoadDesignerState()
     {
         try
         {
-            // ÀúÀåµÈ µ¥ÀÌÅÍ°¡ ÀÖ´ÂÁö È®ÀÎ
             if (PlayerPrefs.GetInt("DesignerState_HasData", 0) == 0)
             {
                 Debug.Log("No saved designer state found");
                 return;
             }
 
-            // ±âº» ¼³Á¤ º¹¿ø
             int savedWidth = PlayerPrefs.GetInt("DesignerState_Width", defaultWidth);
             int savedHeight = PlayerPrefs.GetInt("DesignerState_Height", defaultHeight);
             float savedCellSize = PlayerPrefs.GetFloat("DesignerState_CellSize", defaultCellSize);
@@ -529,25 +656,20 @@ public class LevelDesigner : MonoBehaviour
             int savedSelectedBlockType = PlayerPrefs.GetInt("DesignerState_SelectedBlockType", 0);
             string savedPattern = PlayerPrefs.GetString("DesignerState_Pattern", "");
 
-            // UI¿¡ °ª ¼³Á¤
             widthInput.text = savedWidth.ToString();
             heightInput.text = savedHeight.ToString();
             cellSizeInput.text = savedCellSize.ToString();
             targetScoreInput.text = savedTargetScore;
             maxMovesInput.text = savedMaxMoves;
 
-            // ºí·Ï Å¸ÀÔ ¼±ÅÃ º¹¿ø
             SelectBlockType(savedSelectedBlockType);
 
-            // ÀúÀåµÈ ±×¸®µå ¼³Á¤À¸·Î ±×¸®µå »ı¼º
             currentWidth = savedWidth;
             currentHeight = savedHeight;
             currentCellSize = savedCellSize;
 
-            // ±×¸®µå »ı¼º
             GenerateDesignerGrid();
 
-            // ÆĞÅÏ º¹¿ø
             if (!string.IsNullOrEmpty(savedPattern))
             {
                 RestoreGridPattern(savedPattern);
@@ -561,7 +683,6 @@ public class LevelDesigner : MonoBehaviour
         }
     }
 
-    // ±×¸®µå ÆĞÅÏ º¹¿ø
     void RestoreGridPattern(string pattern)
     {
         try
@@ -595,7 +716,6 @@ public class LevelDesigner : MonoBehaviour
         }
     }
 
-    // ÀúÀåµÈ »óÅÂ »èÁ¦ (»õ·Î ½ÃÀÛÇÒ ¶§)
     public void ClearSavedState()
     {
         PlayerPrefs.DeleteKey("DesignerState_Width");
@@ -610,7 +730,7 @@ public class LevelDesigner : MonoBehaviour
         Debug.Log("Saved designer state cleared");
     }
 
-    // ÀÔ·Â °ËÁõ ¸Ş¼­µåµé
+    // ì…ë ¥ ê²€ì¦ ë©”ì„œë“œë“¤
     void ValidateWidthInput(string value)
     {
         if (int.TryParse(value, out int width))
@@ -662,13 +782,13 @@ public class LevelDesigner : MonoBehaviour
     }
 }
 
-// µğÀÚÀÌ³Ê ±×¸®µå µ¥ÀÌÅÍ Å¬·¡½º
+// ë””ìì´ë„ˆ ê·¸ë¦¬ë“œ ë°ì´í„° í´ë˜ìŠ¤
 [System.Serializable]
 public class DesignerBlock
 {
     public int x;
     public int y;
-    public int blockType; // 0: ºó ºí·Ï, 1-5: °¢ »ö»ó ºí·Ï
+    public int blockType; // 0: ë¹ˆ ë¸”ë¡, 1-5: ê° ìƒ‰ìƒ ë¸”ë¡
 
     public DesignerBlock(int x, int y, int blockType)
     {
