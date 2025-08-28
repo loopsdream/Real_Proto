@@ -1,31 +1,20 @@
-// FirebaseDataManager.cs - 실제 Firebase SDK 연동 + 시뮬레이션 호환 버전
+// FirebaseDataManager.cs - 래퍼 클래스를 사용하도록 최종 수정
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
-using Firebase.Database;
-using Firebase.Extensions;
 
 public class FirebaseDataManager : MonoBehaviour
 {
     public static FirebaseDataManager Instance { get; private set; }
 
-    [Header("Sync Settings")]
+    [Header("Settings")]
     public bool autoSyncEnabled = true;
-    public float autoSyncInterval = 30f; // 30초마다 자동 동기화
-    public bool syncOnGameEvent = true; // 게임 이벤트시 즉시 동기화
-
-    [Header("Debug")]
-    public bool enableDebugLogs = true;
-
-    private DatabaseReference userDataRef;
-    private string currentUserId;
+    public float autoSyncInterval = 30f;
+    
     private bool isConnected = false;
-    private float lastSyncTime;
-    private bool useRealFirebase = false;
+    private float lastSyncTime = 0f;
+    private FirebaseUserDataWrapper dataWrapper;
 
     // 이벤트
-    public event Action<UserData> OnUserDataLoaded;
     public event Action<bool> OnSyncCompleted;
     public event Action<string> OnSyncError;
 
@@ -44,24 +33,18 @@ public class FirebaseDataManager : MonoBehaviour
 
     void Start()
     {
-        // RealFirebaseManager가 있으면 실제 Firebase 사용
-        if (RealFirebaseManager.Instance != null)
+        // CleanFirebaseManager 이벤트 구독
+        if (CleanFirebaseManager.Instance != null)
         {
-            useRealFirebase = true;
-            RealFirebaseManager.Instance.OnUserSignedIn += OnUserSignedIn;
-            RealFirebaseManager.Instance.OnUserSignedOut += OnUserSignedOut;
-        }
-        // SafeFirebaseManager가 있으면 시뮬레이션 사용
-        else if (SafeFirebaseManager.Instance != null)
-        {
-            useRealFirebase = false;
-            SafeFirebaseManager.Instance.OnUserSignedIn += OnUserSignedInSimulation;
-            SafeFirebaseManager.Instance.OnUserSignedOut += OnUserSignedOut;
+            CleanFirebaseManager.Instance.OnFirebaseReady += OnFirebaseReady;
+            CleanFirebaseManager.Instance.OnUserSignedIn += OnUserSignedIn;
+            CleanFirebaseManager.Instance.OnError += OnFirebaseError;
         }
 
         // UserDataManager 이벤트 구독
         if (UserDataManager.Instance != null)
         {
+            dataWrapper = new FirebaseUserDataWrapper(UserDataManager.Instance);
             UserDataManager.Instance.OnDataChanged += OnLocalDataChanged;
         }
     }
@@ -69,570 +52,274 @@ public class FirebaseDataManager : MonoBehaviour
     void Update()
     {
         // 자동 동기화
-        if (autoSyncEnabled && isConnected && 
-            Time.time - lastSyncTime >= autoSyncInterval)
+        if (autoSyncEnabled && isConnected && Time.time - lastSyncTime >= autoSyncInterval)
         {
-            if (useRealFirebase)
-            {
-                _ = SyncUserDataReal();
-            }
-            else
-            {
-                _ = SyncUserDataSimulation();
-            }
+            SyncUserData();
         }
     }
 
-    #region Firebase 연결 관리
+    #region Firebase 이벤트 처리
+
+    void OnFirebaseReady()
+    {
+        Debug.Log("[DataManager] Firebase 준비 완료");
+    }
 
     void OnUserSignedIn(bool success)
     {
-        if (!success || RealFirebaseManager.Instance == null) return;
-
-        currentUserId = RealFirebaseManager.Instance.CurrentUserId;
-        
-        if (RealFirebaseManager.Instance.HasDatabase())
+        if (success && CleanFirebaseManager.Instance != null)
         {
-            userDataRef = RealFirebaseManager.Instance.GetDatabaseReference($"users/{currentUserId}");
             isConnected = true;
-
-            LogDebug($"🔗 실제 Firebase 데이터 매니저 연결: {currentUserId}");
-
-            // 사용자 데이터 로드
-            _ = LoadUserDataReal();
+            Debug.Log("[DataManager] ✅ Firebase 연결됨");
+            
+            // 로그인 시 데이터 로드
+            LoadUserData();
         }
         else
         {
-            LogDebug("⚠️ Database 없이 Auth만 연결됨");
+            isConnected = false;
+            Debug.Log("[DataManager] ❌ Firebase 연결 해제");
         }
     }
 
-    void OnUserSignedInSimulation(bool success)
+    void OnFirebaseError(string error)
     {
-        if (!success) return;
-
-        currentUserId = "simulation_user_" + UnityEngine.Random.Range(1000, 9999);
-        isConnected = true;
-
-        LogDebug($"🔗 시뮬레이션 Firebase 데이터 매니저 연결: {currentUserId}");
-
-        // 시뮬레이션 데이터 로드
-        _ = LoadUserDataSimulation();
+        Debug.LogError($"[DataManager] Firebase 오류: {error}");
+        OnSyncError?.Invoke(error);
     }
 
-    void OnUserSignedOut()
+    void OnLocalDataChanged(string dataType)
     {
-        currentUserId = null;
-        userDataRef = null;
-        isConnected = false;
-
-        LogDebug("🔌 Firebase 데이터 매니저 연결 해제");
+        // 로컬 데이터 변경 시 자동 저장 (연결된 경우)
+        if (isConnected)
+        {
+            Debug.Log($"[DataManager] 로컬 데이터 변경 감지: {dataType}");
+            SyncUserData();
+        }
     }
 
     #endregion
 
-    #region 실제 Firebase 데이터 처리
+    #region 데이터 동기화
 
     /// <summary>
-    /// 실제 Firebase에서 사용자 데이터 로드
+    /// 사용자 데이터 동기화 (저장)
     /// </summary>
-    public async Task<bool> LoadUserDataReal()
+    public void SyncUserData()
     {
-        if (!isConnected || userDataRef == null)
+        if (!isConnected || dataWrapper == null || CleanFirebaseManager.Instance == null)
         {
-            LogDebug("❌ Firebase 연결되지 않음 - 로컬 데이터 사용");
-            return false;
+            Debug.LogWarning("[DataManager] ⚠️ 동기화 불가 - 연결 안됨 또는 매니저 없음");
+            return;
         }
 
         try
         {
-            LogDebug("📥 실제 클라우드에서 사용자 데이터 로드 중...");
+            var userData = dataWrapper.GetCurrentUserData();
+            string userId = CleanFirebaseManager.Instance.CurrentUserId;
 
-            var snapshot = await userDataRef.GetValueAsync();
-            
-            if (snapshot.Exists && !string.IsNullOrEmpty(snapshot.GetRawJsonValue()))
+            if (string.IsNullOrEmpty(userId))
             {
-                string json = snapshot.GetRawJsonValue();
-                
-                // JSON 데이터 파싱 및 병합
-                ParseAndMergeCloudData(json);
-                
-                OnUserDataLoaded?.Invoke(null);
-                LogDebug("✅ 실제 사용자 데이터 로드 완료");
-                return true;
+                Debug.LogWarning("[DataManager] ⚠️ 사용자 ID가 없음");
+                return;
             }
-            else
-            {
-                LogDebug("📤 클라우드 데이터 없음 - 로컬 데이터를 클라우드에 업로드");
-                await SaveUserDataReal();
-                return true;
-            }
-        }
-        catch (Exception ex)
-        {
-            LogError($"❌ 실제 사용자 데이터 로드 실패: {ex.Message}");
-            OnSyncError?.Invoke($"데이터 로드 실패: {ex.Message}");
-            return false;
-        }
-    }
 
-    /// <summary>
-    /// 실제 Firebase에 사용자 데이터 저장
-    /// </summary>
-    public async Task<bool> SaveUserDataReal()
-    {
-        if (!isConnected || userDataRef == null)
-        {
-            LogDebug("❌ Firebase 연결되지 않음 - 로컬에만 저장");
-            return false;
-        }
-
-        try
-        {
-            // 로컬 데이터를 Firebase 형식으로 변환
-            var currentData = GetCurrentUserDataForFirebase();
-
-            string json = JsonUtility.ToJson(currentData, true);
-            
-            LogDebug("📤 실제 클라우드에 사용자 데이터 저장 중...");
-            await userDataRef.SetRawJsonValueAsync(json);
+            Debug.Log("[DataManager] 📤 데이터 동기화 중...");
+            CleanFirebaseManager.Instance.SaveUserData(userId, userData);
             
             lastSyncTime = Time.time;
             OnSyncCompleted?.Invoke(true);
-            LogDebug("✅ 실제 사용자 데이터 저장 완료");
-            return true;
         }
         catch (Exception ex)
         {
-            LogError($"❌ 실제 사용자 데이터 저장 실패: {ex.Message}");
-            OnSyncError?.Invoke($"데이터 저장 실패: {ex.Message}");
+            Debug.LogError($"[DataManager] ❌ 동기화 실패: {ex.Message}");
+            OnSyncError?.Invoke($"동기화 실패: {ex.Message}");
             OnSyncCompleted?.Invoke(false);
-            return false;
         }
     }
 
     /// <summary>
-    /// 실제 Firebase 양방향 데이터 동기화
+    /// 사용자 데이터 로드
     /// </summary>
-    public async Task<bool> SyncUserDataReal()
+    public void LoadUserData()
     {
-        if (!isConnected) return false;
-
-        LogDebug("🔄 실제 데이터 동기화 시작...");
-        
-        bool loadSuccess = await LoadUserDataReal();
-        if (loadSuccess)
+        if (!isConnected || dataWrapper == null || CleanFirebaseManager.Instance == null)
         {
-            bool saveSuccess = await SaveUserDataReal();
-            return saveSuccess;
+            Debug.LogWarning("[DataManager] ⚠️ 로드 불가 - 연결 안됨 또는 매니저 없음");
+            return;
         }
-        
-        return false;
-    }
 
-    #endregion
-
-    #region 시뮬레이션 데이터 처리
-
-    /// <summary>
-    /// 시뮬레이션 사용자 데이터 로드
-    /// </summary>
-    public async Task<bool> LoadUserDataSimulation()
-    {
-        LogDebug("📥 시뮬레이션 데이터 로드 중...");
-        
-        // 시뮬레이션 지연
-        await Task.Delay(500);
-        
-        // PlayerPrefs에서 시뮬레이션 데이터 로드
-        string savedData = PlayerPrefs.GetString($"SimulationUserData_{currentUserId}", "");
-        
-        if (!string.IsNullOrEmpty(savedData))
-        {
-            ParseAndMergeCloudData(savedData);
-            OnUserDataLoaded?.Invoke(null);
-            LogDebug("✅ 시뮬레이션 데이터 로드 완료");
-        }
-        else
-        {
-            LogDebug("📤 시뮬레이션 데이터 없음 - 로컬 데이터를 저장");
-            await SaveUserDataSimulation();
-        }
-        
-        return true;
-    }
-
-    /// <summary>
-    /// 시뮬레이션 사용자 데이터 저장
-    /// </summary>
-    public async Task<bool> SaveUserDataSimulation()
-    {
-        LogDebug("📤 시뮬레이션 데이터 저장 중...");
-        
-        // 시뮬레이션 지연
-        await Task.Delay(300);
-        
-        // 로컬 데이터를 PlayerPrefs에 저장
-        var currentData = GetCurrentUserDataForFirebase();
-        string json = JsonUtility.ToJson(currentData, true);
-        
-        PlayerPrefs.SetString($"SimulationUserData_{currentUserId}", json);
-        PlayerPrefs.Save();
-        
-        lastSyncTime = Time.time;
-        OnSyncCompleted?.Invoke(true);
-        LogDebug("✅ 시뮬레이션 데이터 저장 완료");
-        return true;
-    }
-
-    /// <summary>
-    /// 시뮬레이션 양방향 데이터 동기화
-    /// </summary>
-    public async Task<bool> SyncUserDataSimulation()
-    {
-        LogDebug("🔄 시뮬레이션 데이터 동기화 시작...");
-        
-        bool loadSuccess = await LoadUserDataSimulation();
-        if (loadSuccess)
-        {
-            bool saveSuccess = await SaveUserDataSimulation();
-            return saveSuccess;
-        }
-        
-        return false;
-    }
-
-    #endregion
-
-    #region 데이터 변환 및 병합
-
-    void ParseAndMergeCloudData(string json)
-    {
         try
         {
-            var cloudData = JsonUtility.FromJson<FirebaseUserData>(json);
-            
-            if (cloudData != null && UserDataManager.Instance != null)
+            string userId = CleanFirebaseManager.Instance.CurrentUserId;
+
+            if (string.IsNullOrEmpty(userId))
             {
-                var manager = UserDataManager.Instance;
-                
-                // 재화 (더 많은 값 사용)
-                int currentCoins = manager.GetGameCoins();
-                int currentDiamonds = manager.GetDiamonds();
-                int currentEnergy = manager.GetEnergy();
-                
-                if (cloudData.coins > currentCoins)
-                {
-                    manager.AddGameCoins(cloudData.coins - currentCoins);
-                }
-                
-                if (cloudData.diamonds > currentDiamonds)
-                {
-                    manager.AddDiamonds(cloudData.diamonds - currentDiamonds);
-                }
-                
-                if (cloudData.energy > currentEnergy)
-                {
-                    manager.AddEnergy(cloudData.energy - currentEnergy);
-                }
-                
-                // 진행도 (더 높은 값 사용)
-                if (cloudData.currentStage > manager.GetCurrentStage())
-                {
-                    manager.SetCurrentStage(cloudData.currentStage);
-                }
-                
-                LogDebug("🔄 클라우드 데이터 병합 완료");
+                Debug.LogWarning("[DataManager] ⚠️ 사용자 ID가 없음");
+                return;
             }
+
+            Debug.Log("[DataManager] 📥 데이터 로드 중...");
+            CleanFirebaseManager.Instance.LoadUserData(userId, OnDataLoaded);
         }
         catch (Exception ex)
         {
-            LogError($"❌ 클라우드 데이터 파싱 실패: {ex.Message}");
+            Debug.LogError($"[DataManager] ❌ 로드 실패: {ex.Message}");
+            OnSyncError?.Invoke($"로드 실패: {ex.Message}");
         }
     }
 
-    FirebaseUserData GetCurrentUserDataForFirebase()
+    void OnDataLoaded(string jsonData)
     {
-        if (UserDataManager.Instance == null)
+        if (dataWrapper == null) return;
+
+        try
         {
-            return new FirebaseUserData(); // 기본값 반환
-        }
-
-        var manager = UserDataManager.Instance;
-        string userEmail = "";
-        string displayName = "Player";
-        
-        if (useRealFirebase && RealFirebaseManager.Instance != null)
-        {
-            userEmail = RealFirebaseManager.Instance.CurrentUserEmail;
-            displayName = RealFirebaseManager.Instance.CurrentUser?.DisplayName ?? "Player";
-        }
-        
-        return new FirebaseUserData
-        {
-            userId = currentUserId,
-            email = userEmail,
-            displayName = displayName,
-            lastLoginAt = DateTime.UtcNow.ToBinary(),
-            
-            // 게임 재화
-            coins = manager.GetGameCoins(),
-            diamonds = manager.GetDiamonds(),
-            energy = manager.GetEnergy(),
-            lastEnergyTime = DateTime.UtcNow.ToBinary(),
-            
-            // 진행도
-            currentStage = manager.GetCurrentStage(),
-            totalScore = GetTotalScore(manager)
-        };
-    }
-
-    long GetTotalScore(UserDataManager manager)
-    {
-        return manager.GetCurrentStage() * 1000; // 예시
-    }
-
-    #endregion
-
-    #region 실시간 동기화
-
-    /// <summary>
-    /// 로컬 데이터 변경 시 호출
-    /// </summary>
-    void OnLocalDataChanged(string dataType)
-    {
-        if (!syncOnGameEvent || !isConnected) return;
-
-        LogDebug($"📝 로컬 데이터 변경 감지: {dataType}");
-        
-        // 중요한 데이터는 즉시 동기화
-        if (IsImportantData(dataType))
-        {
-            if (useRealFirebase)
+            if (string.IsNullOrEmpty(jsonData))
             {
-                _ = SaveUserDataReal();
+                Debug.Log("[DataManager] 📝 클라우드 데이터 없음 - 새 사용자로 초기화");
+                SyncUserData(); // 현재 로컬 데이터를 클라우드에 저장
+                return;
+            }
+
+            // JSON 데이터를 UserData로 변환
+            var cloudData = JsonUtility.FromJson<UserData>(jsonData);
+            
+            if (cloudData != null)
+            {
+                Debug.Log("[DataManager] ✅ 클라우드 데이터 로드 성공");
+                
+                // 로컬 데이터와 병합/업데이트
+                MergeCloudData(cloudData);
             }
             else
             {
-                _ = SaveUserDataSimulation();
+                Debug.LogWarning("[DataManager] ⚠️ 클라우드 데이터 파싱 실패");
+                SyncUserData(); // 파싱 실패시 로컬 데이터로 덮어쓰기
             }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[DataManager] ❌ 데이터 처리 실패: {ex.Message}");
+            OnSyncError?.Invoke($"데이터 처리 실패: {ex.Message}");
         }
     }
 
-    bool IsImportantData(string dataType)
+    void MergeCloudData(UserData cloudData)
     {
-        return dataType switch
+        if (dataWrapper == null) return;
+
+        var localData = dataWrapper.GetCurrentUserData();
+        
+        // 간단한 병합 로직: 더 높은 값 선택
+        var mergedData = new UserData
         {
-            "coins" => true,
-            "diamonds" => true,
-            "stage_progress" => true,
-            "infinite_best" => true,
-            _ => false
+            playerInfo = new PlayerInfo
+            {
+                playerName = !string.IsNullOrEmpty(cloudData.playerInfo.playerName) ? 
+                            cloudData.playerInfo.playerName : localData.playerInfo.playerName,
+                level = Math.Max(cloudData.playerInfo.level, localData.playerInfo.level),
+                currentStage = Math.Max(cloudData.playerInfo.currentStage, localData.playerInfo.currentStage),
+                lastLoginTime = DateTime.UtcNow.ToBinary().ToString()
+            },
+            currencies = new Currencies
+            {
+                gameCoins = Math.Max(cloudData.currencies.gameCoins, localData.currencies.gameCoins),
+                diamonds = Math.Max(cloudData.currencies.diamonds, localData.currencies.diamonds),
+                energy = Math.Max(cloudData.currencies.energy, localData.currencies.energy),
+                maxEnergy = Math.Max(cloudData.currencies.maxEnergy, localData.currencies.maxEnergy),
+                lastEnergyTime = cloudData.currencies.lastEnergyTime
+            },
+            stageProgress = cloudData.stageProgress ?? localData.stageProgress,
+            gameStats = MergeGameStats(cloudData.gameStats, localData.gameStats),
+            settings = cloudData.settings ?? localData.settings
+        };
+
+        // 병합된 데이터를 로컬에 적용
+        dataWrapper.LoadUserData(mergedData);
+        
+        Debug.Log("[DataManager] ✅ 클라우드 데이터 병합 완료");
+    }
+
+    GameStats MergeGameStats(GameStats cloudStats, GameStats localStats)
+    {
+        if (cloudStats == null && localStats == null) return new GameStats();
+        if (cloudStats == null) return localStats;
+        if (localStats == null) return cloudStats;
+
+        return new GameStats
+        {
+            infiniteBestScore = Math.Max(cloudStats.infiniteBestScore, localStats.infiniteBestScore),
+            infiniteBestTime = Math.Max(cloudStats.infiniteBestTime, localStats.infiniteBestTime),
+            totalGamesPlayed = Math.Max(cloudStats.totalGamesPlayed, localStats.totalGamesPlayed),
+            totalBlocksDestroyed = Math.Max(cloudStats.totalBlocksDestroyed, localStats.totalBlocksDestroyed),
+            totalPlayTime = Math.Max(cloudStats.totalPlayTime, localStats.totalPlayTime),
+            totalStagesCleared = Math.Max(cloudStats.totalStagesCleared, localStats.totalStagesCleared),
+            totalScoreEarned = Math.Max(cloudStats.totalScoreEarned, localStats.totalScoreEarned),
+            consecutiveWins = Math.Max(cloudStats.consecutiveWins, localStats.consecutiveWins),
+            maxConsecutiveWins = Math.Max(cloudStats.maxConsecutiveWins, localStats.maxConsecutiveWins),
+            firstPlayDate = string.IsNullOrEmpty(cloudStats.firstPlayDate) ? localStats.firstPlayDate : cloudStats.firstPlayDate,
+            lastPlayDate = string.IsNullOrEmpty(localStats.lastPlayDate) ? cloudStats.lastPlayDate : localStats.lastPlayDate
         };
     }
 
     #endregion
 
-    #region 리더보드 (실제 Firebase만 지원)
+    #region 리더보드
 
     /// <summary>
-    /// 리더보드에 점수 업로드
+    /// 리더보드 업데이트
     /// </summary>
-    public async Task<bool> UploadLeaderboardScore(int score, string mode = "infinite")
+    public void UpdateLeaderboard(string leaderboardType, int score, string displayName = "")
     {
-        if (!isConnected || !useRealFirebase || RealFirebaseManager.Instance == null) 
+        if (!isConnected || CleanFirebaseManager.Instance == null)
         {
-            LogDebug("⚠️ 리더보드는 실제 Firebase 연결 시만 지원");
-            return false;
+            Debug.LogWarning("[DataManager] ⚠️ 리더보드 업데이트 불가 - 연결 안됨");
+            return;
         }
 
-        try
+        if (string.IsNullOrEmpty(displayName))
         {
-            var leaderboardRef = RealFirebaseManager.Instance.GetDatabaseReference($"leaderboards/{mode}");
-            
-            var scoreData = new LeaderboardData
-            {
-                userId = currentUserId,
-                displayName = RealFirebaseManager.Instance.CurrentUser?.DisplayName ?? "Anonymous",
-                score = score,
-                timestamp = DateTime.UtcNow.Ticks
-            };
-
-            await leaderboardRef.Child(currentUserId).SetRawJsonValueAsync(JsonUtility.ToJson(scoreData));
-            LogDebug($"🏆 리더보드 점수 업로드: {score}");
-            return true;
-        }
-        catch (Exception ex)
-        {
-            LogError($"❌ 리더보드 업로드 실패: {ex.Message}");
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// 리더보드 데이터 가져오기
-    /// </summary>
-    public async Task<List<LeaderboardEntry>> GetLeaderboard(string mode = "infinite", int limit = 100)
-    {
-        if (!isConnected || !useRealFirebase || RealFirebaseManager.Instance == null) 
-        {
-            LogDebug("⚠️ 리더보드는 실제 Firebase 연결 시만 지원");
-            return new List<LeaderboardEntry>();
+            displayName = "Player";
         }
 
-        try
-        {
-            var leaderboardRef = RealFirebaseManager.Instance.GetDatabaseReference($"leaderboards/{mode}");
-            var query = leaderboardRef.OrderByChild("score").LimitToLast(limit);
-            
-            var snapshot = await query.GetValueAsync();
-            var entries = new List<LeaderboardEntry>();
-
-            foreach (var child in snapshot.Children)
-            {
-                if (!string.IsNullOrEmpty(child.GetRawJsonValue()))
-                {
-                    var data = JsonUtility.FromJson<LeaderboardData>(child.GetRawJsonValue());
-                    entries.Add(new LeaderboardEntry
-                    {
-                        rank = 0, // 나중에 계산
-                        userId = data.userId,
-                        displayName = data.displayName,
-                        score = data.score,
-                        timestamp = data.timestamp
-                    });
-                }
-            }
-
-            // 점수순 정렬 및 순위 설정
-            entries.Sort((a, b) => b.score.CompareTo(a.score));
-            for (int i = 0; i < entries.Count; i++)
-            {
-                entries[i].rank = i + 1;
-            }
-
-            LogDebug($"🏆 리더보드 로드 완료: {entries.Count}개 항목");
-            return entries;
-        }
-        catch (Exception ex)
-        {
-            LogError($"❌ 리더보드 로드 실패: {ex.Message}");
-            return new List<LeaderboardEntry>();
-        }
+        Debug.Log($"[DataManager] 🏆 리더보드 업데이트: {leaderboardType} - {score}점");
+        CleanFirebaseManager.Instance.UpdateLeaderboard(leaderboardType, score, displayName);
     }
 
     #endregion
 
-    #region 유틸리티
+    #region 공개 API
 
-    void LogDebug(string message)
-    {
-        if (enableDebugLogs)
-        {
-            Debug.Log($"[FirebaseDataManager] {message}");
-        }
-    }
-
-    void LogError(string message)
-    {
-        Debug.LogError($"[FirebaseDataManager] {message}");
-    }
-
-    /// <summary>
-    /// 강제 동기화 (공개 메서드)
-    /// </summary>
+    public bool IsConnected => isConnected;
+    
     public void ForceSyncNow()
     {
         if (isConnected)
         {
-            if (useRealFirebase)
-            {
-                _ = SyncUserDataReal();
-            }
-            else
-            {
-                _ = SyncUserDataSimulation();
-            }
+            SyncUserData();
+        }
+        else
+        {
+            Debug.LogWarning("[DataManager] ⚠️ 강제 동기화 불가 - 연결 안됨");
         }
     }
-
-    /// <summary>
-    /// 연결 상태 확인
-    /// </summary>
-    public bool IsConnected => isConnected;
 
     #endregion
 
     void OnDestroy()
     {
         // 이벤트 구독 해제
-        if (RealFirebaseManager.Instance != null)
+        if (CleanFirebaseManager.Instance != null)
         {
-            RealFirebaseManager.Instance.OnUserSignedIn -= OnUserSignedIn;
-            RealFirebaseManager.Instance.OnUserSignedOut -= OnUserSignedOut;
-        }
-
-        if (SafeFirebaseManager.Instance != null)
-        {
-            SafeFirebaseManager.Instance.OnUserSignedIn -= OnUserSignedInSimulation;
-            SafeFirebaseManager.Instance.OnUserSignedOut -= OnUserSignedOut;
+            CleanFirebaseManager.Instance.OnFirebaseReady -= OnFirebaseReady;
+            CleanFirebaseManager.Instance.OnUserSignedIn -= OnUserSignedIn;
+            CleanFirebaseManager.Instance.OnError -= OnFirebaseError;
         }
 
         if (UserDataManager.Instance != null)
         {
             UserDataManager.Instance.OnDataChanged -= OnLocalDataChanged;
         }
-    }
-}
-
-/// <summary>
-/// Firebase용 간소화된 사용자 데이터 구조
-/// </summary>
-[System.Serializable]
-public class FirebaseUserData
-{
-    public string userId;
-    public string email;
-    public string displayName;
-    public long lastLoginAt;
-    
-    // 게임 재화
-    public int coins;
-    public int diamonds;
-    public int energy;
-    public long lastEnergyTime;
-    
-    // 진행도
-    public int currentStage;
-    public long totalScore;
-}
-
-/// <summary>
-/// 리더보드 데이터 구조 (Firebase용)
-/// </summary>
-[System.Serializable]
-public class LeaderboardData
-{
-    public string userId;
-    public string displayName;
-    public int score;
-    public long timestamp;
-}
-
-/// <summary>
-/// 리더보드 엔트리 (클라이언트용)
-/// </summary>
-[System.Serializable]
-public class LeaderboardEntry
-{
-    public int rank;
-    public string userId;
-    public string displayName;
-    public int score;
-    public long timestamp;
-    
-    public DateTime GetDateTime()
-    {
-        return new DateTime(timestamp);
     }
 }

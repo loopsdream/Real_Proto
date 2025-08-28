@@ -1,4 +1,4 @@
-// AudioDiagnostics.cs - 상세한 오디오 진단 도구
+// AudioDiagnostics.cs - Unity 6.0 호환 버전 (FindObjectsOfType 수정)
 using UnityEngine;
 using UnityEngine.Audio;
 using System.Collections;
@@ -151,7 +151,8 @@ public class AudioDiagnostics : MonoBehaviour
     [ContextMenu("Check Audio Listener")]
     public void CheckAudioListener()
     {
-        AudioListener[] listeners = FindObjectsOfType<AudioListener>();
+        // Unity 6.0 호환: FindObjectsByType 사용 (정렬 불필요하므로 None 모드)
+        AudioListener[] listeners = FindObjectsByType<AudioListener>(FindObjectsSortMode.None);
         Debug.Log($"AudioListener count: {listeners.Length}");
         foreach (var listener in listeners)
         {

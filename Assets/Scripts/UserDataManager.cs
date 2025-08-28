@@ -587,10 +587,12 @@ public class UserDataManager : MonoBehaviour
             OnDataChanged?.Invoke("infinite_best");
             SaveUserData();
 
-            // Firebase에 리더보드 업로드
+            // Firebase에 리더보드 업로드 - 수정된 메서드 호출
             if (firebaseIntegrationEnabled && FirebaseDataManager.Instance != null)
             {
-                _ = FirebaseDataManager.Instance.UploadLeaderboardScore((int)score, "infinite");
+                string playerName = !string.IsNullOrEmpty(currentUserData.playerInfo.playerName) ? 
+                                   currentUserData.playerInfo.playerName : "Player";
+                FirebaseDataManager.Instance.UpdateLeaderboard("infinite", (int)score, playerName);
             }
         }
     }

@@ -1760,18 +1760,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b62c268a57791e41a2f9e3b0fa0d92e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  titleText: {fileID: 1505792831}
+  loginButton: {fileID: 759042913}
   versionText: {fileID: 598231337}
-  startButton: {fileID: 759042913}
-  loginButton: {fileID: 1970980629}
   loadingPanel: {fileID: 842022902}
-  progressBar: {fileID: 464569552}
-  statusText: {fileID: 1532646983}
-  progressText: {fileID: 1964236038}
+  loadingProgressBar: {fileID: 0}
+  loadingStatusText: {fileID: 0}
+  firebaseTimeout: 10
   gameVersion: 0.1.0
-  minLoadingTime: 2
-  titleCanvasGroup: {fileID: 287933981}
-  titleFadeInDuration: 1.5
 --- !u!4 &1637549098
 Transform:
   m_ObjectHideFlags: 0
@@ -2156,7 +2151,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1970980629
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2203,7 +2198,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1637549097}
         m_TargetAssemblyTypeName: TitleSceneManager, Assembly-CSharp
-        m_MethodName: OnLoginButtonClicked
+        m_MethodName: 
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

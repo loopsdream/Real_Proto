@@ -1,173 +1,144 @@
-// TitleSceneManager.cs - Firebase 타임아웃 처리 포함 버전
+// TitleSceneManager.cs - Firebase 비동기 로그인 지원 버전
 using System.Collections;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 
 public class TitleSceneManager : MonoBehaviour
 {
-    [Header("Title UI")]
-    public TextMeshProUGUI titleText;
-    public TextMeshProUGUI versionText;
-    public Button startButton;
+    [Header("UI 컴포넌트들")]
     public Button loginButton;
+    public TextMeshProUGUI versionText;
     public GameObject loadingPanel;
-    
-    [Header("Loading UI")]
-    public Slider progressBar;
-    public TextMeshProUGUI statusText;
-    public TextMeshProUGUI progressText;
-    
-    [Header("Settings")]
+    public Slider loadingProgressBar;
+    public TextMeshProUGUI loadingStatusText;
+
+    [Header("로딩 설정")]
+    public float firebaseTimeout = 8f;
+    public float loginTimeout = 15f;      // 로그인 타임아웃 시간
     public string gameVersion = "1.0.0";
-    public float minLoadingTime = 2.0f;
-    public float firebaseTimeout = 10f;
-    
-    [Header("Animation")]
-    public CanvasGroup titleCanvasGroup;
-    public float titleFadeInDuration = 1.5f;
-    
+
     private bool isInitialized = false;
-    private bool isLoading = false;
     private bool firebaseReady = false;
+    private bool isProcessingLogin = false;
+    private bool loginSuccessful = false;
 
     void Start()
     {
-        InitializeTitle();
-    }
-
-    void InitializeTitle()
-    {
-        // 버전 정보 설정
-        if (versionText != null)
-        {
-            versionText.text = $"v{gameVersion}";
-        }
-
-        // 타이틀 텍스트 설정
-        if (titleText != null)
-        {
-            titleText.text = "CROxCRO";
-        }
-
-        // 초기 UI 상태 설정
-        if (loadingPanel != null)
-        {
-            loadingPanel.SetActive(false);
-        }
-
-        // 버튼 초기 비활성화 (Firebase 준비까지)
+        // UI 초기화
         SetButtonsInteractable(false);
+        ShowLoadingPanel();
 
-        // 타이틀 페이드 인
-        StartCoroutine(FadeInTitle());
+        // Firebase 매니저 확인 및 생성
+        EnsureManagers();
 
-        // BGM 재생
-        if (AudioManager.Instance != null)
+        // 로딩 및 인증 처리 시작
+        StartCoroutine(LoadingAndInitialization());
+
+        // 버튼 이벤트 설정
+        if (loginButton != null)
         {
-            AudioManager.Instance.PlaySceneBGM("TitleScene");
+            loginButton.onClick.AddListener(OnLoginButtonClicked);
         }
-
-        // Firebase 초기화 시작
-        StartCoroutine(InitializeFirebaseWithFallback());
     }
 
-    IEnumerator InitializeFirebaseWithFallback()
+    void EnsureManagers()
     {
-        ShowLoadingPanel();
-        ShowStatus("Firebase 초기화 중...", 0.1f);
-
-        // SafeFirebaseManager 찾기 또는 생성
-        if (RealFirebaseManager.Instance == null)
+        // CleanFirebaseManager 확인
+        if (CleanFirebaseManager.Instance == null)
         {
-            Debug.Log("RealFirebaseManager 생성 중...");
-            GameObject firebaseGO = new GameObject("RealFirebaseManager");
-            firebaseGO.AddComponent<RealFirebaseManager>();
+            var firebaseGO = new GameObject("CleanFirebaseManager");
+            firebaseGO.AddComponent<CleanFirebaseManager>();
+            Debug.Log("[TitleScene] CleanFirebaseManager 생성됨");
         }
 
-        // Firebase 초기화 대기 (타임아웃 포함)
+        // FirebaseDataManager 확인
+        if (FirebaseDataManager.Instance == null)
+        {
+            var dataGO = new GameObject("FirebaseDataManager");
+            dataGO.AddComponent<FirebaseDataManager>();
+            Debug.Log("[TitleScene] FirebaseDataManager 생성됨");
+        }
+
+        // UserDataManager 확인
+        if (UserDataManager.Instance == null)
+        {
+            var userGO = new GameObject("UserDataManager");
+            userGO.AddComponent<UserDataManager>();
+            Debug.Log("[TitleScene] UserDataManager 생성됨");
+        }
+    }
+
+    IEnumerator LoadingAndInitialization()
+    {
+        ShowStatus("게임 초기화 중...", 0.1f);
+        yield return new WaitForSeconds(0.5f);
+
+        ShowStatus("Firebase 연결 중...", 0.3f);
         float elapsedTime = 0f;
-        while (RealFirebaseManager.Instance == null && elapsedTime < 2f)
+
+        // Firebase 매니저 대기 (최대 3초)
+        while (CleanFirebaseManager.Instance == null && elapsedTime < 3f)
         {
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
-        if (RealFirebaseManager.Instance == null)
+        if (CleanFirebaseManager.Instance == null)
         {
-            Debug.LogError("RealFirebaseManager 생성 실패 - 오프라인 모드로 진행");
-            ShowStatus("오프라인 모드로 진행", 0.8f);
-            yield return new WaitForSeconds(1f);
-            CompleteInitialization();
+            Debug.LogWarning("[TitleScene] Firebase 매니저 없음 - 로컬 모드로 진행");
+            CompleteInitializationDirectly("📱 로컬");
             yield break;
         }
 
         // Firebase 이벤트 구독
-        RealFirebaseManager.Instance.OnFirebaseInitialized += OnFirebaseReady;
-        RealFirebaseManager.Instance.OnUserSignedIn += OnUserSignedIn;
-        RealFirebaseManager.Instance.OnAuthError += OnFirebaseError;
+        SubscribeToFirebaseEvents();
 
-        // Firebase 초기화 대기 (타임아웃 체크)
+        // Firebase 초기화 대기
+        ShowStatus("Firebase 초기화 중...", 0.5f);
         elapsedTime = 0f;
-        while (!RealFirebaseManager.Instance.IsFirebaseReady() && elapsedTime < firebaseTimeout)
+        
+        while (!CleanFirebaseManager.Instance.IsReady && elapsedTime < firebaseTimeout)
         {
             elapsedTime += Time.deltaTime;
-            float progress = Mathf.Clamp01(elapsedTime / firebaseTimeout);
-            ShowStatus("Firebase 초기화 중...", 0.1f + (progress * 0.6f));
+            float progress = 0.5f + (elapsedTime / firebaseTimeout) * 0.3f;
+            ShowStatus("Firebase 초기화 중...", progress);
             yield return null;
         }
 
-        if (!RealFirebaseManager.Instance.IsFirebaseReady())
+        if (!CleanFirebaseManager.Instance.IsReady)
         {
-            Debug.LogWarning("Firebase 초기화 타임아웃 - 오프라인 모드로 진행");
-            ShowStatus("네트워크 연결 확인 중...", 0.7f);
+            Debug.LogWarning("[TitleScene] Firebase 타임아웃 - 로컬 모드로 진행");
+            ShowStatus("로컬 모드로 전환 중...", 0.8f);
             yield return new WaitForSeconds(1f);
-            ShowStatus("오프라인 모드로 진행", 0.8f);
-            yield return new WaitForSeconds(1f);
-        }
-
-        CompleteInitialization();
-    }
-
-    void OnFirebaseReady()
-    {
-        Debug.Log("Firebase 준비 완료!");
-        firebaseReady = true;
-        
-        if (RealFirebaseManager.Instance.IsOnlineMode())
-        {
-            ShowStatus("Firebase 연결 완료!", 0.7f);
+            CompleteInitializationDirectly("📱 로컬");
         }
         else
         {
-            ShowStatus("오프라인 모드 활성화", 0.7f);
+            Debug.Log("[TitleScene] ✅ Firebase 준비 완료");
+            ShowStatus("Firebase 연결 완료!", 0.8f);
+            yield return new WaitForSeconds(0.5f);
+            CompleteInitializationDirectly("🌐 온라인");
         }
     }
 
-    void OnUserSignedIn(bool success)
+    void SubscribeToFirebaseEvents()
     {
-        if (success)
+        if (CleanFirebaseManager.Instance != null)
         {
-            Debug.Log("사용자 로그인 완료");
-            StartCoroutine(StartGameSequence());
+            CleanFirebaseManager.Instance.OnFirebaseReady += OnFirebaseReady;
+            CleanFirebaseManager.Instance.OnUserSignedIn += OnUserSignedIn;
+            CleanFirebaseManager.Instance.OnError += OnFirebaseError;
         }
     }
 
-    void OnFirebaseError(string error)
-    {
-        Debug.LogError($"Firebase 오류: {error}");
-        ShowStatus($"오류: {error}", 0.5f);
-    }
-
-    void CompleteInitialization()
+    void CompleteInitializationDirectly(string connectionStatus)
     {
         ShowStatus("초기화 완료!", 1.0f);
-        
-        StartCoroutine(FinalizeInitialization());
+        StartCoroutine(FinalizeInitialization(connectionStatus));
     }
 
-    IEnumerator FinalizeInitialization()
+    IEnumerator FinalizeInitialization(string connectionStatus)
     {
         yield return new WaitForSeconds(0.5f);
         
@@ -175,134 +146,220 @@ public class TitleSceneManager : MonoBehaviour
         SetButtonsInteractable(true);
         isInitialized = true;
 
-        // 연결 상태 표시
-        string connectionStatus = "";
-        if (RealFirebaseManager.Instance != null)
-        {
-            if (RealFirebaseManager.Instance.IsOnlineMode())
-            {
-                connectionStatus = "🌐 온라인";
-            }
-            else
-            {
-                connectionStatus = "📱 오프라인";
-            }
-        }
-        else
-        {
-            connectionStatus = "📱 로컬";
-        }
-
+        // 버전 텍스트 업데이트
         if (versionText != null)
         {
             versionText.text = $"v{gameVersion} {connectionStatus}";
         }
 
-        Debug.Log("타이틀 초기화 완료!");
+        Debug.Log("[TitleScene] ✅ 타이틀 초기화 완료!");
     }
 
-    IEnumerator FadeInTitle()
+    #region Firebase 이벤트 처리
+
+    void OnFirebaseReady()
     {
-        if (titleCanvasGroup == null) yield break;
-
-        titleCanvasGroup.alpha = 0f;
-        float elapsedTime = 0f;
-
-        while (elapsedTime < titleFadeInDuration)
-        {
-            elapsedTime += Time.deltaTime;
-            titleCanvasGroup.alpha = Mathf.Clamp01(elapsedTime / titleFadeInDuration);
-            yield return null;
-        }
-
-        titleCanvasGroup.alpha = 1f;
+        Debug.Log("[TitleScene] Firebase 준비 완료!");
+        firebaseReady = true;
     }
 
-    // 게임 시작 버튼 (게스트 로그인)
-    public void OnStartButtonClicked()
+    void OnUserSignedIn(bool success)
     {
-        if (!isInitialized || isLoading) return;
-
-        PlayUISound("ButtonClick");
-        
-        if (RealFirebaseManager.Instance != null)
+        if (success)
         {
-            StartCoroutine(GuestLoginSequence());
+            Debug.Log("[TitleScene] ✅ Firebase 로그인 성공!");
+            loginSuccessful = true;
+            
+            // 로그인이 진행 중일 때만 씬 전환
+            if (isProcessingLogin)
+            {
+                StartCoroutine(StartGameSequenceAfterLogin());
+            }
         }
         else
         {
-            // Firebase 없이 바로 게임 시작
-            StartCoroutine(StartGameSequence());
+            Debug.Log("[TitleScene] ❌ Firebase 로그인 실패");
+            loginSuccessful = false;
         }
     }
 
-    // 로그인 버튼 (향후 구현)
-    public void OnLoginButtonClicked()
+    void OnFirebaseError(string error)
     {
-        if (!isInitialized || isLoading) return;
-
-        PlayUISound("ButtonClick");
-        Debug.Log("로그인 기능은 향후 구현 예정");
+        Debug.LogError($"[TitleScene] Firebase 오류: {error}");
         
-        // 현재는 게스트 로그인과 동일하게 처리
-        OnStartButtonClicked();
+        // 로그인 진행 중이면 오류에도 불구하고 계속 진행
+        if (isProcessingLogin)
+        {
+            Debug.LogWarning("[TitleScene] 오류 발생했지만 로컬 모드로 계속 진행");
+            loginSuccessful = false;
+            StartCoroutine(StartGameSequenceAfterLogin());
+        }
     }
 
-    IEnumerator GuestLoginSequence()
+    #endregion
+
+    #region 버튼 이벤트
+
+    void OnLoginButtonClicked()
     {
-        isLoading = true;
-        SetButtonsInteractable(false);
+        if (!isInitialized || isProcessingLogin)
+        {
+            Debug.LogWarning("[TitleScene] 초기화 미완료 또는 로그인 처리 중");
+            return;
+        }
+
+        Debug.Log("[TitleScene] 🎭 로그인 시작");
+        StartCoroutine(HandleLoginProcess());
+    }
+
+    IEnumerator HandleLoginProcess()
+    {
+        isProcessingLogin = true;
+        loginSuccessful = false;
+        
         ShowLoadingPanel();
+        ShowStatus("로그인 중...", 0.3f);
 
-        ShowStatus("게스트로 로그인 중...", 0.2f);
-
-        bool loginSuccess = false;
-        yield return StartCoroutine(
-            RealFirebaseManager.Instance.SignInAnonymously((success) => loginSuccess = success)
-        );
-
-        if (loginSuccess)
+        if (CleanFirebaseManager.Instance != null && CleanFirebaseManager.Instance.IsReady)
         {
-            ShowStatus("게스트 로그인 성공!", 0.6f);
-            yield return new WaitForSeconds(0.5f);
-            StartCoroutine(StartGameSequence());
+            Debug.Log("[TitleScene] Firebase 익명 로그인 시작");
+            ShowStatus("Firebase 로그인 중...", 0.5f);
+            
+            // Firebase 익명 로그인 시도
+            CleanFirebaseManager.Instance.SignInAnonymously();
+            
+            // 로그인 완료 또는 타임아웃까지 대기
+            float elapsedTime = 0f;
+            while (!loginSuccessful && elapsedTime < loginTimeout)
+            {
+                elapsedTime += Time.deltaTime;
+                float progress = 0.5f + (elapsedTime / loginTimeout) * 0.3f;
+                ShowStatus($"Firebase 로그인 중... {(int)(loginTimeout - elapsedTime)}초", progress);
+                yield return null;
+            }
+            
+            if (loginSuccessful)
+            {
+                Debug.Log("[TitleScene] ✅ Firebase 로그인 완료!");
+                ShowStatus("로그인 성공!", 0.9f);
+                yield return new WaitForSeconds(0.5f);
+            }
+            else
+            {
+                Debug.LogWarning("[TitleScene] ⏰ 로그인 타임아웃 - 로컬 모드로 진행");
+                ShowStatus("타임아웃 - 로컬 모드로 진행", 0.8f);
+                yield return new WaitForSeconds(1f);
+            }
         }
         else
         {
-            ShowStatus("로그인 실패 - 오프라인으로 진행", 0.4f);
+            Debug.Log("[TitleScene] 📱 Firebase 없음 - 로컬 모드로 진행");
+            ShowStatus("로컬 모드로 진행", 0.7f);
             yield return new WaitForSeconds(1f);
-            StartCoroutine(StartGameSequence());
+        }
+
+        // 로그인 성공 여부와 관계없이 게임 시작
+        StartCoroutine(StartGameSequenceAfterLogin());
+    }
+
+    #endregion
+
+    #region 게임 시작
+
+    IEnumerator StartGameSequenceAfterLogin()
+    {
+        // 중복 실행 방지
+        if (!isProcessingLogin) yield break;
+        
+        ShowStatus("게임 시작 중...", 0.9f);
+        yield return new WaitForSeconds(0.5f);
+
+        Debug.Log("[TitleScene] 🚀 로비 씬으로 전환 시작");
+
+        // FirebaseDataManager 연결 상태 로그
+        if (FirebaseDataManager.Instance != null)
+        {
+            bool isConnected = FirebaseDataManager.Instance.IsConnected;
+            Debug.Log($"[TitleScene] FirebaseDataManager 연결 상태: {isConnected}");
+        }
+
+        // 씬 전환을 안전하게 처리
+        yield return StartCoroutine(SafeSceneTransition());
+    }
+
+    IEnumerator SafeSceneTransition()
+    {
+        bool sceneLoadSuccess = false;
+
+        // 첫 번째 시도: SceneTransitionManager 사용
+        if (SceneTransitionManager.Instance != null)
+        {
+            Debug.Log("[TitleScene] SceneTransitionManager로 씬 전환 시도");
+            
+            System.Exception caughtException = null;
+            try
+            {
+                SceneTransitionManager.Instance.LoadScene("LobbyScene");
+                sceneLoadSuccess = true;
+            }
+            catch (System.Exception ex)
+            {
+                caughtException = ex;
+            }
+
+            if (caughtException != null)
+            {
+                Debug.LogError($"[TitleScene] SceneTransitionManager 실패: {caughtException.Message}");
+            }
+        }
+
+        // 첫 번째 시도가 실패하면 잠시 대기 후 직접 전환
+        if (!sceneLoadSuccess)
+        {
+            yield return new WaitForSeconds(0.5f);
+            
+            Debug.Log("[TitleScene] 직접 씬 전환 시도");
+            
+            System.Exception directException = null;
+            try
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("LobbyScene");
+                sceneLoadSuccess = true;
+            }
+            catch (System.Exception ex)
+            {
+                directException = ex;
+            }
+
+            if (directException != null)
+            {
+                Debug.LogError($"[TitleScene] 직접 씬 전환도 실패: {directException.Message}");
+                
+                // 최후의 시도: 1초 대기 후 재시도
+                yield return new WaitForSeconds(1f);
+                
+                try
+                {
+                    UnityEngine.SceneManagement.SceneManager.LoadScene("LobbyScene");
+                }
+                catch (System.Exception finalEx)
+                {
+                    Debug.LogError($"[TitleScene] 최종 씬 전환 실패: {finalEx.Message}");
+                    ShowStatus("씬 전환 오류 - 재시도 필요", 0.5f);
+                }
+            }
         }
     }
 
-    IEnumerator StartGameSequence()
-    {
-        isLoading = true;
-        SetButtonsInteractable(false);
+    #endregion
 
-        ShowStatus("게임 데이터 로드 중...", 0.7f);
-        yield return new WaitForSeconds(1f);
-
-        ShowStatus("에셋 로드 중...", 0.9f);
-        yield return new WaitForSeconds(0.5f);
-
-        ShowStatus("로드 완료!", 1.0f);
-        yield return new WaitForSeconds(0.5f);
-
-        // 로비 씬으로 이동
-        GoToLobbyScene();
-    }
+    #region UI 헬퍼 메서드
 
     void ShowLoadingPanel()
     {
         if (loadingPanel != null)
         {
             loadingPanel.SetActive(true);
-        }
-        
-        if (progressBar != null)
-        {
-            progressBar.value = 0f;
         }
     }
 
@@ -316,66 +373,39 @@ public class TitleSceneManager : MonoBehaviour
 
     void ShowStatus(string message, float progress)
     {
-        if (statusText != null)
+        if (loadingStatusText != null)
         {
-            statusText.text = message;
+            loadingStatusText.text = message;
         }
 
-        if (progressBar != null)
+        if (loadingProgressBar != null)
         {
-            progressBar.value = progress;
+            loadingProgressBar.value = progress;
         }
 
-        if (progressText != null)
-        {
-            progressText.text = $"{Mathf.RoundToInt(progress * 100)}%";
-        }
-
-        Debug.Log($"Loading: {message} ({Mathf.RoundToInt(progress * 100)}%)");
+        Debug.Log($"[TitleScene] {message} ({progress * 100:F0}%)");
     }
 
     void SetButtonsInteractable(bool interactable)
     {
-        if (startButton != null) startButton.interactable = interactable;
-        if (loginButton != null) loginButton.interactable = interactable;
-    }
-
-    void GoToLobbyScene()
-    {
-        PlayUISound("MenuTransition");
-        Debug.Log("Moving to Lobby Scene...");
-        SceneManager.LoadScene("LobbyScene");
-    }
-
-    // 게임 종료
-    public void QuitGame()
-    {
-        PlayUISound("ButtonClick");
-        Debug.Log("Quitting the game...");
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-        Application.Quit();
-#endif
-    }
-
-    // UI 사운드 재생 헬퍼 메서드
-    void PlayUISound(string soundName)
-    {
-        if (AudioManager.Instance != null)
+        if (loginButton != null)
         {
-            AudioManager.Instance.PlayUI(soundName);
+            loginButton.interactable = interactable;
         }
     }
+
+    #endregion
 
     void OnDestroy()
     {
         // 이벤트 구독 해제
-        if (RealFirebaseManager.Instance != null)
+        if (CleanFirebaseManager.Instance != null)
         {
-            RealFirebaseManager.Instance.OnFirebaseInitialized -= OnFirebaseReady;
-            RealFirebaseManager.Instance.OnUserSignedIn -= OnUserSignedIn;
-            RealFirebaseManager.Instance.OnAuthError -= OnFirebaseError;
+            CleanFirebaseManager.Instance.OnFirebaseReady -= OnFirebaseReady;
+            CleanFirebaseManager.Instance.OnUserSignedIn -= OnUserSignedIn;
+            CleanFirebaseManager.Instance.OnError -= OnFirebaseError;
         }
+
+        isProcessingLogin = false;
     }
 }

@@ -444,8 +444,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 729121411}
-  - component: {fileID: 729121410}
-  - component: {fileID: 729121409}
+  - component: {fileID: 729121412}
+  - component: {fileID: 729121413}
   m_Layer: 0
   m_Name: FirebaseManager
   m_TagString: Untagged
@@ -453,36 +453,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &729121409
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 729121408}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57ec565db60ae284ea59c392691625d9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  autoSyncEnabled: 1
-  autoSyncInterval: 30
-  syncOnGameEvent: 1
-  enableDebugLogs: 1
---- !u!114 &729121410
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 729121408}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 418e697e5de10714fbeebc388b153393, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isInitialized: 0
-  isAuthenticated: 0
 --- !u!4 &729121411
 Transform:
   m_ObjectHideFlags: 0
@@ -498,6 +468,35 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &729121412
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 729121408}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23c04e8580937cd428e3a347d1be6175, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  databaseURL: https://croxcro-default-rtdb.asia-southeast1.firebasedatabase.app/
+  isInitialized: 0
+  isAuthenticated: 0
+--- !u!114 &729121413
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 729121408}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57ec565db60ae284ea59c392691625d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  autoSyncEnabled: 1
+  autoSyncInterval: 30
 --- !u!1 &964992712
 GameObject:
   m_ObjectHideFlags: 0
@@ -657,6 +656,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1702445883
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1702445885}
+  - component: {fileID: 1702445884}
+  m_Layer: 0
+  m_Name: FirebaseLoginDiagnostic
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1702445884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1702445883}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccd941e535d9ee84cb47ea07c527ac30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  runDiagnosticOnStart: 1
+  detailedLogging: 1
+--- !u!4 &1702445885
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1702445883}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 258.97043, y: 522.04553, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1815263907
 GameObject:
   m_ObjectHideFlags: 0
@@ -798,3 +843,4 @@ SceneRoots:
   - {fileID: 431798845}
   - {fileID: 976513489}
   - {fileID: 729121411}
+  - {fileID: 1702445885}

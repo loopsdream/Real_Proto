@@ -1,10 +1,9 @@
-// LoginUIManager.cs - 로그인 UI 관리
+// LoginUIManager.cs - CleanFirebaseManager와 호환되도록 수정된 버전
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
-using Firebase.Auth;
 
 public class LoginUIManager : MonoBehaviour
 {
@@ -36,11 +35,17 @@ public class LoginUIManager : MonoBehaviour
     public TextMeshProUGUI statusText;
     public GameObject statusPanel;
 
+    [Header("UI Colors")]
+    public Color successColor = Color.green;
+    public Color errorColor = Color.red;
+
     [Header("Animation")]
     public CanvasGroup mainCanvasGroup;
     public float transitionDuration = 0.5f;
 
+    // 상태 관리
     private bool isProcessing = false;
+    private const string REMEMBER_EMAIL_KEY = "RememberedEmail";
 
     void Start()
     {
@@ -55,16 +60,15 @@ public class LoginUIManager : MonoBehaviour
         HideLoadingPanel();
         HideStatusPanel();
 
-        // FirebaseManager 이벤트 구독
-        if (FirebaseManager.Instance != null)
+        // CleanFirebaseManager 이벤트 구독 (수정된 부분)
+        if (CleanFirebaseManager.Instance != null)
         {
-            FirebaseManager.Instance.OnFirebaseInitialized += OnFirebaseReady;
-            FirebaseManager.Instance.OnUserSignedIn += OnUserSignedIn;
-            FirebaseManager.Instance.OnUserSignedOut += OnUserSignedOut;
-            FirebaseManager.Instance.OnAuthError += OnAuthError;
+            CleanFirebaseManager.Instance.OnFirebaseReady += OnFirebaseReady;
+            CleanFirebaseManager.Instance.OnUserSignedIn += OnUserSignedIn;
+            CleanFirebaseManager.Instance.OnError += OnAuthError;
 
             // 이미 초기화된 경우
-            if (FirebaseManager.Instance.isInitialized)
+            if (CleanFirebaseManager.Instance.IsReady)
             {
                 OnFirebaseReady();
             }
@@ -95,13 +99,8 @@ public class LoginUIManager : MonoBehaviour
             backToLoginButton.onClick.AddListener(ShowLoginPanel);
 
         // 입력 필드 이벤트
-        if (loginEmailInput != null)
-            loginEmailInput.onEndEdit.AddListener(OnEmailInputChanged);
         if (loginPasswordInput != null)
-        {
-            loginPasswordInput.onEndEdit.AddListener(OnPasswordInputChanged);
             loginPasswordInput.onSubmit.AddListener((_) => OnLoginButtonClicked());
-        }
         if (confirmPasswordInput != null)
             confirmPasswordInput.onSubmit.AddListener((_) => OnSignupButtonClicked());
     }
@@ -110,35 +109,40 @@ public class LoginUIManager : MonoBehaviour
 
     void OnFirebaseReady()
     {
-        Debug.Log("Firebase 준비 완료 - 로그인 UI 활성화");
+        Debug.Log("[LoginUI] Firebase 준비 완료 - 로그인 UI 활성화");
         SetButtonsInteractable(true);
 
         // 이미 로그인된 사용자가 있는지 확인
-        if (FirebaseManager.Instance.isAuthenticated)
+        if (CleanFirebaseManager.Instance != null && CleanFirebaseManager.Instance.IsLoggedIn)
         {
             StartCoroutine(AutoLoginSequence());
         }
     }
 
-    void OnUserSignedIn(FirebaseUser user)
+    void OnUserSignedIn(bool success)
     {
-        Debug.Log($"사용자 로그인 완료: {user.Email}");
-        ShowStatus($"환영합니다, {user.DisplayName ?? user.Email}!", true);
-        
-        StartCoroutine(MoveToGameAfterDelay());
-    }
-
-    void OnUserSignedOut()
-    {
-        Debug.Log("사용자 로그아웃");
-        ShowLoginPanel();
-        SetButtonsInteractable(true);
-        isProcessing = false;
+        if (success && CleanFirebaseManager.Instance != null)
+        {
+            var user = CleanFirebaseManager.Instance.CurrentUser;
+            string displayName = user?.Email ?? "익명 사용자";
+            
+            Debug.Log($"[LoginUI] 사용자 로그인 완료: {displayName}");
+            ShowStatus($"환영합니다, {displayName}!", true);
+            
+            StartCoroutine(MoveToGameAfterDelay());
+        }
+        else
+        {
+            Debug.Log("[LoginUI] 사용자 로그인 실패");
+            HideLoadingPanel();
+            SetButtonsInteractable(true);
+            isProcessing = false;
+        }
     }
 
     void OnAuthError(string error)
     {
-        Debug.LogError($"인증 오류: {error}");
+        Debug.LogError($"[LoginUI] 인증 오류: {error}");
         ShowStatus(error, false);
         HideLoadingPanel();
         SetButtonsInteractable(true);
@@ -149,7 +153,7 @@ public class LoginUIManager : MonoBehaviour
 
     #region 로그인 처리
 
-    async void OnLoginButtonClicked()
+    void OnLoginButtonClicked()
     {
         if (isProcessing || !ValidateLoginInput()) return;
 
@@ -162,10 +166,11 @@ public class LoginUIManager : MonoBehaviour
 
         ShowLoadingPanel("로그인 중...");
 
-        bool success = await FirebaseManager.Instance.SignInWithEmail(email, password);
-
-        if (success)
+        // CleanFirebaseManager 사용 (수정된 부분)
+        if (CleanFirebaseManager.Instance != null)
         {
+            CleanFirebaseManager.Instance.SignInWithEmailPassword(email, password);
+            
             // Remember Me 처리
             if (rememberMeToggle != null && rememberMeToggle.isOn)
             {
@@ -178,13 +183,14 @@ public class LoginUIManager : MonoBehaviour
         }
         else
         {
+            ShowStatus("Firebase가 초기화되지 않았습니다.", false);
             HideLoadingPanel();
             SetButtonsInteractable(true);
             isProcessing = false;
         }
     }
 
-    async void OnGuestLoginButtonClicked()
+    void OnGuestLoginButtonClicked()
     {
         if (isProcessing) return;
 
@@ -194,17 +200,21 @@ public class LoginUIManager : MonoBehaviour
 
         ShowLoadingPanel("게스트로 로그인 중...");
 
-        bool success = await FirebaseManager.Instance.SignInAnonymously();
-
-        if (!success)
+        // CleanFirebaseManager 사용 (수정된 부분)
+        if (CleanFirebaseManager.Instance != null)
         {
+            CleanFirebaseManager.Instance.SignInAnonymously();
+        }
+        else
+        {
+            ShowStatus("Firebase가 초기화되지 않았습니다.", false);
             HideLoadingPanel();
             SetButtonsInteractable(true);
             isProcessing = false;
         }
     }
 
-    async void OnSignupButtonClicked()
+    void OnSignupButtonClicked()
     {
         if (isProcessing || !ValidateSignupInput()) return;
 
@@ -217,10 +227,14 @@ public class LoginUIManager : MonoBehaviour
 
         ShowLoadingPanel("회원가입 중...");
 
-        bool success = await FirebaseManager.Instance.SignUpWithEmail(email, password);
-
-        if (!success)
+        // CleanFirebaseManager 사용 (수정된 부분)
+        if (CleanFirebaseManager.Instance != null)
         {
+            CleanFirebaseManager.Instance.CreateUserWithEmailPassword(email, password);
+        }
+        else
+        {
+            ShowStatus("Firebase가 초기화되지 않았습니다.", false);
             HideLoadingPanel();
             SetButtonsInteractable(true);
             isProcessing = false;
@@ -360,17 +374,26 @@ public class LoginUIManager : MonoBehaviour
         if (statusText != null)
         {
             statusText.text = message;
-            statusText.color = isSuccess ? Color.green : Color.red;
+            statusText.color = isSuccess ? successColor : errorColor;
         }
+
         if (statusPanel != null) statusPanel.SetActive(true);
 
-        // 자동으로 숨기기
-        StartCoroutine(HideStatusAfterDelay(3f));
+        // 일정 시간 후 자동으로 상태 메시지 숨김
+        StartCoroutine(HideStatusAfterDelay(isSuccess ? 2f : 4f));
     }
 
     void HideStatusPanel()
     {
         if (statusPanel != null) statusPanel.SetActive(false);
+    }
+
+    void ClearInputFields()
+    {
+        if (loginPasswordInput != null) loginPasswordInput.text = "";
+        if (signupEmailInput != null) signupEmailInput.text = "";
+        if (signupPasswordInput != null) signupPasswordInput.text = "";
+        if (confirmPasswordInput != null) confirmPasswordInput.text = "";
     }
 
     void SetButtonsInteractable(bool interactable)
@@ -382,69 +405,74 @@ public class LoginUIManager : MonoBehaviour
         if (backToLoginButton != null) backToLoginButton.interactable = interactable;
     }
 
-    void ClearInputFields()
-    {
-        if (loginPasswordInput != null) loginPasswordInput.text = "";
-        if (signupEmailInput != null) signupEmailInput.text = "";
-        if (signupPasswordInput != null) signupPasswordInput.text = "";
-        if (confirmPasswordInput != null) confirmPasswordInput.text = "";
-    }
-
     #endregion
 
-    #region 저장된 로그인 정보 처리
-
-    void LoadSavedLoginInfo()
-    {
-        if (PlayerPrefs.HasKey("SavedEmail") && loginEmailInput != null)
-        {
-            string savedEmail = PlayerPrefs.GetString("SavedEmail");
-            loginEmailInput.text = savedEmail;
-            if (rememberMeToggle != null) rememberMeToggle.isOn = true;
-        }
-    }
+    #region Remember Me 기능
 
     void SaveLoginInfo(string email)
     {
-        PlayerPrefs.SetString("SavedEmail", email);
+        PlayerPrefs.SetString(REMEMBER_EMAIL_KEY, email);
         PlayerPrefs.Save();
+        Debug.Log("[LoginUI] 로그인 정보 저장됨");
+    }
+
+    void LoadSavedLoginInfo()
+    {
+        if (PlayerPrefs.HasKey(REMEMBER_EMAIL_KEY))
+        {
+            string savedEmail = PlayerPrefs.GetString(REMEMBER_EMAIL_KEY);
+            if (loginEmailInput != null && !string.IsNullOrEmpty(savedEmail))
+            {
+                loginEmailInput.text = savedEmail;
+                if (rememberMeToggle != null) rememberMeToggle.isOn = true;
+            }
+        }
     }
 
     void ClearSavedLoginInfo()
     {
-        PlayerPrefs.DeleteKey("SavedEmail");
+        PlayerPrefs.DeleteKey(REMEMBER_EMAIL_KEY);
         PlayerPrefs.Save();
+        Debug.Log("[LoginUI] 저장된 로그인 정보 삭제됨");
     }
 
     #endregion
 
-    #region 애니메이션 및 시퀀스
+    #region 게임 진행
 
     IEnumerator AutoLoginSequence()
     {
         ShowLoadingPanel("자동 로그인 중...");
         yield return new WaitForSeconds(1f);
-        // OnUserSignedIn에서 처리됨
+        StartCoroutine(MoveToGameAfterDelay());
     }
 
     IEnumerator MoveToGameAfterDelay()
     {
+        ShowLoadingPanel("게임으로 이동 중...");
         yield return new WaitForSeconds(1.5f);
-        
-        ShowLoadingPanel("게임 데이터 로드 중...");
-        yield return new WaitForSeconds(1f);
 
         // 로비 씬으로 이동
-        PlayUISound("MenuTransition");
-        SceneManager.LoadScene("LobbyScene");
+        if (SceneTransitionManager.Instance != null)
+        {
+            SceneTransitionManager.Instance.LoadScene("LobbyScene");
+        }
+        else
+        {
+            SceneManager.LoadScene("LobbyScene");
+        }
     }
+
+    #endregion
+
+    #region 애니메이션
 
     IEnumerator AnimateLoadingProgress()
     {
         if (loadingProgress == null) yield break;
-        
+
         float progress = 0f;
-        while (progress < 1f)
+        while (progress < 1f && loadingPanel.activeInHierarchy)
         {
             progress += Time.deltaTime * 0.5f;
             loadingProgress.value = progress;
@@ -456,20 +484,6 @@ public class LoginUIManager : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         HideStatusPanel();
-    }
-
-    #endregion
-
-    #region 이벤트 처리
-
-    void OnEmailInputChanged(string value)
-    {
-        // 실시간 이메일 유효성 검사 (선택사항)
-    }
-
-    void OnPasswordInputChanged(string value)
-    {
-        // 실시간 패스워드 강도 체크 (선택사항)
     }
 
     #endregion
@@ -488,13 +502,12 @@ public class LoginUIManager : MonoBehaviour
 
     void OnDestroy()
     {
-        // 이벤트 구독 해제
-        if (FirebaseManager.Instance != null)
+        // 이벤트 구독 해제 (수정된 부분)
+        if (CleanFirebaseManager.Instance != null)
         {
-            FirebaseManager.Instance.OnFirebaseInitialized -= OnFirebaseReady;
-            FirebaseManager.Instance.OnUserSignedIn -= OnUserSignedIn;
-            FirebaseManager.Instance.OnUserSignedOut -= OnUserSignedOut;
-            FirebaseManager.Instance.OnAuthError -= OnAuthError;
+            CleanFirebaseManager.Instance.OnFirebaseReady -= OnFirebaseReady;
+            CleanFirebaseManager.Instance.OnUserSignedIn -= OnUserSignedIn;
+            CleanFirebaseManager.Instance.OnError -= OnAuthError;
         }
     }
 }
