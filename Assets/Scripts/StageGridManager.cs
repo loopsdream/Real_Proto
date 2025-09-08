@@ -167,10 +167,10 @@ public class StageGridManager : BaseGridManager
                 stageManager.OnStageCleared();
             }
 
-            if (winPanel != null)
-            {
-                winPanel.SetActive(true);
-            }
+            //if (winPanel != null)
+            //{
+            //    winPanel.SetActive(true);
+            //}
         }
         else if (!CanMakeAnyMatch())
         {
@@ -633,10 +633,10 @@ public class StageGridManager : BaseGridManager
             stageManager.OnStageCleared();
         }
 
-        if (winPanel != null)
-        {
-            winPanel.SetActive(true);
-        }
+        //if (winPanel != null)
+        //{
+        //    winPanel.SetActive(true);
+        //}
     }
 
     private IEnumerator RotateBlocksAnimation(List<GameObject> blocks)

@@ -367,11 +367,17 @@ public class StageManager : MonoBehaviour
         // 보상 지급
         if (currentStage != null && UserDataManager.Instance != null)
         {
-            UserDataManager.Instance.AddGameCoins(currentStage.coinReward);
-            if (currentStage.diamondReward > 0)
-            {
-                UserDataManager.Instance.AddDiamonds(currentStage.diamondReward);
-            }
+            // 원본
+            //UserDataManager.Instance.AddGameCoins(currentStage.coinReward);
+            //if (currentStage.diamondReward > 0)
+            //{
+            //    UserDataManager.Instance.AddDiamonds(currentStage.diamondReward);
+            //}
+
+            // 테스트 용
+            UserDataManager.Instance.AddGameCoins(1);
+            UserDataManager.Instance.AddDiamonds(1);
+
             // 경험치 시스템이 있다면
             // UserDataManager.Instance.AddExperience(currentStage.experienceReward);
         }

@@ -610,7 +610,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 1448824128}
         m_TargetAssemblyTypeName: StageManager, Assembly-CSharp
         m_MethodName: RestartCurrentStage
         m_Mode: 1
@@ -2494,7 +2494,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 1448824128}
         m_TargetAssemblyTypeName: StageManager, Assembly-CSharp
         m_MethodName: LoadNextStage
         m_Mode: 1
@@ -2802,7 +2802,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allStages:
-  - {fileID: 11400000, guid: ac65e0b1e596ab5438b2ec1c99c0fc5a, type: 2}
+  - {fileID: 11400000, guid: 02b11069187f79a44b0cc08baad224ff, type: 2}
   - {fileID: 11400000, guid: 3b8e6b2bf1ca29f4a85a1c4c60fa8534, type: 2}
   currentStage: {fileID: 0}
   stageNumberText: {fileID: 0}
