@@ -47,6 +47,9 @@ public class InfiniteModeManager : MonoBehaviour
     public Button pauseMenuButton; // 일시정지 중 메뉴 버튼
     public GameObject gridBlocker; // 그리드를 가리는 오브젝트 (어두운 배경)
 
+    [Header("Effect System")]
+    public CROxCROBlockEffectSystem blockEffectSystem;
+
     // 게임 상태
     private bool isGameActive = false;
     private float currentTimeLimit;
@@ -1226,6 +1229,12 @@ public class InfiniteModeManager : MonoBehaviour
                 int y = blockComponent.y;
 
                 Debug.Log($"Destroying block at ({x}, {y}) with tag {block.tag}");
+
+                if (blockEffectSystem != null)
+                {
+                    int blockType = (block.tag == "RedBlock") ? 1 : (block.tag == "BlueBlock") ? 2 : (block.tag == "YellowBlock") ? 3 : (block.tag == "GreenBlock") ? 4 : (block.tag == "PurpleBlock") ? 5 : 1;
+                    blockEffectSystem.CreateBlockDestroyEffect(x, y, blockType);
+                }
 
                 // infiniteGrid 배열에서 참조 제거
                 if (infiniteGrid[x, y] == block)

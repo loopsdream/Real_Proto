@@ -381,6 +381,7 @@ MonoBehaviour:
   resumeButton: {fileID: 397206684}
   pauseMenuButton: {fileID: 50219006}
   gridBlocker: {fileID: 0}
+  blockEffectSystem: {fileID: 476897852}
 --- !u!4 &206013272
 Transform:
   m_ObjectHideFlags: 0
@@ -1303,7 +1304,7 @@ GameObject:
   - component: {fileID: 476897851}
   - component: {fileID: 476897852}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: BlockEffectSystem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

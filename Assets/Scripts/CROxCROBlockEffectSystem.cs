@@ -94,6 +94,10 @@ public class CROxCROBlockEffectSystem : MonoBehaviour
         // 그리드 좌표를 UI 좌표로 변환
         Vector2 uiPosition = GridToUIPosition(gridX, gridY);
 
+        Debug.Log($"Grid Position: ({gridX}, {gridY})");
+        Debug.Log($"UI Position: ({uiPosition.x}, {uiPosition.y})");
+        Debug.Log($"Block Type: {blockType}");
+
         // 블록 색상 결정
         Color effectColor = GetBlockEffectColor(blockType);
 
@@ -121,30 +125,27 @@ public class CROxCROBlockEffectSystem : MonoBehaviour
     {
         if (gridManager != null)
         {
-            // GridManager가 있으면 실제 그리드 설정 사용
-            // 이 부분은 GridManager의 실제 구조에 맞게 수정 필요
+            // 1. World 좌표 얻기
+            Vector3 worldPos = gridManager.GridToWorldPosition(gridX, gridY);
+            Debug.Log($"World Position: {worldPos}");
 
-            // 예시: 그리드 중앙을 기준으로 계산
-            float worldX = (gridX - gridManager.width / 2f) * gridCellSize;
-            float worldY = (gridY - gridManager.height / 2f) * gridCellSize;
+            // 2. Screen 좌표로 변환
+            Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPos);
+            Debug.Log($"Screen Position: {screenPos}");
 
-            // 월드 좌표를 UI 좌표로 변환 (Canvas가 Screen Space인 경우)
-            Vector3 worldPos = new Vector3(worldX, worldY, 0);
-            Vector2 screenPos = Camera.main.WorldToScreenPoint(worldPos);
-
+            // 3. Canvas의 RectTransform 좌표로 변환
             RectTransform canvasRect = gameCanvas.GetComponent<RectTransform>();
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvasRect, screenPos, gameCanvas.worldCamera, out Vector2 localPoint);
 
+            // Canvas가 Screen Space - Overlay인 경우
+            Vector2 localPoint;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                canvasRect, screenPos, null, out localPoint);
+
+            Debug.Log($"Final UI Position: {localPoint}");
             return localPoint;
         }
-        else
-        {
-            // GridManager가 없으면 간단히 계산
-            float uiX = (gridX - 3) * 80f; // 임시값
-            float uiY = (3 - gridY) * 80f; // 임시값
-            return new Vector2(uiX, uiY);
-        }
+
+        return Vector2.zero;
     }
 
     /// <summary>
