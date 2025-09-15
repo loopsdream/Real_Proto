@@ -31,21 +31,102 @@ public class FirebaseDataManager : MonoBehaviour
         }
     }
 
-    void Start()
+void Start()
     {
+        // 안전한 초기화를 위해 코루틴 사용
+        StartCoroutine(SafeInitialization());
+    }
+    
+System.Collections.IEnumerator SafeInitialization()
+    {
+        // 다른 매니저들이 초기화될 때까지 충분히 대기
+        yield return new WaitForSeconds(0.5f);
+        
+        Debug.Log("[DataManager] 안전한 초기화 시작");
+        
+        // UserDataManager 먼저 대기
+        yield return StartCoroutine(WaitForUserDataManager());
+        
         // CleanFirebaseManager 이벤트 구독
         if (CleanFirebaseManager.Instance != null)
         {
             CleanFirebaseManager.Instance.OnFirebaseReady += OnFirebaseReady;
             CleanFirebaseManager.Instance.OnUserSignedIn += OnUserSignedIn;
             CleanFirebaseManager.Instance.OnError += OnFirebaseError;
+            Debug.Log("[DataManager] CleanFirebaseManager 이벤트 구독 완료");
         }
-
-        // UserDataManager 이벤트 구독
+        else
+        {
+            Debug.LogWarning("[DataManager] CleanFirebaseManager가 아직 없음");
+        }
+        
+        Debug.Log("[DataManager] 초기화 완료 - 연결 대기 중");
+    }
+    
+System.Collections.IEnumerator WaitForUserDataManager()
+    {
+        Debug.Log("[DataManager] UserDataManager 대기 중...");
+        
+        float timeout = 5f;
+        float elapsed = 0f;
+        
+        while (UserDataManager.Instance == null && elapsed < timeout)
+        {
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        
         if (UserDataManager.Instance != null)
         {
-            dataWrapper = new FirebaseUserDataWrapper(UserDataManager.Instance);
             UserDataManager.Instance.OnDataChanged += OnLocalDataChanged;
+            dataWrapper = new FirebaseUserDataWrapper(UserDataManager.Instance);
+            Debug.Log("[DataManager] UserDataManager 연결 완료!");
+        }
+        else
+        {
+            Debug.LogError("[DataManager] UserDataManager 타임아웃!");
+        }
+        
+        // CleanFirebaseManager 이벤트 구독도 여기서 재시도
+        yield return StartCoroutine(WaitForCleanFirebaseManager());
+    }
+    
+    System.Collections.IEnumerator WaitForCleanFirebaseManager()
+    {
+        Debug.Log("[DataManager] CleanFirebaseManager 대기 중...");
+        
+        float timeout = 5f;
+        float elapsed = 0f;
+        
+        while (CleanFirebaseManager.Instance == null && elapsed < timeout)
+        {
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        
+        if (CleanFirebaseManager.Instance != null)
+        {
+            // 이벤트 중복 구독 방지
+            CleanFirebaseManager.Instance.OnFirebaseReady -= OnFirebaseReady;
+            CleanFirebaseManager.Instance.OnUserSignedIn -= OnUserSignedIn;
+            CleanFirebaseManager.Instance.OnError -= OnFirebaseError;
+            
+            // 새로 구독
+            CleanFirebaseManager.Instance.OnFirebaseReady += OnFirebaseReady;
+            CleanFirebaseManager.Instance.OnUserSignedIn += OnUserSignedIn;
+            CleanFirebaseManager.Instance.OnError += OnFirebaseError;
+            Debug.Log("[DataManager] CleanFirebaseManager 이벤트 구독 완료!");
+            
+            // 이미 로그인되어 있는지 확인
+            if (CleanFirebaseManager.Instance.IsLoggedIn)
+            {
+                Debug.Log("[DataManager] 이미 로그인되어 있음 - 연결 상태 업데이트");
+                isConnected = true;
+            }
+        }
+        else
+        {
+            Debug.LogError("[DataManager] CleanFirebaseManager 타임아웃!");
         }
     }
 
@@ -60,17 +141,29 @@ public class FirebaseDataManager : MonoBehaviour
 
     #region Firebase 이벤트 처리
 
-    void OnFirebaseReady()
+void OnFirebaseReady()
     {
-        Debug.Log("[DataManager] Firebase 준비 완료");
+        Debug.Log("[DataManager] Firebase 준비 완료 - 자동 로그인 시도");
+        
+        // Firebase가 준비되면 자동으로 익명 로그인 시도
+        if (CleanFirebaseManager.Instance != null && CleanFirebaseManager.Instance.IsReady)
+        {
+            Debug.Log("[DataManager] 자동 익명 로그인 시작");
+            CleanFirebaseManager.Instance.SignInAnonymously();
+        }
     }
 
-    void OnUserSignedIn(bool success)
+void OnUserSignedIn(bool success)
     {
+        Debug.Log($"[DataManager] 📨 OnUserSignedIn 이벤트 수신: {success}");
+        
         if (success && CleanFirebaseManager.Instance != null)
         {
             isConnected = true;
-            Debug.Log("[DataManager] ✅ Firebase 연결됨");
+            Debug.Log("[DataManager] ✅ Firebase 연결됨 - 로그인 성공!");
+            
+            // 연결 상태 재확인
+            Debug.Log($"[DataManager] 연결 상태 재확인 - IsConnected: {isConnected}, IsReady: {CleanFirebaseManager.Instance.IsReady}");
             
             // 로그인 시 데이터 로드
             LoadUserData();
@@ -78,7 +171,7 @@ public class FirebaseDataManager : MonoBehaviour
         else
         {
             isConnected = false;
-            Debug.Log("[DataManager] ❌ Firebase 연결 해제");
+            Debug.LogWarning($"[DataManager] ❌ Firebase 로그인 실패 또는 매니저 없음. Success: {success}, Manager: {(CleanFirebaseManager.Instance != null ? "존재" : "NULL")}");
         }
     }
 
@@ -141,26 +234,50 @@ public class FirebaseDataManager : MonoBehaviour
     /// <summary>
     /// 사용자 데이터 로드
     /// </summary>
+/// <summary>
+    /// 사용자 데이터 로드
+    /// </summary>
     public void LoadUserData()
     {
-        if (!isConnected || dataWrapper == null || CleanFirebaseManager.Instance == null)
+        // 더 상세한 조건 체크와 로그
+        if (!isConnected)
         {
-            Debug.LogWarning("[DataManager] ⚠️ 로드 불가 - 연결 안됨 또는 매니저 없음");
+            Debug.LogWarning("[DataManager] ⚠️ 로드 불가 - Firebase 연결 안됨");
+            return;
+        }
+        
+        if (dataWrapper == null)
+        {
+            Debug.LogWarning("[DataManager] ⚠️ 로드 불가 - UserDataManager 래퍼 없음");
+            return;
+        }
+        
+        if (CleanFirebaseManager.Instance == null)
+        {
+            Debug.LogWarning("[DataManager] ⚠️ 로드 불가 - CleanFirebaseManager 없음");
+            return;
+        }
+        
+        if (UserDataManager.Instance == null)
+        {
+            Debug.LogWarning("[DataManager] ⚠️ 로드 불가 - UserDataManager 없음");
             return;
         }
 
         try
         {
             string userId = CleanFirebaseManager.Instance.CurrentUserId;
-
+            
             if (string.IsNullOrEmpty(userId))
             {
-                Debug.LogWarning("[DataManager] ⚠️ 사용자 ID가 없음");
+                Debug.LogWarning("[DataManager] ⚠️ 사용자 ID가 없음 - 익명 로그인 전?");
                 return;
             }
 
-            Debug.Log("[DataManager] 📥 데이터 로드 중...");
+            Debug.Log($"[DataManager] 📥 데이터 로드 시작: {userId}");
             CleanFirebaseManager.Instance.LoadUserData(userId, OnDataLoaded);
+            
+            lastSyncTime = Time.time;
         }
         catch (Exception ex)
         {
@@ -291,9 +408,55 @@ public class FirebaseDataManager : MonoBehaviour
 
     #region 공개 API
 
-    public bool IsConnected => isConnected;
     
-    public void ForceSyncNow()
+    
+    /// <summary>
+    /// Firebase가 초기화되었는지 확인 (로그인 상태와 무관)
+    /// </summary>
+    public bool IsFirebaseReady => CleanFirebaseManager.Instance != null && CleanFirebaseManager.Instance.IsReady;
+    
+    /// <summary>
+    /// 부분적 연결 상태 (초기화되었지만 로그인 안됨)
+    /// </summary>
+    public bool IsPartiallyConnected => IsFirebaseReady && dataWrapper != null && UserDataManager.Instance != null;
+public bool IsConnected => isConnected;
+    
+    
+    
+    /// <summary>
+    /// 강제로 연결 상태를 다시 확인하고 업데이트
+    /// </summary>
+    [ContextMenu("Force Check Connection")]
+    public void ForceCheckConnection()
+    {
+        Debug.Log("[DataManager] 🔍 강제 연결 상태 체크 시작");
+        
+        if (CleanFirebaseManager.Instance != null)
+        {
+            Debug.Log($"[DataManager] CleanFirebaseManager 상태: Ready={CleanFirebaseManager.Instance.IsReady}, LoggedIn={CleanFirebaseManager.Instance.IsLoggedIn}");
+            
+            if (CleanFirebaseManager.Instance.IsLoggedIn)
+            {
+                if (!isConnected)
+                {
+                    Debug.Log("[DataManager] ✅ 로그인되어 있지만 isConnected가 false였음 - 수정");
+                    isConnected = true;
+                }
+            }
+            else if (CleanFirebaseManager.Instance.IsReady)
+            {
+                Debug.Log("[DataManager] Firebase 준비되었지만 로그인 안됨 - 자동 로그인 시도");
+                CleanFirebaseManager.Instance.SignInAnonymously();
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[DataManager] CleanFirebaseManager가 없음");
+        }
+        
+        Debug.Log($"[DataManager] 현재 연결 상태: IsConnected={isConnected}");
+    }
+public void ForceSyncNow()
     {
         if (isConnected)
         {
