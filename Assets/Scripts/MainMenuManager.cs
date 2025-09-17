@@ -13,6 +13,8 @@ public class MainMenuManager : MonoBehaviour
     public GameObject modeSelectPanel;
     public GameObject optionsPanel;
     public GameObject creditsPanel;
+    public GameObject readyPanel;
+    public GameObject startButton;
 
     [Header("Sound Settings")]
     public Slider bgmSlider;
@@ -78,11 +80,24 @@ public class MainMenuManager : MonoBehaviour
         modeSelectPanel.SetActive(false);
     }
 
+    public void ReadyGame()
+    {
+        PlayUISound("ButtonClick");
+    }
+
+    public void StageButton()
+    {
+        PlayUISound("ButtonClick");
+        startButton.SetActive(false);
+        readyPanel.SetActive(true);
+    }
+
     // 메인 메뉴로 돌아가기
     public void ShowMainMenu()
     {
         PlayUISound("ButtonClick");
-        mainMenuPanel.SetActive(true);
+        startButton.SetActive(true);
+        mainMenuPanel.SetActive(false);
         optionsPanel.SetActive(false);
         creditsPanel.SetActive(false);
         modeSelectPanel.SetActive(false);
