@@ -208,8 +208,13 @@ public class TitleSceneManager : MonoBehaviour
             return;
         }
 
-        Debug.Log("[TitleScene] 🎭 로그인 시작");
-        StartCoroutine(HandleLoginProcess());
+
+        // 실제 서비스 전에 활성화
+        //Debug.Log("[TitleScene] 🎭 로그인 시작");
+        //StartCoroutine(HandleLoginProcess());
+
+        isProcessingLogin = true;
+        StartCoroutine(StartGameSequenceAfterLogin());
     }
 
     IEnumerator HandleLoginProcess()

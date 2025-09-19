@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75dd4bef2328c824d9c8b4deffcd2d2c, type: 3}
+  m_Name: Stage_001
+  m_EditorClassIdentifier: 
+  stageNumber: 5
+  stageName: Stage 1
+  stageDescription: 
+  gridWidth: 6
+  gridHeight: 8
+  blockPattern: 000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000010000000000000000000000000000000000000001000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000
+  hasTimeLimit: 1
+  timeLimit: 180
+  maxMoves: 0
+  coinReward: 150
+  diamondReward: 0
+  experienceReward: 10
+  allowColorTransform: 1
+  shuffleAnimationDuration: 1
+  blockConversionDuration: 0.8
+  difficultyLevel: 1
+  showHints: 1

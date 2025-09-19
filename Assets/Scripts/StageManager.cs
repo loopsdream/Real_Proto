@@ -12,6 +12,8 @@ public class StageManager : MonoBehaviour
     public StageData currentStage;
 
     [Header("UI References")]
+    public GameObject pausePanel;
+    public GameObject WarningPanel;
     public TextMeshProUGUI stageNumberText;
     public TextMeshProUGUI stageNameText;
     public TextMeshProUGUI stageDescriptionText;
@@ -19,6 +21,7 @@ public class StageManager : MonoBehaviour
     public TextMeshProUGUI timerText;
     public Button nextStageButton;
     public Button restartStageButton;
+    public Button settingButton;
     public GameObject stageCompletePanel;
 
     [Header("Game References")]
@@ -415,6 +418,42 @@ public class StageManager : MonoBehaviour
         currentTestStage = null;    // 테스트 데이터 정리
 
         SceneManager.LoadScene("LevelDesigner");
+    }
+
+    public void OnTouchesSettingButton()
+    {
+        AudioManager.Instance.PlayUI("ButtonClick");
+        if (pausePanel != null)
+        {
+            pausePanel.SetActive(true);
+        }
+    }
+
+    public void OnTouchesHomeButton()
+    {
+        AudioManager.Instance.PlayUI("ButtonClick");
+        if (WarningPanel != null)
+        {
+            WarningPanel.SetActive(true);
+        }
+    }
+
+    public void OnTouchesResumeButton()
+    {
+        AudioManager.Instance.PlayUI("ButtonClick");
+        if (pausePanel != null)
+        {
+            pausePanel.SetActive(false);
+        }
+    }
+
+    public void OnTouchesBackButton()
+    {
+        AudioManager.Instance.PlayUI("ButtonClick");
+        if (WarningPanel != null)
+        {
+            WarningPanel.SetActive(false);
+        }
     }
 
 }

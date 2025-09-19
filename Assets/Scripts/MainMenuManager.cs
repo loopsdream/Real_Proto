@@ -80,9 +80,11 @@ public class MainMenuManager : MonoBehaviour
         modeSelectPanel.SetActive(false);
     }
 
-    public void ReadyGame()
+    public void CloseReadyPanel()
     {
         PlayUISound("ButtonClick");
+        startButton.SetActive(true);
+        readyPanel.SetActive(false);
     }
 
     public void StageButton()

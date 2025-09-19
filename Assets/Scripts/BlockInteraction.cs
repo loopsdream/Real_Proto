@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem; // »õ Input System ³×ÀÓ½ºÆäÀÌ½º
+using UnityEngine.InputSystem; // ï¿½ï¿½ Input System ï¿½ï¿½ï¿½Ó½ï¿½ï¿½ï¿½ï¿½Ì½ï¿½
 
 public class BlockInteraction : MonoBehaviour
 {
@@ -9,11 +9,11 @@ public class BlockInteraction : MonoBehaviour
     private Camera mainCamera;
 
     [Header("Touch Settings")]
-    public float touchAreaMultiplier = 1.2f; // ÅÍÄ¡ ¿µ¿ªÀ» 20% È®´ë
+    public float touchAreaMultiplier = 1.2f; // ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 20% È®ï¿½ï¿½
 
-    void Start()
+void Start()
     {
-        // Äİ¶óÀÌ´õ Å©±â¸¦ ÅÍÄ¡ÇÏ±â ½±°Ô È®´ë
+        // í„°ì¹˜ ì˜ì—­ 1.2ë°° í™•ëŒ€
         BoxCollider2D collider = GetComponent<BoxCollider2D>();
         if (collider != null)
         {
@@ -21,10 +21,36 @@ public class BlockInteraction : MonoBehaviour
         }
 
         block = GetComponent<Block>();
+        
+        // gridManager ìš°ì„ ìˆœìœ„ ê²€ìƒ‰
         if (gridManager == null)
         {
-            gridManager = Object.FindAnyObjectByType<BaseGridManager>();
+            // 1ìˆœìœ„: í˜„ì¬ ì”¬ì˜ StageGridManager
+            gridManager = Object.FindAnyObjectByType<StageGridManager>();
+            
+            // 2ìˆœìœ„: InfiniteGridManager (ë¬´í•œëª¨ë“œ)
+            if (gridManager == null)
+            {
+                gridManager = Object.FindAnyObjectByType<InfiniteGridManager>();
+            }
+            
+            // 3ìˆœìœ„: ê¸°ë³¸ BaseGridManager (í´ë°±)
+            if (gridManager == null)
+            {
+                gridManager = Object.FindAnyObjectByType<BaseGridManager>();
+            }
+            
+            // ë””ë²„ê·¸ ë¡œê·¸ ì¶”ê°€
+            if (gridManager != null)
+            {
+                Debug.Log($"BlockInteraction found gridManager: {gridManager.GetType().Name}");
+            }
+            else
+            {
+                Debug.LogWarning("BlockInteraction: No gridManager found!");
+            }
         }
+        
         mainCamera = Camera.main;
     }
 
@@ -33,7 +59,7 @@ public class BlockInteraction : MonoBehaviour
         bool inputDetected = false;
         Vector2 inputPosition = Vector2.zero;
 
-        // ¸ğ¹ÙÀÏ ÅÍÄ¡ ÀÔ·Â È®ÀÎ (¿ì¼±¼øÀ§ 1)
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½Ô·ï¿½ È®ï¿½ï¿½ (ï¿½ì¼±ï¿½ï¿½ï¿½ï¿½ 1)
         if (Input.touchCount > 0)
         {
             Touch touch = Input.GetTouch(0);
@@ -44,7 +70,7 @@ public class BlockInteraction : MonoBehaviour
                 Debug.Log("Touch detected at: " + inputPosition);
             }
         }
-        // ¸¶¿ì½º Å¬¸¯ È®ÀÎ (¿¡µğÅÍ/PC¿ë)
+        // ï¿½ï¿½ï¿½ì½º Å¬ï¿½ï¿½ È®ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/PCï¿½ï¿½)
         else if (Input.GetMouseButtonDown(0))
         {
             inputDetected = true;
@@ -54,40 +80,68 @@ public class BlockInteraction : MonoBehaviour
 
         if (inputDetected)
         {
-            // UI ¿ä¼Ò À§¿¡ ÀÖ´ÂÁö È®ÀÎ
-            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-            {
-                Debug.Log("Input over UI - ignoring");
-                return;
-            }
+            // UI ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½ È®ï¿½ï¿½
+            //if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            //{
+            //    Debug.Log("Input over UI - ignoring");
+            //    return;
+            //}
 
-            // ¸ğ¹ÙÀÏ¿¡¼­´Â ÅÍÄ¡ IDµµ È®ÀÎ
+            // ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ IDï¿½ï¿½ È®ï¿½ï¿½
             if (Input.touchCount > 0 && EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
             {
                 Debug.Log("Touch over UI - ignoring");
                 return;
             }
 
-            // ¿ùµå Æ÷Áö¼ÇÀ¸·Î º¯È¯
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
             Vector2 worldPos = mainCamera.ScreenToWorldPoint(inputPosition);
             Debug.Log("World position: " + worldPos);
 
-            // ¿ÀºêÁ§Æ®¿Í Ãæµ¹ È®ÀÎ
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½æµ¹ È®ï¿½ï¿½
             Collider2D hitCollider = Physics2D.OverlapPoint(worldPos);
             Debug.Log("Hit collider: " + (hitCollider ? hitCollider.name : "none"));
 
-            if (hitCollider != null && hitCollider.gameObject == gameObject)
+            if (hitCollider != null)
             {
-                if (block != null && block.isEmpty && gridManager != null)
+                Debug.Log("hitCollider != null");
+
+                if (hitCollider.gameObject == gameObject)
                 {
-                    Debug.Log($"Block clicked at grid position ({block.x}, {block.y})");
-                    gridManager.OnEmptyBlockClicked(block.x, block.y);
+                    Debug.Log("hitCollider.gameObject == gameObject");
+                    if (block != null && block.isEmpty && gridManager != null)
+                    {
+                        Debug.Log($"Block clicked at grid position ({block.x}, {block.y})");
+                        gridManager.OnEmptyBlockClicked(block.x, block.y);
+                    }
+                    else
+                    {
+                        Debug.Log($"Click invalid - Block: {(block != null)}, IsEmpty: {(block != null ? block.isEmpty : false)}, GridManager: {(gridManager != null)}");
+                    }
                 }
                 else
                 {
-                    Debug.Log($"Click invalid - Block: {(block != null)}, IsEmpty: {(block != null ? block.isEmpty : false)}, GridManager: {(gridManager != null)}");
+                    Debug.Log("hitCollider.gameObject != gameObject");
                 }
             }
+            else
+            {
+                Debug.Log("hitCollider == null");
+            }
+
+
+            //if (hitCollider != null && hitCollider.gameObject == gameObject)
+            //{
+            //    if (block != null && block.isEmpty && gridManager != null)
+            //    {
+            //        Debug.Log($"Block clicked at grid position ({block.x}, {block.y})");
+            //        gridManager.OnEmptyBlockClicked(block.x, block.y);
+            //    }
+            //    else
+            //    {
+            //        Debug.Log($"Click invalid - Block: {(block != null)}, IsEmpty: {(block != null ? block.isEmpty : false)}, GridManager: {(gridManager != null)}");
+            //    }
+            //}
         }
     }
 }
