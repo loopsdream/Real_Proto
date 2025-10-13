@@ -127,14 +127,11 @@ public class BlockFactory : MonoBehaviour
         blockComponent.x = x;
         blockComponent.y = y;
         blockComponent.isEmpty = isEmpty;
-        
-        if (isEmpty)
+
+        BlockInteraction interaction = blockObj.GetComponent<BlockInteraction>();
+        if (interaction == null)
         {
-            BlockInteraction interaction = blockObj.GetComponent<BlockInteraction>();
-            if (interaction == null)
-            {
-                interaction = blockObj.AddComponent<BlockInteraction>();
-            }
+            interaction = blockObj.AddComponent<BlockInteraction>();
         }
     }
     

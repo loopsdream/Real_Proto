@@ -22,6 +22,7 @@ public class UserDataManager : MonoBehaviour
     
     // Firebase 연동을 위한 이벤트
     public event Action<string> OnDataChanged;
+    public System.Action<ItemType, int> OnItemCountChanged;
 
     private UserData currentUserData;
     private const string SAVE_KEY = "UserData";
@@ -685,6 +686,106 @@ public class UserDataManager : MonoBehaviour
         CreateNewUserData();
         InvokeAllEvents();
         Debug.Log("User data reset");
+    }
+
+    #endregion
+
+    #region 아이템 관리
+
+    public int GetItemCount(ItemType itemType)
+    {
+        switch (itemType)
+        {
+            case ItemType.Hammer:
+                return currentUserData.currencies.hammerCount;
+            case ItemType.Tornado:
+                return currentUserData.currencies.tornadoCount;
+            case ItemType.Brush:
+                return currentUserData.currencies.brushCount;
+            default:
+                return 0;
+        }
+    }
+
+    public bool UseItem(ItemType itemType)
+    {
+        int currentCount = GetItemCount(itemType);
+        if (currentCount > 0)
+        {
+            switch (itemType)
+            {
+                case ItemType.Hammer:
+                    currentUserData.currencies.hammerCount--;
+                    break;
+                case ItemType.Tornado:
+                    currentUserData.currencies.tornadoCount--;
+                    break;
+                case ItemType.Brush:
+                    currentUserData.currencies.brushCount--;
+                    break;
+            }
+
+            OnItemCountChanged?.Invoke(itemType, GetItemCount(itemType));
+            OnDataChanged?.Invoke("items");
+            SaveUserData();
+            return true;
+        }
+        return false;
+    }
+
+    public void AddItem(ItemType itemType, int amount)
+    {
+        switch (itemType)
+        {
+            case ItemType.Hammer:
+                currentUserData.currencies.hammerCount += amount;
+                break;
+            case ItemType.Tornado:
+                currentUserData.currencies.tornadoCount += amount;
+                break;
+            case ItemType.Brush:
+                currentUserData.currencies.brushCount += amount;
+                break;
+        }
+
+        OnItemCountChanged?.Invoke(itemType, GetItemCount(itemType));
+        OnDataChanged?.Invoke("items");
+        SaveUserData();
+        Debug.Log($"Added {amount} {itemType}. Total: {GetItemCount(itemType)}");
+    }
+
+    public bool CanPurchaseItem(ItemData itemData, bool useDiamonds = false)
+    {
+        if (useDiamonds)
+        {
+            return GetDiamonds() >= itemData.diamondPrice;
+        }
+        else
+        {
+            return GetGameCoins() >= itemData.coinPrice;
+        }
+    }
+
+    public bool PurchaseItem(ItemData itemData, bool useDiamonds = false)
+    {
+        if (!CanPurchaseItem(itemData, useDiamonds))
+            return false;
+
+        // 재화 차감
+        if (useDiamonds)
+        {
+            if (!SpendDiamonds(itemData.diamondPrice))
+                return false;
+        }
+        else
+        {
+            if (!SpendGameCoins(itemData.coinPrice))
+                return false;
+        }
+
+        // 아이템 추가
+        AddItem(itemData.itemType, 1);
+        return true;
     }
 
     #endregion

@@ -38,6 +38,12 @@ public class Currencies
     public int energy = 5;       // 시작 시 최대 에너지
     public int maxEnergy = 5;
     public string lastEnergyTime;
+
+    // 아이템 보유 개수 추가
+    [Header("Items")]
+    public int hammerCount = 3;   // 시작 시 망치 3개
+    public int tornadoCount = 2;  // 시작 시 회오리 2개
+    public int brushCount = 2;    // 시작 시 붓 2개
 }
 
 [System.Serializable]

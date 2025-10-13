@@ -5,6 +5,9 @@ using TMPro;
 
 public class StageGridManager : BaseGridManager
 {
+    // 싱글톤 인스턴스
+    public static StageGridManager Instance { get; private set; }
+
     [Header("Stage Settings")]
     public int scorePerBlock = 10;
 
@@ -23,10 +26,32 @@ public class StageGridManager : BaseGridManager
 
     protected override void Awake()
     {
+        // 싱글톤 설정
+        if (Instance == null)
+        {
+            Instance = this;
+            Debug.Log($"[StageGridManager] Singleton instance set: {gameObject.name} (ID: {GetInstanceID()})");
+        }
+        else if (Instance != this)
+        {
+            Debug.LogWarning($"[StageGridManager] Duplicate instance found! Destroying: {gameObject.name}");
+            Destroy(gameObject);
+            return;
+        }
+
         base.Awake();
 
         if (shuffleSystem == null)
             shuffleSystem = GetComponent<StageShuffleSystem>();
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Debug.Log("[StageGridManager] Singleton instance cleared");
+            Instance = null;
+        }
     }
 
     void Start()
@@ -37,15 +62,40 @@ public class StageGridManager : BaseGridManager
 
     public void InitializeStageGrid(StageData stageData)
     {
+        Debug.Log($"[InitializeStageGrid] Starting with stage: {stageData.stageName}");
+        Debug.Log($"[InitializeStageGrid] Grid size: {stageData.gridWidth}x{stageData.gridHeight}");
+
         if (stageData == null) return;
 
         width = stageData.gridWidth;
         height = stageData.gridHeight;
 
         ClearGrid();
+        Debug.Log("[InitializeStageGrid] Grid cleared");
+
         SetupGrid();
+        Debug.Log($"[InitializeStageGrid] SetupGrid() called - grid array: {(grid != null ? $"{grid.GetLength(0)}x{grid.GetLength(1)}" : "NULL")}");
+
         CreateBlocksFromPattern(stageData.blockPattern);
+        Debug.Log("[InitializeStageGrid] Pattern initialized");
+
+        int nullCount = 0;
+        int blockCount = 0;
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (grid[x, y] == null)
+                    nullCount++;
+                else
+                    blockCount++;
+            }
+        }
+        Debug.Log($"[InitializeStageGrid] Grid status - Blocks: {blockCount}, NULL: {nullCount}");
+
         SetupCameraAndLayout();
+
+        Debug.Log("[InitializeStageGrid] Completed");
 
         currentScore = 0;
         UpdateScoreText();
@@ -75,23 +125,88 @@ public class StageGridManager : BaseGridManager
 
     public override void OnEmptyBlockClicked(int x, int y)
     {
-        if (grid == null || x < 0 || x >= grid.GetLength(0) || y < 0 || y >= grid.GetLength(1))
+        Debug.Log($"[StageGridManager] OnEmptyBlockClicked({x}, {y}) called");
+
+        // grid 배열 상태 확인
+        if (grid == null)
         {
-            Debug.LogWarning($"Invalid click position: ({x}, {y})");
+            Debug.LogError("[StageGridManager] grid array is NULL!");
             return;
         }
 
-        Debug.Log($"Stage Mode: Empty block clicked at ({x}, {y})");
+        Debug.Log($"[StageGridManager] grid size: {grid.GetLength(0)}x{grid.GetLength(1)}");
+        Debug.Log($"[StageGridManager] Looking at grid[{x}, {y}]");
 
-        if (matchingSystem != null)
+        // 해당 위치와 주변 블록 확인
+        for (int dx = -1; dx <= 1; dx++)
         {
-            List<GameObject> matchedBlocks = matchingSystem.FindMatchingBlocks(x, y, grid);
-
-            if (matchedBlocks.Count > 0)
+            for (int dy = -1; dy <= 1; dy++)
             {
-                ProcessMatchedBlocks(matchedBlocks);
+                int checkX = x + dx;
+                int checkY = y + dy;
+
+                if (checkX >= 0 && checkX < grid.GetLength(0) &&
+                    checkY >= 0 && checkY < grid.GetLength(1))
+                {
+                    GameObject blockObj = grid[checkX, checkY];
+                    if (blockObj != null)
+                    {
+                        Block blockComp = blockObj.GetComponent<Block>();
+                        string blockInfo = blockComp != null ? $"isEmpty:{blockComp.isEmpty}, tag:{blockObj.tag}" : "NO BLOCK COMPONENT";
+                        Debug.Log($"[Grid] ({checkX},{checkY}): {blockObj.name} - {blockInfo}");
+                    }
+                    else
+                    {
+                        Debug.Log($"[Grid] ({checkX},{checkY}): NULL");
+                    }
+                }
             }
         }
+
+        // matchingSystem 체크
+        if (matchingSystem == null)
+        {
+            Debug.LogError("[StageGridManager] matchingSystem is NULL!");
+            return;
+        }
+
+        Debug.Log($"[StageGridManager] Calling matchingSystem.FindMatchingBlocks({x}, {y})");
+        List<GameObject> matchedBlocks = matchingSystem.FindMatchingBlocks(x, y, grid);
+
+        Debug.Log($"[StageGridManager] Found {matchedBlocks.Count} matches");
+
+        if (matchedBlocks.Count > 0)
+        {
+            Debug.Log("[StageGridManager] Destroying matched blocks...");
+            // 블록 파괴 로직
+            ProcessMatchedBlocks(matchedBlocks);
+        }
+        else
+        {
+            Debug.LogWarning("[StageGridManager] No matches found!");
+        }
+
+        //if (grid == null || x < 0 || x >= grid.GetLength(0) || y < 0 || y >= grid.GetLength(1))
+        //{
+        //    Debug.LogWarning($"Invalid click position: ({x}, {y})");
+        //    return;
+        //}
+
+        //Debug.Log($"Stage Mode: Empty block clicked at ({x}, {y})");
+
+        //if (matchingSystem != null)
+        //{
+        //    Debug.Log("matchingSystem is not null)");
+
+        //    List<GameObject> matchedBlocks = matchingSystem.FindMatchingBlocks(x, y, grid);
+
+        //    if (matchedBlocks.Count > 0)
+        //    {
+        //        Debug.Log("Stage Mode: matchedBlocks.Count > 0)");
+
+        //        ProcessMatchedBlocks(matchedBlocks);
+        //    }
+        //}
     }
 
     protected override void ProcessMatchedBlocks(List<GameObject> matchedBlocks)
@@ -780,4 +895,138 @@ public class StageGridManager : BaseGridManager
             }
         }
     }
+
+    #region Item System Support Methods
+
+    // Grid dimension methods - 기존 width, height 변수 사용
+    public int GetGridWidth()
+    {
+        return width;
+    }
+
+    public int GetGridHeight()
+    {
+        return height;
+    }
+
+    // Block access methods - BaseGridManager의 기존 메서드들과 호환
+    public Block GetBlockComponentAt(int x, int y)
+    {
+        GameObject blockObj = GetBlockAt(x, y); // BaseGridManager의 기존 메서드 사용
+        if (blockObj != null)
+        {
+            return blockObj.GetComponent<Block>();
+        }
+        return null;
+    }
+
+    public void DestroyBlockAt(int x, int y)
+    {
+        GameObject targetBlock = GetBlockAt(x, y);
+        if (targetBlock == null)
+            return;
+
+        Block blockComponent = targetBlock.GetComponent<Block>();
+        if (blockComponent == null || blockComponent.isEmpty) // 빈 블록은 파괴하지 않음
+            return;
+
+        Debug.Log("Destroying block at position: " + x + ", " + y);
+
+        // BlockFactory를 사용하여 블록 파괴
+        if (blockFactory != null)
+        {
+            blockFactory.DestroyBlock(targetBlock);
+            // 빈 블록으로 교체
+            grid[x, y] = blockFactory.CreateEmptyBlock(x, y);
+        }
+        else
+        {
+            // Fallback: 직접 파괴
+            Destroy(targetBlock);
+            grid[x, y] = null;
+        }
+
+        // 아이템 사용 후 매치 체크
+        StartCoroutine(CheckMatchesAfterItemUse(0.2f));
+    }
+
+    // World position conversion - BaseGridManager의 GridToWorldPosition 사용
+    public Vector3 GetWorldPositionFromGrid(int x, int y)
+    {
+        return GridToWorldPosition(x, y); // BaseGridManager의 기존 메서드 사용
+    }
+
+    // Score management - 기존 AddScore 메서드 오버로드
+    public void AddScoreFromItem(int points)
+    {
+        AddScore(points); // 기존 private AddScore 메서드 호출
+    }
+
+    // Helper method to get all non-empty blocks
+    public List<Block> GetAllNonEmptyBlocks()
+    {
+        List<Block> nonEmptyBlocks = new List<Block>();
+
+        if (grid == null) return nonEmptyBlocks;
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Block block = GetBlockComponentAt(x, y);
+                if (block != null && !block.isEmpty)
+                {
+                    nonEmptyBlocks.Add(block);
+                }
+            }
+        }
+
+        return nonEmptyBlocks;
+    }
+
+    // Helper method to get all blocks in the grid
+    public List<Block> GetAllBlocks()
+    {
+        List<Block> allBlocks = new List<Block>();
+
+        if (grid == null) return allBlocks;
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Block block = GetBlockComponentAt(x, y);
+                if (block != null)
+                {
+                    allBlocks.Add(block);
+                }
+            }
+        }
+
+        return allBlocks;
+    }
+
+    // Coroutine for checking matches after item usage
+    private System.Collections.IEnumerator CheckMatchesAfterItemUse(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        Debug.Log("Checking for matches after item use");
+
+        // 기존 매칭 시스템 사용
+        if (matchingSystem != null)
+        {
+            // 매치 가능한 블록이 있는지 확인
+            bool hasMatches = matchingSystem.HasAnyPossibleMatch(grid);
+            Debug.Log("Has possible matches after item use: " + hasMatches);
+
+            // 필요하다면 데드락 상황 처리
+            if (!hasMatches && CountRemainingBlocks() > 0)
+            {
+                HandleDeadlockSituation(); // 기존 메서드 호출
+            }
+        }
+    }
+
+    #endregion
 }

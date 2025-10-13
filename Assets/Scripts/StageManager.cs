@@ -72,6 +72,18 @@ public class StageManager : MonoBehaviour
 
     void Start()
     {
+        // gridManager를 싱글톤 인스턴스로 교체
+        if (StageGridManager.Instance != null)
+        {
+            gridManager = StageGridManager.Instance;
+            Debug.Log($"[StageManager] Using StageGridManager.Instance (ID: {gridManager.GetInstanceID()})");
+        }
+        else if (gridManager == null)
+        {
+            gridManager = Object.FindAnyObjectByType<StageGridManager>();
+            Debug.LogWarning("[StageManager] StageGridManager.Instance is null, using FindAnyObjectByType");
+        }
+
         // 테스트 레벨 체크를 먼저
         CheckForTestLevel();
 
@@ -119,6 +131,9 @@ public class StageManager : MonoBehaviour
 
         Debug.Log("start LoadStage()");
 
+        // 강제로 inputHandler 리셋
+        BlockInteraction.ResetInputHandler();
+
         currentStageIndex = stageIndex;
         currentStage = allStages[stageIndex];
 
@@ -129,6 +144,8 @@ public class StageManager : MonoBehaviour
 
         if (gridManager != null)
         {
+            Debug.Log($"[StageManager] gridManager instance ID: {gridManager.GetInstanceID()}");
+            Debug.Log($"[StageManager] gridManager GameObject: {gridManager.gameObject.name}");
             gridManager.InitializeStageGrid(currentStage);
         }
 
