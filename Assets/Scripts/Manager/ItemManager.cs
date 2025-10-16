@@ -19,63 +19,26 @@ public class ItemManager : MonoBehaviour
 
     void Start()
     {
-        // Find required managers - 더 안전한 방법 사용
-        // 1순위: GameObject 이름으로 찾기
-        GameObject stageGridObj = GameObject.Find("StageGridManager");
-        if (stageGridObj != null)
+        // GameManager GameObject에서 StageGridManager 찾기
+        GameObject gameManagerObj = GameObject.Find("GameManager");
+        if (gameManagerObj != null)
         {
-            stageGridManager = stageGridObj.GetComponent<StageGridManager>();
-            Debug.Log("[ItemManager] Found StageGridManager by name");
+            stageGridManager = gameManagerObj.GetComponent<StageGridManager>();
+            Debug.Log("[ItemManager] Found StageGridManager on GameManager");
         }
 
-        // 2순위: FindAnyObjectByType으로 찾기
         if (stageGridManager == null)
         {
-            stageGridManager = Object.FindAnyObjectByType<StageGridManager>();
-            if (stageGridManager != null)
-            {
-                Debug.Log("[ItemManager] Found StageGridManager by type");
-            }
-        }
-
-        // 최종 확인
-        if (stageGridManager == null)
-        {
-            Debug.LogError("[ItemManager] StageGridManager not found! Item system will not work.");
-        }
-        else
-        {
-            Debug.Log($"[ItemManager] StageGridManager found: {stageGridManager.gameObject.name}");
+            Debug.LogError("[ItemManager] StageGridManager not found!");
         }
 
         // ItemUIManager 찾기
-        GameObject itemUIObj = GameObject.Find("ItemUIManager");
-        if (itemUIObj != null)
-        {
-            itemUIManager = itemUIObj.GetComponent<ItemUIManager>();
-            Debug.Log("[ItemManager] Found ItemUIManager by name");
-        }
-
-        // 2순위: FindAnyObjectByType으로 찾기
-        if (itemUIManager == null)
-        {
-            itemUIManager = Object.FindAnyObjectByType<ItemUIManager>();
-            if (itemUIManager != null)
-            {
-                Debug.Log("[ItemManager] Found ItemUIManager by type");
-            }
-        }
-
-        // Subscribe to item UI events
+        itemUIManager = Object.FindAnyObjectByType<ItemUIManager>();
         if (itemUIManager != null)
         {
             itemUIManager.OnItemModeActivated += OnItemModeActivated;
             itemUIManager.OnItemModeDeactivated += OnItemModeDeactivated;
-            Debug.Log("[ItemManager] Subscribed to ItemUIManager events");
-        }
-        else
-        {
-            Debug.LogError("[ItemManager] ItemUIManager not found!");
+            Debug.Log("[ItemManager] Connected to ItemUIManager");
         }
 
         Debug.Log("[ItemManager] Initialization complete");
@@ -109,8 +72,21 @@ public class ItemManager : MonoBehaviour
     {
         Debug.Log("start TryUseItemOnBlock...");
 
+        // StageGridManager 재확인
+        if (stageGridManager == null)
+        {
+            GameObject gameManagerObj = GameObject.Find("GameManager");
+            if (gameManagerObj != null)
+            {
+                stageGridManager = gameManagerObj.GetComponent<StageGridManager>();
+            }
+        }
+
         if (!itemModeActive || !activeItemType.HasValue || stageGridManager == null)
+        {
+            Debug.LogWarning($"[TryUseItemOnBlock] Cannot use item - Active: {itemModeActive}, Type: {activeItemType.HasValue}, GridManager: {stageGridManager != null}");
             return false;
+        }
 
         Debug.Log("progress TryUseItemOnBlock step 1");
 

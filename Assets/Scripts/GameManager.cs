@@ -4,24 +4,12 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance;
-
     [Header("UI References")]
     public GameObject pauseMenu;
     public GameObject gameOverMenu;
 
     void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-
         AudioManager.Instance.PlaySceneBGM("StageModeScene");
     }
 

@@ -72,24 +72,35 @@ public class StageManager : MonoBehaviour
 
     void Start()
     {
-        // gridManager를 싱글톤 인스턴스로 교체
-        if (StageGridManager.Instance != null)
+        // GameManager GameObject에서 StageGridManager 찾기
+        GameObject gameManagerObj = GameObject.Find("GameManager");
+        if (gameManagerObj != null)
         {
-            gridManager = StageGridManager.Instance;
-            Debug.Log($"[StageManager] Using StageGridManager.Instance (ID: {gridManager.GetInstanceID()})");
+            gridManager = gameManagerObj.GetComponent<StageGridManager>();
+            Debug.Log($"[StageManager] Found StageGridManager on GameManager");
         }
-        else if (gridManager == null)
+
+        if (gridManager == null)
         {
-            gridManager = Object.FindAnyObjectByType<StageGridManager>();
-            Debug.LogWarning("[StageManager] StageGridManager.Instance is null, using FindAnyObjectByType");
+            Debug.LogError("[StageManager] StageGridManager not found!");
+            return;
         }
 
         // 테스트 레벨 체크를 먼저
         CheckForTestLevel();
 
-        // 테스트 레벨이 아닐 때만 일반 스테이지 로드
+        // 씬 재진입 시 강제 초기화
+        StartCoroutine(InitializeStageWithDelay());
+    }
+
+    System.Collections.IEnumerator InitializeStageWithDelay()
+    {
+        // 한 프레임 대기 (모든 컴포넌트 초기화 대기)
+        yield return null;
+
         if (!isTestLevel && PlayerPrefs.GetInt("IsTestLevel", 0) == 0)
         {
+            Debug.Log("[StageManager] Loading first stage after delay");
             LoadStage(0);
         }
     }
@@ -131,9 +142,6 @@ public class StageManager : MonoBehaviour
 
         Debug.Log("start LoadStage()");
 
-        // 강제로 inputHandler 리셋
-        BlockInteraction.ResetInputHandler();
-
         currentStageIndex = stageIndex;
         currentStage = allStages[stageIndex];
 
@@ -142,14 +150,53 @@ public class StageManager : MonoBehaviour
         ResetGameState();
         StartStageTimer();
 
+        // gridManager 재확인
+        if (gridManager == null)
+        {
+            GameObject gameManagerObj = GameObject.Find("GameManager");
+            if (gameManagerObj != null)
+            {
+                gridManager = gameManagerObj.GetComponent<StageGridManager>();
+            }
+
+            //gridManager = Object.FindAnyObjectByType<StageGridManager>();
+        }
+
         if (gridManager != null)
         {
-            Debug.Log($"[StageManager] gridManager instance ID: {gridManager.GetInstanceID()}");
-            Debug.Log($"[StageManager] gridManager GameObject: {gridManager.gameObject.name}");
+            Debug.Log($"[StageManager] Initializing grid");
             gridManager.InitializeStageGrid(currentStage);
+
+            // 그리드 초기화 확인
+            StartCoroutine(VerifyGridInitialization());
+        }
+        else
+        {
+            Debug.LogError("[StageManager] GridManager is still null!");
         }
 
         Debug.Log($"Loaded Stage {currentStage.stageNumber}: {currentStage.stageName}");
+    }
+
+    System.Collections.IEnumerator VerifyGridInitialization()
+    {
+        yield return new WaitForSeconds(0.1f);
+
+        // 블록이 제대로 생성되었는지 확인
+        int blockCount = 0;
+        Transform gridParent = gridManager.gridParent;
+        if (gridParent != null)
+        {
+            blockCount = gridParent.childCount;
+        }
+
+        Debug.Log($"[StageManager] Grid initialization complete. Block count: {blockCount}");
+
+        if (blockCount == 0)
+        {
+            Debug.LogError("[StageManager] No blocks created! Trying to reinitialize...");
+            gridManager.InitializeStageGrid(currentStage);
+        }
     }
 
     public void LoadTestStage(TestStageData testStage)

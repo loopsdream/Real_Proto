@@ -1058,11 +1058,11 @@ public class InfiniteModeManager : MonoBehaviour
         gridManager.SetBlockAt(x, y, emptyBlock);
 
         // BlockInteraction 설정
-        BlockInteraction interaction = emptyBlock.GetComponent<BlockInteraction>();
-        if (interaction != null)
-        {
-            interaction.gridManager = gridManager;
-        }
+        //BlockInteraction interaction = emptyBlock.GetComponent<BlockInteraction>();
+        //if (interaction != null)
+        //{
+        //    interaction.SetGridManager(gridManager);
+        //}
 
         // 로컬 그리드 동기화
         infiniteGrid[x, y] = emptyBlock;

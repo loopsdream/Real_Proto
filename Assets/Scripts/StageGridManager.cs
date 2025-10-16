@@ -5,9 +5,6 @@ using TMPro;
 
 public class StageGridManager : BaseGridManager
 {
-    // ΩÃ±€≈Ê ¿ŒΩ∫≈œΩ∫
-    public static StageGridManager Instance { get; private set; }
-
     [Header("Stage Settings")]
     public int scorePerBlock = 10;
 
@@ -26,32 +23,17 @@ public class StageGridManager : BaseGridManager
 
     protected override void Awake()
     {
-        // ΩÃ±€≈Ê º≥¡§
-        if (Instance == null)
-        {
-            Instance = this;
-            Debug.Log($"[StageGridManager] Singleton instance set: {gameObject.name} (ID: {GetInstanceID()})");
-        }
-        else if (Instance != this)
-        {
-            Debug.LogWarning($"[StageGridManager] Duplicate instance found! Destroying: {gameObject.name}");
-            Destroy(gameObject);
-            return;
-        }
-
         base.Awake();
 
         if (shuffleSystem == null)
             shuffleSystem = GetComponent<StageShuffleSystem>();
+
+        Debug.Log($"[StageGridManager] Awake called on {gameObject.name}");
     }
 
-    void OnDestroy()
+    void OnEnable()
     {
-        if (Instance == this)
-        {
-            Debug.Log("[StageGridManager] Singleton instance cleared");
-            Instance = null;
-        }
+        Debug.Log($"[StageGridManager] OnEnable called on {gameObject.name}");
     }
 
     void Start()
@@ -63,9 +45,12 @@ public class StageGridManager : BaseGridManager
     public void InitializeStageGrid(StageData stageData)
     {
         Debug.Log($"[InitializeStageGrid] Starting with stage: {stageData.stageName}");
-        Debug.Log($"[InitializeStageGrid] Grid size: {stageData.gridWidth}x{stageData.gridHeight}");
 
-        if (stageData == null) return;
+        if (stageData == null)
+        {
+            Debug.LogError("[InitializeStageGrid] StageData is null!");
+            return;
+        }
 
         width = stageData.gridWidth;
         height = stageData.gridHeight;
@@ -79,26 +64,21 @@ public class StageGridManager : BaseGridManager
         CreateBlocksFromPattern(stageData.blockPattern);
         Debug.Log("[InitializeStageGrid] Pattern initialized");
 
-        int nullCount = 0;
+        // ª˝º∫µ» ∫Ì∑œ »Æ¿Œ
         int blockCount = 0;
-        for (int x = 0; x < width; x++)
+        if (gridParent != null)
         {
-            for (int y = 0; y < height; y++)
-            {
-                if (grid[x, y] == null)
-                    nullCount++;
-                else
-                    blockCount++;
-            }
+            Debug.Log("[InitializeStageGrid] gridParent != null");
+            blockCount = gridParent.childCount;
         }
-        Debug.Log($"[InitializeStageGrid] Grid status - Blocks: {blockCount}, NULL: {nullCount}");
+        Debug.Log($"[InitializeStageGrid] Total blocks in scene: {blockCount}");
 
         SetupCameraAndLayout();
 
-        Debug.Log("[InitializeStageGrid] Completed");
-
         currentScore = 0;
         UpdateScoreText();
+
+        Debug.Log("[InitializeStageGrid] Completed");
     }
 
     private void CreateBlocksFromPattern(int[] pattern)
