@@ -13,6 +13,7 @@ public class CommonUIManager : MonoBehaviour
     public Button settingsButton;
     public Button pauseButton;
     public GameObject notificationPanel;
+    public Button shopButton;
     public TextMeshProUGUI notificationText;
     public GameObject loadingScreen;
 
@@ -105,6 +106,12 @@ public class CommonUIManager : MonoBehaviour
         if (pauseButton != null)
         {
             pauseButton.onClick.RemoveAllListeners();
+
+        if (shopButton != null)
+        {
+            shopButton.onClick.RemoveAllListeners();
+            shopButton.onClick.AddListener(OpenShop);
+        }
             pauseButton.onClick.AddListener(PauseGame);
         }
     }
@@ -313,6 +320,20 @@ public class CommonUIManager : MonoBehaviour
 
             string message = Time.timeScale == 0 ? "게임 일시정지" : "게임 재시작";
             ShowNotification(message, 2f);
+        }
+    }
+
+    void OpenShop()
+    {
+        Debug.Log("Opening shop...");
+
+        if (ShopUIManager.Instance != null)
+        {
+            ShopUIManager.Instance.ShowShop(ShopTab.Items);
+        }
+        else
+        {
+            Debug.LogError("CommonUIManager: ShopUIManager.Instance is null!");
         }
     }
 
