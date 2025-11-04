@@ -106,13 +106,13 @@ public class CommonUIManager : MonoBehaviour
         if (pauseButton != null)
         {
             pauseButton.onClick.RemoveAllListeners();
+            pauseButton.onClick.AddListener(PauseGame);
+        }
 
         if (shopButton != null)
         {
             shopButton.onClick.RemoveAllListeners();
             shopButton.onClick.AddListener(OpenShop);
-        }
-            pauseButton.onClick.AddListener(PauseGame);
         }
     }
 

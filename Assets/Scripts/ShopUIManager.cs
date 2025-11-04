@@ -34,6 +34,8 @@ public class ShopUIManager : MonoBehaviour
 
     void Awake()
     {
+        Debug.Log("=== ShopUIManager Awake() called! ===");
+
         // 싱글톤 설정
         if (Instance == null)
         {
@@ -47,8 +49,25 @@ public class ShopUIManager : MonoBehaviour
         }
     }
 
+    void OnEnable()
+    {
+        // 비활성화 상태에서 활성화될 때도 Instance 설정 보장
+        if (Instance == null)
+        {
+            Instance = this;
+            Debug.Log("ShopUIManager Instance set in OnEnable");
+        }
+    }
+
     void Start()
     {
+        // Instance가 아직 없으면 설정 (백업)
+        if (Instance == null)
+        {
+            Instance = this;
+            Debug.Log("ShopUIManager Instance set in Start (backup)");
+        }
+
         SetupButtons();
 
         // 초기 상태: 상점 닫힘
@@ -162,21 +181,25 @@ public class ShopUIManager : MonoBehaviour
 
     void LoadTabContent(ShopTab tab)
     {
-        // 기존 슬롯 정리
         ClearItemSlots();
 
-        // ShopManager에서 해당 탭의 아이템 가져오기
-        if (ShopManager.Instance == null)
+        // ShopManager 대신 직접 샘플 데이터 로드
+        List<ShopItemData> items = new List<ShopItemData>();
+
+        // Project에서 ShopItemData들을 로드
+        ShopItemData[] allItems = Resources.LoadAll<ShopItemData>("ItemData");
+
+        foreach (var item in allItems)
         {
-            Debug.LogError("ShopUIManager: ShopManager.Instance is null!");
-            return;
+            if (item != null && item.isAvailable)
+            {
+                items.Add(item);
+            }
         }
 
-        //TODO
-        //List<ShopItemData> items = ShopManager.Instance.GetItemsForTab(tab);
-        //CreateItemSlots(items);
+        CreateItemSlots(items);
 
-        //Debug.Log($"Loaded {items.Count} items for tab: {tab}");
+        Debug.Log($"Loaded {items.Count} items for tab: {tab}");
     }
 
     void ClearItemSlots()
