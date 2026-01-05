@@ -183,18 +183,23 @@ public class ShopUIManager : MonoBehaviour
     {
         ClearItemSlots();
 
-        // ShopManager 대신 직접 샘플 데이터 로드
+        // ShopManager에서 아이템 목록 가져오기
         List<ShopItemData> items = new List<ShopItemData>();
 
-        // Project에서 ShopItemData들을 로드
-        ShopItemData[] allItems = Resources.LoadAll<ShopItemData>("ItemData");
-
-        foreach (var item in allItems)
+        if (ShopManager.Instance != null && ShopManager.Instance.shopItems != null)
         {
-            if (item != null && item.isAvailable)
+            // ShopManager의 shopItems 리스트에서 현재 탭에 맞는 아이템만 필터링
+            foreach (var item in ShopManager.Instance.shopItems)
             {
-                items.Add(item);
+                if (item != null && item.isAvailable && item.shopTab == tab)
+                {
+                    items.Add(item);
+                }
             }
+        }
+        else
+        {
+            Debug.LogWarning("ShopUIManager: ShopManager.Instance or shopItems is null!");
         }
 
         CreateItemSlots(items);
@@ -303,8 +308,7 @@ public class ShopUIManager : MonoBehaviour
         }
 
         //TODO
-        //bool success = ShopManager.Instance.TryPurchaseItem(item);
-        bool success = false;
+        bool success = ShopManager.Instance.TryPurchaseItem(item);
 
         if (success)
         {

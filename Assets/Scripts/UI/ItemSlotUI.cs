@@ -85,7 +85,6 @@ void Start()
         OnItemSelected?.Invoke(itemData.itemType);
         SetSelected(!isSelected);
 
-        // ���� ���
         if (AudioManager.Instance != null)
         {
             //TODO
