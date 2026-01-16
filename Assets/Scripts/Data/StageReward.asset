@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e98bd8f95117044c922529d197d3fd9, type: 3}
+  m_Name: StageReward
+  m_EditorClassIdentifier: 
+  stageNumber: 1
+  stageName: 1
+  oneStarRewards:
+  - rewardType: 0
+    amount: 100
+    displayName: coin
+    icon: {fileID: 0}
+  twoStarRewards:
+  - rewardType: 3
+    amount: 1
+    displayName: hammer
+    icon: {fileID: 0}
+  threeStarRewards:
+  - rewardType: 1
+    amount: 10
+    displayName: dia10
+    icon: {fileID: 0}
+  firstClearBonus:
+  - rewardType: 1
+    amount: 50
+    displayName: first50
+    icon: {fileID: 0}
+  perfectClearBonus:
+  - rewardType: 4
+    amount: 1
+    displayName: perfect
+    icon: {fileID: 0}

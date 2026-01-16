@@ -51,6 +51,7 @@ public class StageProgress
 {
     public int stageNumber = 0;  // 스테이지 번호 추가
     public int bestScore = 0;
+    public int bestStars = 0;
     public bool completed = false;
     public long completedTime = 0; // 클리어 시간 (DateTime.Ticks)
 }

@@ -151,7 +151,7 @@ public class BlockFactory : MonoBehaviour
         }
     }
     
-    public int GetBlockTypeFromTag(string tag)
+public int GetBlockTypeFromTag(string tag)
     {
         switch (tag)
         {
@@ -160,6 +160,7 @@ public class BlockFactory : MonoBehaviour
             case "YellowBlock": return 3;
             case "GreenBlock": return 4;
             case "PurpleBlock": return 5;
+            case "PinkBlock": return 6;
             default: return 0;
         }
     }
@@ -181,7 +182,7 @@ public class BlockFactory : MonoBehaviour
         return true;
     }
 
-    public string GetTagFromBlockType(int blockType)
+public string GetTagFromBlockType(int blockType)
     {
         switch (blockType)
         {
@@ -190,6 +191,7 @@ public class BlockFactory : MonoBehaviour
             case 3: return "YellowBlock";
             case 4: return "GreenBlock";
             case 5: return "PurpleBlock";
+            case 6: return "PinkBlock";
             default: return "EmptyBlock";
         }
     }

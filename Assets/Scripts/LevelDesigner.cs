@@ -16,7 +16,7 @@ public class LevelDesigner : MonoBehaviour
     public TMP_InputField heightInput;
     public TMP_InputField cellSizeInput;
     public TMP_InputField targetScoreInput;
-    public TMP_InputField maxMovesInput;
+    public TMP_InputField maxTapsInput;
     public Button generateGridButton;
     public Button testLevelButton;
     public Button clearGridButton;
@@ -38,6 +38,11 @@ public class LevelDesigner : MonoBehaviour
     public Button[] blockTypeButtons;
     public Image[] blockTypeImages;
     public Button emptyBlockButton;
+
+    [Header("Collectible Selection")]
+    public Button[] collectibleButtons;
+    public Image[] collectibleButtonImages;
+    public Button clearCollectibleButton;
 
     [Header("Grid Container")]
     public Transform gridContainer;
@@ -62,6 +67,9 @@ public class LevelDesigner : MonoBehaviour
     private int currentHeight;
     private float currentCellSize;
     private int selectedBlockType = 0; // 0: 빈 블록, 1-5: 각 색상 블록
+    private int selectedCollectibleType = 0;  // NEW: 0=None, 1=Heart, 2=Clover
+    private bool isCollectibleMode = false;  // NEW: Toggle between block/collectible mode
+
     private DesignerBlock[,] designerGrid;
     private List<GameObject> gridButtons = new List<GameObject>();
     private List<GameObject> centerLineObjects = new List<GameObject>(); // 중앙선 오브젝트들
@@ -204,13 +212,20 @@ public class LevelDesigner : MonoBehaviour
         stageData.gridWidth = currentWidth;
         stageData.gridHeight = currentHeight;
         stageData.blockPattern = GetCurrentBlockPattern();
+        stageData.collectiblePattern = GetCurrentCollectiblePattern();
         stageData.timeLimit = timeLimit;
         stageData.coinReward = CalculateCoinReward(stageNumber);
         stageData.experienceReward = 10;
         stageData.difficultyLevel = CalculateDifficulty(stageNumber);
         stageData.allowColorTransform = true;
         stageData.showHints = true;
-        
+
+        stageData.clearGoals = new List<ClearGoalData>();
+        stageData.clearGoals.Add(new ClearGoalData
+        {
+            goalType = ClearGoalType.DestroyAllBlocks
+        });
+
         string fileName = $"Stage_{stageNumber:D3}.asset";
         string assetPath = $"Assets/StageData/{fileName}";
         
@@ -266,6 +281,30 @@ public class LevelDesigner : MonoBehaviour
             }
         }
         
+        return pattern;
+    }
+
+    private int[] GetCurrentCollectiblePattern()
+    {
+        int width = currentWidth;
+        int height = currentHeight;
+        int[] pattern = new int[width * height];
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (designerGrid != null && x < designerGrid.GetLength(0) && y < designerGrid.GetLength(1))
+                {
+                    pattern[y * width + x] = designerGrid[x, y].collectibleType;
+                }
+                else
+                {
+                    pattern[y * width + x] = 0;
+                }
+            }
+        }
+
         return pattern;
     }
 
@@ -350,11 +389,33 @@ public class LevelDesigner : MonoBehaviour
 
     void SetupButtonEvents()
     {
-        widthInput.onEndEdit.AddListener(ValidateWidthInput);
-        heightInput.onEndEdit.AddListener(ValidateHeightInput);
-        cellSizeInput.onEndEdit.AddListener(ValidateCellSizeInput);
-        targetScoreInput.onEndEdit.AddListener(ValidateTargetScoreInput);
-        maxMovesInput.onEndEdit.AddListener(ValidateMaxMovesInput);
+        // Block type buttons
+        for (int i = 0; i < blockTypeButtons.Length; i++)
+        {
+            int blockType = i + 1;
+            blockTypeButtons[i].onClick.AddListener(() => SelectBlockType(blockType));
+        }
+
+        if (emptyBlockButton != null)
+        {
+            emptyBlockButton.onClick.AddListener(() => SelectBlockType(0));
+        }
+
+        // NEW: Collectible buttons
+        if (collectibleButtons != null)
+        {
+            for (int i = 0; i < collectibleButtons.Length; i++)
+            {
+                int collectibleType = i + 1;  // 1=Heart, 2=Clover
+                collectibleButtons[i].onClick.AddListener(() => SelectCollectibleType(collectibleType));
+            }
+        }
+
+        // NEW: Clear collectible button
+        if (clearCollectibleButton != null)
+        {
+            clearCollectibleButton.onClick.AddListener(() => SelectCollectibleType(0));
+        }
     }
 
     void SetDefaultValues()
@@ -363,7 +424,7 @@ public class LevelDesigner : MonoBehaviour
         heightInput.text = defaultHeight.ToString();
         cellSizeInput.text = defaultCellSize.ToString();
         targetScoreInput.text = defaultTargetScore.ToString();
-        maxMovesInput.text = defaultMaxMoves.ToString();
+        maxTapsInput.text = defaultMaxMoves.ToString();
 
         if (stageNumberInput)
             stageNumberInput.text = GetNextStageNumber().ToString();
@@ -375,25 +436,69 @@ public class LevelDesigner : MonoBehaviour
 
     void SelectBlockType(int blockType)
     {
-        if (selectedBlockType == blockType)
-        {
-            return;
-        }
         selectedBlockType = blockType;
+        isCollectibleMode = false;
+        UpdateBlockTypeButtonVisuals();
+        UpdateCollectibleButtonVisuals();
+        Debug.Log($"Selected block type: {blockType}");
+    }
+
+    private void SelectCollectibleType(int collectibleType)
+    {
+        selectedCollectibleType = collectibleType;
+        isCollectibleMode = true;
+        UpdateCollectibleButtonVisuals();
+        UpdateBlockTypeButtonVisuals();
+        Debug.Log($"Selected collectible type: {collectibleType}");
+    }
+
+    private void UpdateBlockTypeButtonVisuals()
+    {
+        if (blockTypeButtons == null || blockTypeImages == null) return;
 
         for (int i = 0; i < blockTypeButtons.Length; i++)
         {
-            blockTypeButtons[i].GetComponent<Image>().color = Color.white;
+            if (i < blockTypeImages.Length && blockTypeImages[i] != null)
+            {
+                bool isSelected = !isCollectibleMode && selectedBlockType == (i + 1);
+                blockTypeImages[i].color = isSelected ? Color.yellow : Color.white;
+            }
         }
-        emptyBlockButton.GetComponent<Image>().color = Color.white;
 
-        if (blockType == 0)
+        // Empty block button
+        if (emptyBlockButton != null)
         {
-            emptyBlockButton.GetComponent<Image>().color = Color.cyan;
+            Image emptyImage = emptyBlockButton.GetComponent<Image>();
+            if (emptyImage != null)
+            {
+                bool isSelected = !isCollectibleMode && selectedBlockType == 0;
+                emptyImage.color = isSelected ? Color.yellow : Color.white;
+            }
         }
-        else
+    }
+
+    private void UpdateCollectibleButtonVisuals()
+    {
+        if (collectibleButtons == null || collectibleButtonImages == null) return;
+
+        for (int i = 0; i < collectibleButtons.Length; i++)
         {
-            blockTypeButtons[blockType - 1].GetComponent<Image>().color = Color.cyan;
+            if (i < collectibleButtonImages.Length && collectibleButtonImages[i] != null)
+            {
+                bool isSelected = isCollectibleMode && selectedCollectibleType == (i + 1);
+                collectibleButtonImages[i].color = isSelected ? Color.yellow : Color.white;
+            }
+        }
+
+        // Clear button
+        if (clearCollectibleButton != null)
+        {
+            Image clearImage = clearCollectibleButton.GetComponent<Image>();
+            if (clearImage != null)
+            {
+                bool isSelected = isCollectibleMode && selectedCollectibleType == 0;
+                clearImage.color = isSelected ? Color.yellow : Color.white;
+            }
         }
     }
 
@@ -476,7 +581,11 @@ public class LevelDesigner : MonoBehaviour
 
         button.onClick.AddListener(() => OnGridButtonClicked(x, y));
 
-        designerGrid[x, y] = new DesignerBlock(x, y, 0);
+        designerGrid[x, y] = new DesignerBlock
+        {
+            blockType = 0,
+            collectibleType = 0
+        };
 
         gridButtons.Add(buttonObj);
     }
@@ -485,19 +594,32 @@ public class LevelDesigner : MonoBehaviour
     {
         if (designerGrid == null) return;
 
-        designerGrid[x, y].blockType = selectedBlockType;
-        UpdateGridButtonVisual(x, y);
+        if (isCollectibleMode)
+        {
+            designerGrid[x, y].collectibleType = selectedCollectibleType;
+            Debug.Log($"Set collectible at ({x},{y}) to type {selectedCollectibleType}");
+        }
+        else  // Block mode
+        {
+            designerGrid[x, y].blockType = selectedBlockType;
+            Debug.Log($"Grid button clicked: ({x}, {y}) - Block type: {selectedBlockType}");
+        }
 
-        Debug.Log($"Grid button clicked: ({x}, {y}) - Block type: {selectedBlockType}");
+        UpdateGridButtonVisual(x, y);
     }
 
     void UpdateGridButtonVisual(int x, int y)
     {
         int buttonIndex = (currentHeight - 1 - y) * currentWidth + x;
-        if (buttonIndex >= 0 && buttonIndex < gridButtons.Count)
-        {
-            Image buttonImage = gridButtons[buttonIndex].GetComponent<Image>();
+        if (buttonIndex < 0 || buttonIndex >= gridButtons.Count) return;
 
+        GameObject buttonObj = gridButtons[buttonIndex];
+        if (buttonObj == null) return;
+
+        // Update block visual
+        Image buttonImage = buttonObj.GetComponent<Image>();
+        if (buttonImage != null)
+        {
             switch (designerGrid[x, y].blockType)
             {
                 case 0: buttonImage.color = Color.gray; break;
@@ -506,23 +628,68 @@ public class LevelDesigner : MonoBehaviour
                 case 3: buttonImage.color = Color.yellow; break;
                 case 4: buttonImage.color = Color.green; break;
                 case 5: buttonImage.color = Color.magenta; break;
+                case 6: buttonImage.color = new Color(1f, 0.75f, 0.8f); break;  // NEW: Pink
                 default: buttonImage.color = Color.white; break;
             }
+        }
+
+        // NEW: Update collectible visual (overlay)
+        Transform collectibleOverlay = buttonObj.transform.Find("CollectibleOverlay");
+        if (collectibleOverlay == null)
+        {
+            GameObject overlayObj = new GameObject("CollectibleOverlay");
+            overlayObj.transform.SetParent(buttonObj.transform);
+            overlayObj.transform.localPosition = Vector3.zero;
+            overlayObj.transform.localScale = Vector3.one * 0.5f;
+
+            Image overlayImage = overlayObj.AddComponent<Image>();
+            overlayImage.raycastTarget = false;
+
+            collectibleOverlay = overlayObj.transform;
+        }
+
+        Image overlayImg = collectibleOverlay.GetComponent<Image>();
+        if (overlayImg != null)
+        {
+            int collectibleType = designerGrid[x, y].collectibleType;
+            if (collectibleType > 0)
+            {
+                overlayImg.enabled = true;
+                overlayImg.color = GetCollectibleColor(collectibleType);
+            }
+            else
+            {
+                overlayImg.enabled = false;
+            }
+        }
+    }
+
+    private Color GetCollectibleColor(int collectibleType)
+    {
+        switch (collectibleType)
+        {
+            case 1: return new Color(1f, 0.5f, 0.5f, 0.8f);  // Heart - Pink transparent
+            case 2: return new Color(0.5f, 1f, 0.5f, 0.8f);  // Clover - Green transparent
+            default: return Color.clear;
         }
     }
 
     void ClearGrid()
     {
-        if (designerGrid == null) return;
-
-        for (int x = 0; x < currentWidth; x++)
+        if (designerGrid != null)
         {
-            for (int y = 0; y < currentHeight; y++)
+            for (int x = 0; x < designerGrid.GetLength(0); x++)
             {
-                designerGrid[x, y].blockType = 0;
-                UpdateGridButtonVisual(x, y);
+                for (int y = 0; y < designerGrid.GetLength(1); y++)
+                {
+                    designerGrid[x, y].blockType = 0;
+                    designerGrid[x, y].collectibleType = 0;
+                    UpdateGridButtonVisual(x, y);
+                }
             }
         }
+
+        SaveDesignerState();
 
         Debug.Log("Grid cleared");
     }
@@ -578,15 +745,15 @@ public class LevelDesigner : MonoBehaviour
     void CreateTestStageData()
     {
         int targetScore = defaultTargetScore;
-        int maxMoves = defaultMaxMoves;
+        int maxTaps = defaultMaxMoves;
 
         if (!int.TryParse(targetScoreInput.text, out targetScore)) targetScore = defaultTargetScore;
-        if (!int.TryParse(maxMovesInput.text, out maxMoves)) maxMoves = defaultMaxMoves;
+        if (!int.TryParse(maxTapsInput.text, out maxTaps)) maxTaps = defaultMaxMoves;
 
         PlayerPrefs.SetInt("TestLevel_Width", currentWidth);
         PlayerPrefs.SetInt("TestLevel_Height", currentHeight);
         PlayerPrefs.SetInt("TestLevel_TargetScore", targetScore);
-        PlayerPrefs.SetInt("TestLevel_MaxMoves", maxMoves);
+        PlayerPrefs.SetInt("TestLevel_MaxMoves", maxTaps);
         PlayerPrefs.SetFloat("TestLevel_CellSize", currentCellSize);
 
         string gridPattern = "";
@@ -603,7 +770,7 @@ public class LevelDesigner : MonoBehaviour
         PlayerPrefs.SetString("TestLevel_Pattern", gridPattern);
         PlayerPrefs.SetInt("IsTestLevel", 1);
 
-        Debug.Log($"Test level data saved: {currentWidth}x{currentHeight}, Target: {targetScore}, Moves: {maxMoves}");
+        Debug.Log($"Test level data saved: {currentWidth}x{currentHeight}, Target: {targetScore}, Moves: {maxTaps}");
         Debug.Log($"Pattern: {gridPattern}");
     }
 
@@ -623,7 +790,7 @@ public class LevelDesigner : MonoBehaviour
             PlayerPrefs.SetInt("DesignerState_Height", currentHeight);
             PlayerPrefs.SetFloat("DesignerState_CellSize", currentCellSize);
             PlayerPrefs.SetString("DesignerState_TargetScore", targetScoreInput.text);
-            PlayerPrefs.SetString("DesignerState_MaxMoves", maxMovesInput.text);
+            PlayerPrefs.SetString("DesignerState_MaxMoves", maxTapsInput.text);
             PlayerPrefs.SetInt("DesignerState_SelectedBlockType", selectedBlockType);
 
             string gridPattern = "";
@@ -670,7 +837,7 @@ public class LevelDesigner : MonoBehaviour
             heightInput.text = savedHeight.ToString();
             cellSizeInput.text = savedCellSize.ToString();
             targetScoreInput.text = savedTargetScore;
-            maxMovesInput.text = savedMaxMoves;
+            maxTapsInput.text = savedMaxMoves;
 
             SelectBlockType(savedSelectedBlockType);
 
@@ -872,23 +1039,15 @@ public class LevelDesigner : MonoBehaviour
         {
             moves = Mathf.Clamp(moves, 1, 999);
             if (moves.ToString() != value)
-                maxMovesInput.text = moves.ToString();
+                maxTapsInput.text = moves.ToString();
         }
     }
 }
 
 // 디자이너 그리드 데이터 클래스
 [System.Serializable]
-public class DesignerBlock
+public struct DesignerBlock
 {
-    public int x;
-    public int y;
-    public int blockType; // 0: 빈 블록, 1-5: 각 색상 블록
-
-    public DesignerBlock(int x, int y, int blockType)
-    {
-        this.x = x;
-        this.y = y;
-        this.blockType = blockType;
-    }
+    public int blockType;  // 0=Empty, 1-6=Colors
+    public int collectibleType;  // NEW: 0=None, 1=Heart, 2=Clover
 }

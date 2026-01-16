@@ -257,7 +257,7 @@ public class StageManager : MonoBehaviour
 
             if (movesLeftText != null)
             {
-                movesLeftText.text = $"Move Left: {currentTestStage.maxMoves}";
+                movesLeftText.text = $"Move Left: {currentTestStage.maxTaps}";
             }
 
             if (testPanel != null)
@@ -310,7 +310,7 @@ public class StageManager : MonoBehaviour
         movesUsed++;
         UpdateMovesUI();
 
-        if (currentStage != null && currentStage.maxMoves > 0 && movesUsed >= currentStage.maxMoves)
+        if (currentStage != null && currentStage.maxTaps > 0 && movesUsed >= currentStage.maxTaps)
         {
             CheckGameOver();
         }
@@ -318,9 +318,9 @@ public class StageManager : MonoBehaviour
 
     void UpdateMovesUI()
     {
-        if (movesLeftText != null && currentStage != null && currentStage.maxMoves > 0)
+        if (movesLeftText != null && currentStage != null && currentStage.maxTaps > 0)
         {
-            int movesLeft = currentStage.maxMoves - movesUsed;
+            int movesLeft = currentStage.maxTaps - movesUsed;
             movesLeftText.text = $"Move left: {movesLeft}";
             movesLeftText.gameObject.SetActive(true);
         }
@@ -342,7 +342,7 @@ public class StageManager : MonoBehaviour
 
     void CheckGameOver()
     {
-        if ((currentStage != null && currentStage.maxMoves > 0 && movesUsed >= currentStage.maxMoves) ||
+        if ((currentStage != null && currentStage.maxTaps > 0 && movesUsed >= currentStage.maxTaps) ||
             (isTimerActive && timeRemaining <= 0))
         {
             GameOver();

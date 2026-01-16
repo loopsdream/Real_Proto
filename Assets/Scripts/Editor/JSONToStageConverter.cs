@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using System.Collections.Generic;
 
 public class JSONToStageConverter : EditorWindow
 {
@@ -61,23 +62,67 @@ private void ConvertJSONToStageData()
             // StageData Create
             StageData stageData = ScriptableObject.CreateInstance<StageData>();
 
+            // Basic info
             stageData.stageNumber = jsonData.stageNumber;
             stageData.stageName = jsonData.stageName;
+            stageData.stageDescription = jsonData.stageDescription;
+
+            // Grid settings
             stageData.gridWidth = jsonData.gridWidth;
             stageData.gridHeight = jsonData.gridHeight;
+
+            // Block pattern
+            stageData.blockPattern = jsonData.blockPattern;
+
+            // Collectible pattern
+            if (jsonData.collectiblePattern != null)
+            {
+                stageData.collectiblePattern = jsonData.collectiblePattern;
+            }
+
+            // Clear Goals
+            if (jsonData.clearGoals != null && jsonData.clearGoals.Length > 0)
+            {
+                stageData.clearGoals = new List<ClearGoalData>();
+                foreach (var jsonGoal in jsonData.clearGoals)
+                {
+                    ClearGoalData goal = new ClearGoalData
+                    {
+                        goalType = (ClearGoalType)jsonGoal.goalType,
+                        targetColor = jsonGoal.targetColor,
+                        targetColorCount = jsonGoal.targetColorCount,
+                        collectibleType = (CollectibleType)jsonGoal.collectibleType,
+                        targetCollectibleCount = jsonGoal.targetCollectibleCount
+                    };
+                    stageData.clearGoals.Add(goal);
+                }
+            }
+
+            // Clear Conditions
+            stageData.hasTimeLimit = jsonData.hasTimeLimit;
             stageData.timeLimit = jsonData.timeLimit;
+            stageData.maxTaps = jsonData.maxTaps;
+
+            // Rewards
             stageData.coinReward = jsonData.coinReward;
+            stageData.diamondReward = jsonData.diamondReward;
             stageData.experienceReward = jsonData.experienceReward;
-            stageData.difficultyLevel = jsonData.difficultyLevel;
+
+            // Special Rules
             stageData.allowColorTransform = jsonData.allowColorTransform;
+            stageData.shuffleAnimationDuration = jsonData.shuffleAnimationDuration;
+            stageData.blockConversionDuration = jsonData.blockConversionDuration;
+
+            // Difficulty
+            stageData.difficultyLevel = jsonData.difficultyLevel;
             stageData.showHints = jsonData.showHints;
 
             // blockPattern은 1차원 배열로 직접 할당
-            stageData.blockPattern = new int[jsonData.blockPattern.Length];
-            for (int i = 0; i < jsonData.blockPattern.Length; i++)
-            {
-                stageData.blockPattern[i] = jsonData.blockPattern[i];
-            }
+            //stageData.blockPattern = new int[jsonData.blockPattern.Length];
+            //for (int i = 0; i < jsonData.blockPattern.Length; i++)
+            //{
+            //    stageData.blockPattern[i] = jsonData.blockPattern[i];
+            //}
 
             // File save
             string fileName = $"Stage_{jsonData.stageNumber:D3}.asset";
@@ -145,24 +190,51 @@ private void LoadJSONFromFile()
     }
 }
 
-// JSON ������ ���� (Unity JsonUtility ȣȯ)
 [System.Serializable]
 public class StageDataJSON
 {
     public int stageNumber;
     public string stageName;
+    public string stageDescription;
     public int gridWidth;
     public int gridHeight;
-    public int[] blockPattern;  // 1D �迭�� ����
+    public int[] blockPattern;
+    public int[] collectiblePattern;
+
+    // Clear Goals
+    public ClearGoalDataJSON[] clearGoals;
+
+    // Conditions
+    public bool hasTimeLimit;
     public float timeLimit;
+    public int maxTaps;
+
+    // Rewards
     public int coinReward;
+    public int diamondReward;
     public int experienceReward;
-    public int difficultyLevel;
+
+    // Special Rules
     public bool allowColorTransform;
+    public float shuffleAnimationDuration;
+    public float blockConversionDuration;
+
+    // Difficulty
+    public int difficultyLevel;
     public bool showHints;
 }
 
-// �ϰ� ��ȯ ����
+// Clear Goal을 위한 JSON 구조
+[System.Serializable]
+public class ClearGoalDataJSON
+{
+    public int goalType;  // 0=DestroyAll, 1=CollectColor, 2=CollectItems
+    public int targetColor;  // For CollectColorBlocks
+    public int targetColorCount;
+    public int collectibleType;  // For CollectCollectibles
+    public int targetCollectibleCount;
+}
+
 public class BatchJSONConverter : EditorWindow
 {
     [MenuItem("Tools/Batch JSON to StageData")]

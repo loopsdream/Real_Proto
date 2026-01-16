@@ -28,13 +28,3 @@ public enum PriceType
     Diamonds,
     RealMoney  // IAP ¿¬µ¿ ½Ã
 }
-
-public enum RewardType
-{
-    Hammer,
-    Tornado,
-    Brush,
-    Coins,
-    Diamonds,
-    Energy
-}

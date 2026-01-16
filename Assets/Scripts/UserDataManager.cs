@@ -789,4 +789,50 @@ public class UserDataManager : MonoBehaviour
     }
 
     #endregion
+
+    #region Stage Progress Methods
+
+    /// <summary>
+    /// 스테이지 클리어 여부 확인
+    /// </summary>
+    public bool IsStageCleared(int stageNumber)
+    {
+        string key = $"stage_{stageNumber}";
+        return currentUserData.stageProgress.ContainsKey(key) &&
+               currentUserData.stageProgress[key].completed;
+    }
+
+    /// <summary>
+    /// 스테이지 클리어 기록
+    /// </summary>
+    public void SetStageCleared(int stageNumber, int stars, int score)
+    {
+        string key = $"stage_{stageNumber}";
+
+        if (!currentUserData.stageProgress.ContainsKey(key))
+        {
+            currentUserData.stageProgress[key] = new StageProgress();
+        }
+
+        StageProgress progress = currentUserData.stageProgress[key];
+        progress.completed = true;
+
+        // 최고 기록 갱신
+        if (stars > progress.bestStars)
+        {
+            progress.bestStars = stars;
+        }
+
+        if (score > progress.bestScore)
+        {
+            progress.bestScore = score;
+        }
+
+        OnDataChanged?.Invoke("stageProgress");
+        SaveUserData();
+
+        Debug.Log($"Stage {stageNumber} cleared with {stars} stars, score: {score}");
+    }
+
+    #endregion
 }

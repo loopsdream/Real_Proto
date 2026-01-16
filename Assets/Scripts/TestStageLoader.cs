@@ -26,7 +26,7 @@ public class TestStageLoader : MonoBehaviour
             int width = PlayerPrefs.GetInt("TestLevel_Width", 6);
             int height = PlayerPrefs.GetInt("TestLevel_Height", 8);
             int targetScore = PlayerPrefs.GetInt("TestLevel_TargetScore", 100);
-            int maxMoves = PlayerPrefs.GetInt("TestLevel_MaxMoves", 20);
+            int maxTaps = PlayerPrefs.GetInt("TestLevel_MaxMoves", 20);
             float cellSize = PlayerPrefs.GetFloat("TestLevel_CellSize", 80f);
             string pattern = PlayerPrefs.GetString("TestLevel_Pattern", "");
 
@@ -55,7 +55,7 @@ public class TestStageLoader : MonoBehaviour
             Debug.Log("GridManager settings updated");
 
             // 테스트 스테이지 데이터 생성
-            TestStageData testStage = CreateTestStageData(width, height, targetScore, maxMoves, pattern);
+            TestStageData testStage = CreateTestStageData(width, height, targetScore, maxTaps, pattern);
 
             if (testStage == null)
             {
@@ -95,7 +95,7 @@ public class TestStageLoader : MonoBehaviour
         }
     }
 
-    TestStageData CreateTestStageData(int width, int height, int targetScore, int maxMoves, string pattern)
+    TestStageData CreateTestStageData(int width, int height, int targetScore, int maxTaps, string pattern)
     {
         try
         {
@@ -105,7 +105,7 @@ public class TestStageLoader : MonoBehaviour
             testStage.width = width;
             testStage.height = height;
             testStage.targetScore = targetScore;
-            testStage.maxMoves = maxMoves;
+            testStage.maxTaps = maxTaps;
             testStage.stageNumber = 999; // 테스트 스테이지 번호
             testStage.stageName = "Test Level";
 
@@ -240,7 +240,7 @@ public class TestStageData
     public int width;
     public int height;
     public int targetScore;
-    public int maxMoves;
+    public int maxTaps;
     public int[,] pattern;
 
     public TestStageData()
@@ -250,7 +250,7 @@ public class TestStageData
         width = 6;
         height = 8;
         targetScore = 100;
-        maxMoves = 20;
+        maxTaps = 20;
         pattern = new int[width, height];
     }
 }

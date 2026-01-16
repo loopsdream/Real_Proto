@@ -10,6 +10,7 @@ TagManager:
   - GreenBlock
   - PurpleBlock
   - EmptyBlock
+  - PinkBlock
   layers:
   - Default
   - TransparentFX
