@@ -267,4 +267,58 @@ public class MainMenuManager : MonoBehaviour
         
         ShowMainMenu();
     }
+
+    #region 로그아웃
+
+    [Header("Logout Confirmation")]
+    public GameObject logoutConfirmPanel;  // 확인 팝업
+
+    // 로그아웃 버튼 클릭
+    public void OnLogoutButtonClicked()
+    {
+        PlayUISound("ButtonClick");
+
+        if (logoutConfirmPanel != null)
+        {
+            logoutConfirmPanel.SetActive(true);
+        }
+        else
+        {
+            Debug.LogWarning("[MainMenu] Logout confirm panel not assigned!");
+        }
+    }
+
+    // 로그아웃 확인 - Yes
+    public void ConfirmLogout()
+    {
+        PlayUISound("ButtonClick");
+        Debug.Log("[MainMenu] Logging out...");
+
+        // Firebase 로그아웃
+        if (CleanFirebaseManager.Instance != null)
+        {
+            CleanFirebaseManager.Instance.SignOut();
+        }
+
+        // TitleScene으로 이동
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.StopBGM();
+        }
+
+        SceneManager.LoadScene("TitleScene");
+    }
+
+    // 로그아웃 취소 - No
+    public void CancelLogout()
+    {
+        PlayUISound("ButtonClick");
+
+        if (logoutConfirmPanel != null)
+        {
+            logoutConfirmPanel.SetActive(false);
+        }
+    }
+
+    #endregion
 }

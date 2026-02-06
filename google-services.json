@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "328897736133",
+    "firebase_url": "https://croxcro-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "croxcro",
+    "storage_bucket": "croxcro.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:328897736133:android:9c29acc087385b7b46afac",
+        "android_client_info": {
+          "package_name": "com.neptunestudio.croxcro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "328897736133-a9ah5dutccl6ckdptrmalm1u9bk5gage.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.neptunestudio.croxcro",
+            "certificate_hash": "deb7c24419b102d7b7b10fb6a76d58047ca8db26"
+          }
+        },
+        {
+          "client_id": "328897736133-8ghg8stkjd7krjqt71svnvn76616v4o2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB64MBbp9w7GAVVJiG6A01GIsxAKu1MgNs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "328897736133-8ghg8stkjd7krjqt71svnvn76616v4o2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "328897736133-ubkh1489v4nb5416kde6n8p6jmhedmm9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.neptunestudio.croxcro"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

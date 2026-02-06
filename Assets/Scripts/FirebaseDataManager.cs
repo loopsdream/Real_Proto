@@ -14,6 +14,8 @@ public class FirebaseDataManager : MonoBehaviour
     private float lastSyncTime = 0f;
     private FirebaseUserDataWrapper dataWrapper;
 
+    private string deviceId = "";
+
     // 이벤트
     public event Action<bool> OnSyncCompleted;
     public event Action<string> OnSyncError;
@@ -41,7 +43,9 @@ System.Collections.IEnumerator SafeInitialization()
     {
         // 다른 매니저들이 초기화될 때까지 충분히 대기
         yield return new WaitForSeconds(0.5f);
-        
+
+        InitializeDeviceId();
+
         Debug.Log("[DataManager] 안전한 초기화 시작");
         
         // UserDataManager 먼저 대기
@@ -198,11 +202,14 @@ void OnUserSignedIn(bool success)
     /// <summary>
     /// 사용자 데이터 동기화 (저장)
     /// </summary>
+    /// <summary>
+    /// Sync user data to server
+    /// </summary>
     public void SyncUserData()
     {
         if (!isConnected || dataWrapper == null || CleanFirebaseManager.Instance == null)
         {
-            Debug.LogWarning("[DataManager] ⚠️ 동기화 불가 - 연결 안됨 또는 매니저 없음");
+            Debug.LogWarning("[DataManager] Cannot sync - not connected or manager missing");
             return;
         }
 
@@ -213,20 +220,46 @@ void OnUserSignedIn(bool success)
 
             if (string.IsNullOrEmpty(userId))
             {
-                Debug.LogWarning("[DataManager] ⚠️ 사용자 ID가 없음");
+                Debug.LogWarning("[DataManager] No user ID");
                 return;
             }
 
-            Debug.Log("[DataManager] 📤 데이터 동기화 중...");
+            // 추가: 디바이스 ID 설정
+            if (userData.syncMetadata != null)
+            {
+                userData.syncMetadata.deviceId = deviceId;
+                userData.syncMetadata.lastSyncDeviceId = deviceId;
+            }
+
+            Debug.Log("[DataManager] Syncing user data...");
             CleanFirebaseManager.Instance.SaveUserData(userId, userData);
-            
+
+            // 추가: 동기화 성공 기록
+            if (UserDataManager.Instance != null)
+            {
+                var localData = dataWrapper.GetCurrentUserData();
+                localData.MarkAsSynced();
+                UserDataManager.Instance.SaveUserData();
+            }
+
             lastSyncTime = Time.time;
             OnSyncCompleted?.Invoke(true);
+
+            Debug.Log("[DataManager] Sync completed successfully");
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[DataManager] ❌ 동기화 실패: {ex.Message}");
-            OnSyncError?.Invoke($"동기화 실패: {ex.Message}");
+            Debug.LogError($"[DataManager] Sync failed: {ex.Message}");
+
+            // 추가: 동기화 실패 기록
+            if (UserDataManager.Instance != null)
+            {
+                var localData = dataWrapper.GetCurrentUserData();
+                localData.RecordSyncFailure(ex.Message);
+                UserDataManager.Instance.SaveUserData();
+            }
+
+            OnSyncError?.Invoke($"Sync failed: {ex.Message}");
             OnSyncCompleted?.Invoke(false);
         }
     }
@@ -234,7 +267,7 @@ void OnUserSignedIn(bool success)
     /// <summary>
     /// 사용자 데이터 로드
     /// </summary>
-/// <summary>
+    /// <summary>
     /// 사용자 데이터 로드
     /// </summary>
     public void LoadUserData()
@@ -242,25 +275,25 @@ void OnUserSignedIn(bool success)
         // 더 상세한 조건 체크와 로그
         if (!isConnected)
         {
-            Debug.LogWarning("[DataManager] ⚠️ 로드 불가 - Firebase 연결 안됨");
+            Debug.LogWarning("[DataManager] 로드 불가 - Firebase 연결 안됨");
             return;
         }
         
         if (dataWrapper == null)
         {
-            Debug.LogWarning("[DataManager] ⚠️ 로드 불가 - UserDataManager 래퍼 없음");
+            Debug.LogWarning("[DataManager]  로드 불가 - UserDataManager 래퍼 없음");
             return;
         }
         
         if (CleanFirebaseManager.Instance == null)
         {
-            Debug.LogWarning("[DataManager] ⚠️ 로드 불가 - CleanFirebaseManager 없음");
+            Debug.LogWarning("[DataManager] 로드 불가 - CleanFirebaseManager 없음");
             return;
         }
         
         if (UserDataManager.Instance == null)
         {
-            Debug.LogWarning("[DataManager] ⚠️ 로드 불가 - UserDataManager 없음");
+            Debug.LogWarning("[DataManager] 로드 불가 - UserDataManager 없음");
             return;
         }
 
@@ -270,18 +303,18 @@ void OnUserSignedIn(bool success)
             
             if (string.IsNullOrEmpty(userId))
             {
-                Debug.LogWarning("[DataManager] ⚠️ 사용자 ID가 없음 - 익명 로그인 전?");
+                Debug.LogWarning("[DataManager] 사용자 ID가 없음 - 익명 로그인 전?");
                 return;
             }
 
-            Debug.Log($"[DataManager] 📥 데이터 로드 시작: {userId}");
+            Debug.Log($"[DataManager] 데이터 로드 시작: {userId}");
             CleanFirebaseManager.Instance.LoadUserData(userId, OnDataLoaded);
             
             lastSyncTime = Time.time;
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[DataManager] ❌ 로드 실패: {ex.Message}");
+            Debug.LogError($"[DataManager] 로드 실패: {ex.Message}");
             OnSyncError?.Invoke($"로드 실패: {ex.Message}");
         }
     }
@@ -294,7 +327,7 @@ void OnUserSignedIn(bool success)
         {
             if (string.IsNullOrEmpty(jsonData))
             {
-                Debug.Log("[DataManager] 📝 클라우드 데이터 없음 - 새 사용자로 초기화");
+                Debug.Log("[DataManager] 클라우드 데이터 없음 - 새 사용자로 초기화");
                 SyncUserData(); // 현재 로컬 데이터를 클라우드에 저장
                 return;
             }
@@ -304,21 +337,30 @@ void OnUserSignedIn(bool success)
             
             if (cloudData != null)
             {
-                Debug.Log("[DataManager] ✅ 클라우드 데이터 로드 성공");
+                Debug.Log("[DataManager] 클라우드 데이터 로드 성공");
                 
                 // 로컬 데이터와 병합/업데이트
                 MergeCloudData(cloudData);
             }
             else
             {
-                Debug.LogWarning("[DataManager] ⚠️ 클라우드 데이터 파싱 실패");
+                Debug.LogWarning("[DataManager] 클라우드 데이터 파싱 실패");
                 SyncUserData(); // 파싱 실패시 로컬 데이터로 덮어쓰기
             }
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[DataManager] ❌ 데이터 처리 실패: {ex.Message}");
-            OnSyncError?.Invoke($"데이터 처리 실패: {ex.Message}");
+            Debug.LogError($"[DataManager] Data processing failed: {ex.Message}");
+
+            // ⭐ 추가: 동기화 실패 기록
+            if (UserDataManager.Instance != null)
+            {
+                var localData = dataWrapper.GetCurrentUserData();
+                localData.RecordSyncFailure($"Data load error: {ex.Message}");
+                UserDataManager.Instance.SaveUserData();
+            }
+
+            OnSyncError?.Invoke($"Data processing failed: {ex.Message}");
         }
     }
 
@@ -327,35 +369,61 @@ void OnUserSignedIn(bool success)
         if (dataWrapper == null) return;
 
         var localData = dataWrapper.GetCurrentUserData();
-        
-        // 간단한 병합 로직: 더 높은 값 선택
-        var mergedData = new UserData
-        {
-            playerInfo = new PlayerInfo
-            {
-                playerName = !string.IsNullOrEmpty(cloudData.playerInfo.playerName) ? 
-                            cloudData.playerInfo.playerName : localData.playerInfo.playerName,
-                level = Math.Max(cloudData.playerInfo.level, localData.playerInfo.level),
-                currentStage = Math.Max(cloudData.playerInfo.currentStage, localData.playerInfo.currentStage),
-                lastLoginTime = DateTime.UtcNow.ToBinary().ToString()
-            },
-            currencies = new Currencies
-            {
-                gameCoins = Math.Max(cloudData.currencies.gameCoins, localData.currencies.gameCoins),
-                diamonds = Math.Max(cloudData.currencies.diamonds, localData.currencies.diamonds),
-                energy = Math.Max(cloudData.currencies.energy, localData.currencies.energy),
-                maxEnergy = Math.Max(cloudData.currencies.maxEnergy, localData.currencies.maxEnergy),
-                lastEnergyTime = cloudData.currencies.lastEnergyTime
-            },
-            stageProgress = cloudData.stageProgress ?? localData.stageProgress,
-            gameStats = MergeGameStats(cloudData.gameStats, localData.gameStats),
-            settings = cloudData.settings ?? localData.settings
-        };
 
-        // 병합된 데이터를 로컬에 적용
-        dataWrapper.LoadUserData(mergedData);
-        
-        Debug.Log("[DataManager] ✅ 클라우드 데이터 병합 완료");
+        // 타임스탬프 기반 충돌 해결
+        bool useCloudData = ShouldUseCloudData(cloudData, localData);
+
+        if (useCloudData)
+        {
+            Debug.Log("[DataManager] Cloud data is newer - using cloud data");
+
+            // Cloud data is newer, use it entirely
+            cloudData.syncMetadata.deviceId = deviceId; // Update current device
+            dataWrapper.LoadUserData(cloudData);
+        }
+        else
+        {
+            Debug.Log("[DataManager] Local data is newer - uploading local data");
+
+            // Local data is newer, sync to cloud
+            SyncUserData();
+        }
+
+        Debug.Log("[DataManager] Data merge completed");
+    }
+
+    /// <summary>
+    /// Determine if cloud data should be used based on timestamps
+    /// </summary>
+    bool ShouldUseCloudData(UserData cloudData, UserData localData)
+    {
+        // If no metadata, use simple merge
+        if (cloudData.syncMetadata == null && localData.syncMetadata == null)
+        {
+            Debug.Log("[DataManager] No sync metadata - using simple merge");
+            return false; // Keep local as default
+        }
+
+        // If only cloud has metadata
+        if (cloudData.syncMetadata != null && localData.syncMetadata == null)
+        {
+            return true;
+        }
+
+        // If only local has metadata
+        if (cloudData.syncMetadata == null && localData.syncMetadata != null)
+        {
+            return false;
+        }
+
+        // Both have metadata - compare timestamps
+        long cloudTimestamp = cloudData.syncMetadata.lastModifiedTimestamp;
+        long localTimestamp = localData.syncMetadata.lastModifiedTimestamp;
+
+        Debug.Log($"[DataManager] Comparing timestamps - Cloud: {cloudTimestamp}, Local: {localTimestamp}");
+
+        // Cloud is newer if its timestamp is greater
+        return cloudTimestamp > localTimestamp;
     }
 
     GameStats MergeGameStats(GameStats cloudStats, GameStats localStats)
@@ -465,6 +533,41 @@ public void ForceSyncNow()
         else
         {
             Debug.LogWarning("[DataManager] ⚠️ 강제 동기화 불가 - 연결 안됨");
+        }
+    }
+
+    #endregion
+
+    #region Device Management
+
+    /// <summary>
+    /// Initialize or load device ID
+    /// </summary>
+    void InitializeDeviceId()
+    {
+        // Try to load saved device ID first
+        if (PlayerPrefs.HasKey("DeviceId"))
+        {
+            deviceId = PlayerPrefs.GetString("DeviceId");
+            Debug.Log($"[DataManager] Loaded Device ID: {deviceId.Substring(0, 8)}...");
+        }
+        else
+        {
+            // Generate new device ID
+            deviceId = SystemInfo.deviceUniqueIdentifier;
+
+            // Fallback if device ID is not available
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                deviceId = System.Guid.NewGuid().ToString();
+                Debug.LogWarning("[DataManager] SystemInfo.deviceUniqueIdentifier not available, generated GUID");
+            }
+
+            // Save device ID
+            PlayerPrefs.SetString("DeviceId", deviceId);
+            PlayerPrefs.Save();
+
+            Debug.Log($"[DataManager] Generated new Device ID: {deviceId.Substring(0, 8)}...");
         }
     }
 

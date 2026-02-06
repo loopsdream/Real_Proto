@@ -7,6 +7,9 @@ using TMPro;
 
 public class LoginUIManager : MonoBehaviour
 {
+    [Header("Scene Management")]
+    public TitleSceneManager titleSceneManager;
+
     [Header("Main Panels")]
     public GameObject loginPanel;
     public GameObject signupPanel;
@@ -45,6 +48,7 @@ public class LoginUIManager : MonoBehaviour
 
     // 상태 관리
     private bool isProcessing = false;
+    private bool signupSuccess = false;
     private const string REMEMBER_EMAIL_KEY = "RememberedEmail";
 
     void Start()
@@ -121,22 +125,31 @@ public class LoginUIManager : MonoBehaviour
 
     void OnUserSignedIn(bool success)
     {
-        if (success && CleanFirebaseManager.Instance != null)
+        if (success)
         {
-            var user = CleanFirebaseManager.Instance.CurrentUser;
-            string displayName = user?.Email ?? "익명 사용자";
-            
-            Debug.Log($"[LoginUI] 사용자 로그인 완료: {displayName}");
-            ShowStatus($"환영합니다, {displayName}!", true);
-            
-            StartCoroutine(MoveToGameAfterDelay());
+            Debug.Log("[LoginUI] User signed in successfully");
+
+            // 회원가입 후 자동 로그인인 경우
+            if (signupSuccess)
+            {
+                Debug.Log("[LoginUI] Signup and auto-login successful");
+                ShowStatus("Account created! Welcome!", true);
+                signupSuccess = false;  // 플래그 리셋
+                StartCoroutine(MoveToGameAfterDelay());
+            }
+            else
+            {
+                // 일반 로그인인 경우
+                ShowStatus("Login successful!", true);
+                StartCoroutine(MoveToGameAfterDelay());
+            }
         }
         else
         {
-            Debug.Log("[LoginUI] 사용자 로그인 실패");
-            HideLoadingPanel();
-            SetButtonsInteractable(true);
+            Debug.LogWarning("[LoginUI] Sign in failed");
+            ShowStatus("Login failed", false);
             isProcessing = false;
+            HideLoadingPanel();
         }
     }
 
@@ -159,12 +172,13 @@ public class LoginUIManager : MonoBehaviour
 
         PlayUISound("ButtonClick");
         isProcessing = true;
+        signupSuccess = false;
         SetButtonsInteractable(false);
 
         string email = loginEmailInput.text.Trim();
         string password = loginPasswordInput.text;
 
-        ShowLoadingPanel("로그인 중...");
+        ShowLoadingPanel("Logining...");
 
         // CleanFirebaseManager 사용 (수정된 부분)
         if (CleanFirebaseManager.Instance != null)
@@ -198,7 +212,7 @@ public class LoginUIManager : MonoBehaviour
         isProcessing = true;
         SetButtonsInteractable(false);
 
-        ShowLoadingPanel("게스트로 로그인 중...");
+        ShowLoadingPanel("Guest Logining...");
 
         // CleanFirebaseManager 사용 (수정된 부분)
         if (CleanFirebaseManager.Instance != null)
@@ -220,12 +234,13 @@ public class LoginUIManager : MonoBehaviour
 
         PlayUISound("ButtonClick");
         isProcessing = true;
+        signupSuccess = true;
         SetButtonsInteractable(false);
 
         string email = signupEmailInput.text.Trim();
         string password = signupPasswordInput.text;
 
-        ShowLoadingPanel("회원가입 중...");
+        ShowLoadingPanel("Signing Up...");
 
         // CleanFirebaseManager 사용 (수정된 부분)
         if (CleanFirebaseManager.Instance != null)
@@ -238,6 +253,7 @@ public class LoginUIManager : MonoBehaviour
             HideLoadingPanel();
             SetButtonsInteractable(true);
             isProcessing = false;
+            signupSuccess = false;
         }
     }
 
@@ -442,24 +458,37 @@ public class LoginUIManager : MonoBehaviour
 
     IEnumerator AutoLoginSequence()
     {
-        ShowLoadingPanel("자동 로그인 중...");
+        ShowLoadingPanel("Auto Logining...");
         yield return new WaitForSeconds(1f);
         StartCoroutine(MoveToGameAfterDelay());
     }
 
     IEnumerator MoveToGameAfterDelay()
     {
-        ShowLoadingPanel("게임으로 이동 중...");
+        ShowLoadingPanel("Move to Game...");
         yield return new WaitForSeconds(1.5f);
 
-        // 로비 씬으로 이동
-        if (SceneTransitionManager.Instance != null)
+        isProcessing = false;
+
+        // 수정: TitleSceneManager를 통해 로비로 이동
+        if (titleSceneManager != null)
         {
-            SceneTransitionManager.Instance.LoadScene("LobbyScene");
+            Debug.Log("[LoginUI] Using TitleSceneManager for scene transition");
+            titleSceneManager.HideLoginPanel();
+            titleSceneManager.StartGameTransition();
         }
         else
         {
-            SceneManager.LoadScene("LobbyScene");
+            // TitleSceneManager가 없으면 직접 이동 (폴백)
+            Debug.LogWarning("[LoginUI] TitleSceneManager not set, using direct scene load");
+            if (SceneTransitionManager.Instance != null)
+            {
+                SceneTransitionManager.Instance.LoadScene("LobbyScene");
+            }
+            else
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("LobbyScene");
+            }
         }
     }
 

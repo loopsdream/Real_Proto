@@ -1,4 +1,5 @@
 // UserData.cs - Firebase 연동을 위해 확장된 사용자 데이터 구조
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,16 +9,87 @@ public class UserData
     public PlayerInfo playerInfo;
     public Currencies currencies;
     public Dictionary<string, StageProgress> stageProgress;
-    public GameStats gameStats;      // 새로 추가
-    public GameSettings settings;    // 새로 추가
+    public GameStats gameStats;
+    public GameSettings settings;
+    public SyncMetadata syncMetadata;
 
     public UserData()
     {
         playerInfo = new PlayerInfo();
         currencies = new Currencies();
         stageProgress = new Dictionary<string, StageProgress>();
-        gameStats = new GameStats();       // 기본값 초기화
-        settings = new GameSettings();     // 기본값 초기화
+        gameStats = new GameStats();
+        settings = new GameSettings();
+        syncMetadata = new SyncMetadata();
+        syncMetadata.createdTimestamp = GetCurrentUnixTimestamp();
+        syncMetadata.lastModifiedTimestamp = GetCurrentUnixTimestamp();
+    }
+
+    /// <summary>
+    /// Get current Unix timestamp in milliseconds
+    /// </summary>
+    public static long GetCurrentUnixTimestamp()
+    {
+        return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    }
+
+    /// <summary>
+    /// Mark data as modified and update timestamp
+    /// </summary>
+    public void MarkAsModified(string changedField = "")
+    {
+        if (syncMetadata == null)
+        {
+            syncMetadata = new SyncMetadata();
+        }
+
+        syncMetadata.lastModifiedTimestamp = GetCurrentUnixTimestamp();
+        syncMetadata.isPendingSync = true;
+
+        // Track what changed
+        if (!string.IsNullOrEmpty(changedField))
+        {
+            if (string.IsNullOrEmpty(syncMetadata.pendingChanges))
+            {
+                syncMetadata.pendingChanges = changedField;
+            }
+            else if (!syncMetadata.pendingChanges.Contains(changedField))
+            {
+                syncMetadata.pendingChanges += "," + changedField;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Mark data as successfully synced
+    /// </summary>
+    public void MarkAsSynced()
+    {
+        if (syncMetadata == null)
+        {
+            syncMetadata = new SyncMetadata();
+        }
+
+        syncMetadata.lastSyncTimestamp = GetCurrentUnixTimestamp();
+        syncMetadata.isPendingSync = false;
+        syncMetadata.pendingChanges = "";
+        syncMetadata.syncCount++;
+        syncMetadata.syncFailCount = 0;
+        syncMetadata.lastSyncError = "";
+    }
+
+    /// <summary>
+    /// Record sync failure
+    /// </summary>
+    public void RecordSyncFailure(string errorMessage)
+    {
+        if (syncMetadata == null)
+        {
+            syncMetadata = new SyncMetadata();
+        }
+
+        syncMetadata.syncFailCount++;
+        syncMetadata.lastSyncError = errorMessage;
     }
 }
 
@@ -28,22 +100,25 @@ public class PlayerInfo
     public int level = 1;
     public int currentStage = 1;
     public string lastLoginTime;
+    public long accountCreatedTimestamp = 0;  // Account creation time
 }
 
 [System.Serializable]
 public class Currencies
 {
-    public int gameCoins = 1000; // 시작 시 기본 코인 (Firebase 연동 시 1000으로 증가)
-    public int diamonds = 50;    // 시작 시 기본 다이아몬드 (Firebase 연동 시 50으로 증가)
-    public int energy = 5;       // 시작 시 최대 에너지
+    public int gameCoins = 1000;
+    public int diamonds = 50;
+    public int energy = 5;
     public int maxEnergy = 5;
     public string lastEnergyTime;
 
-    // 아이템 보유 개수 추가
-    [Header("Items")]
-    public int hammerCount = 3;   // 시작 시 망치 3개
-    public int tornadoCount = 2;  // 시작 시 회오리 2개
-    public int brushCount = 2;    // 시작 시 붓 2개
+    public int hammerCount = 3;
+    public int tornadoCount = 2;
+    public int brushCount = 2;
+
+    public long lastCoinChange = 0;      // Last time coins were modified
+    public long lastDiamondChange = 0;   // Last time diamonds were modified
+    public long lastItemChange = 0;      // Last time items were modified
 }
 
 [System.Serializable]
@@ -139,4 +214,32 @@ public class Achievement
     public string unlockedDate = "";       // 달성 날짜
     public int rewardCoins = 0;            // 보상 코인
     public int rewardDiamonds = 0;         // 보상 다이아몬드
+}
+
+/// <summary>
+/// Firebase sync metadata - for conflict resolution and versioning
+/// </summary>
+[System.Serializable]
+public class SyncMetadata
+{
+    // Timestamp tracking (Unix timestamp in milliseconds)
+    public long lastModifiedTimestamp = 0;    // Last local modification time
+    public long lastSyncTimestamp = 0;        // Last successful sync to server
+    public long createdTimestamp = 0;         // Account creation time
+
+    // Version control
+    public int dataVersion = 1;               // Data schema version (for future migrations)
+    public int syncCount = 0;                 // Total number of successful syncs
+
+    // Device tracking
+    public string deviceId = "";              // Unique device identifier
+    public string lastSyncDeviceId = "";      // Device that performed last sync
+
+    // Sync state
+    public bool isPendingSync = false;        // Has unsaved changes
+    public string pendingChanges = "";        // Comma-separated list of changed fields (e.g., "coins,diamonds,stage_progress")
+
+    // Error tracking
+    public int syncFailCount = 0;             // Consecutive sync failure count
+    public string lastSyncError = "";         // Last sync error message
 }

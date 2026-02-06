@@ -21,27 +21,23 @@ public class FirebaseUserDataWrapper
     {
         if (userDataManager == null) return new UserData();
 
-        return new UserData
+        // 수정: 실제 UserData 객체를 가져옴 (syncMetadata 포함)
+        var userData = userDataManager.GetCompleteUserData();
+
+        // Ensure syncMetadata exists
+        if (userData.syncMetadata == null)
         {
-            playerInfo = new PlayerInfo
-            {
-                playerName = userDataManager.GetPlayerName(),
-                level = userDataManager.GetPlayerLevel(),
-                currentStage = userDataManager.GetCurrentStage(),
-                lastLoginTime = DateTime.UtcNow.ToBinary().ToString()
-            },
-            currencies = new Currencies
-            {
-                gameCoins = userDataManager.GetGameCoins(),
-                diamonds = userDataManager.GetDiamonds(),
-                energy = userDataManager.GetEnergy(),
-                maxEnergy = userDataManager.GetMaxEnergy(),
-                lastEnergyTime = userDataManager.GetLastEnergyTime().ToString()
-            },
-            stageProgress = GetAllStageProgress(),
-            gameStats = GetCurrentGameStats(),
-            settings = GetCurrentSettings()
-        };
+            userData.syncMetadata = new SyncMetadata();
+            userData.syncMetadata.createdTimestamp = UserData.GetCurrentUnixTimestamp();
+        }
+
+        // Update lastModifiedTimestamp if needed
+        if (userData.syncMetadata.isPendingSync)
+        {
+            userData.syncMetadata.lastModifiedTimestamp = UserData.GetCurrentUnixTimestamp();
+        }
+
+        return userData;
     }
 
     /// <summary>
@@ -53,48 +49,13 @@ public class FirebaseUserDataWrapper
 
         try
         {
-            // 플레이어 정보 업데이트
-            if (!string.IsNullOrEmpty(cloudData.playerInfo.playerName))
-            {
-                userDataManager.SetPlayerName(cloudData.playerInfo.playerName);
-            }
-            userDataManager.SetPlayerLevel(cloudData.playerInfo.level);
-            userDataManager.SetCurrentStage(cloudData.playerInfo.currentStage);
+            userDataManager.SetCompleteUserData(cloudData);
 
-            // 재화 정보 업데이트
-            userDataManager.SetCoins(cloudData.currencies.gameCoins);
-            userDataManager.SetDiamonds(cloudData.currencies.diamonds);
-            userDataManager.SetEnergy(cloudData.currencies.energy);
-            
-            if (long.TryParse(cloudData.currencies.lastEnergyTime, out long energyTime))
-            {
-                userDataManager.SetLastEnergyTime(energyTime);
-            }
-
-            // 게임 통계 업데이트
-            if (cloudData.gameStats != null)
-            {
-                userDataManager.SetInfiniteBestScore(cloudData.gameStats.infiniteBestScore);
-                userDataManager.SetInfiniteBestTime(cloudData.gameStats.infiniteBestTime);
-            }
-
-            // 설정 업데이트
-            if (cloudData.settings != null)
-            {
-                ApplySettings(cloudData.settings);
-            }
-
-            // 스테이지 진행도는 개별적으로 병합
-            if (cloudData.stageProgress != null)
-            {
-                ApplyStageProgress(cloudData.stageProgress);
-            }
-
-            Debug.Log("[FirebaseWrapper] ✅ 클라우드 데이터 로컬 적용 완료");
+            Debug.Log("[FirebaseWrapper] Cloud data applied to local");
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[FirebaseWrapper] ❌ 데이터 적용 실패: {ex.Message}");
+            Debug.LogError($"[FirebaseWrapper] 데이터 적용 실패: {ex.Message}");
         }
     }
 

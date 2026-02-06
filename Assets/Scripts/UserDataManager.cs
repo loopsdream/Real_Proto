@@ -101,7 +101,6 @@ public class UserDataManager : MonoBehaviour
     {
         try
         {
-            currentUserData.playerInfo.lastLoginTime = DateTime.Now.ToBinary().ToString();
             string jsonData = JsonUtility.ToJson(currentUserData, true);
             PlayerPrefs.SetString(SAVE_KEY, jsonData);
             PlayerPrefs.Save();
@@ -129,6 +128,9 @@ public class UserDataManager : MonoBehaviour
         if (currentUserData.currencies.gameCoins >= amount)
         {
             currentUserData.currencies.gameCoins -= amount;
+            currentUserData.currencies.lastCoinChange = UserData.GetCurrentUnixTimestamp();
+            currentUserData.MarkAsModified("coins");
+
             OnGameCoinsChanged?.Invoke(currentUserData.currencies.gameCoins);
             OnDataChanged?.Invoke("coins");
             SaveUserData();
@@ -140,6 +142,9 @@ public class UserDataManager : MonoBehaviour
     public void AddGameCoins(int amount)
     {
         currentUserData.currencies.gameCoins += amount;
+        currentUserData.currencies.lastCoinChange = UserData.GetCurrentUnixTimestamp();
+        currentUserData.MarkAsModified("coins");
+
         OnGameCoinsChanged?.Invoke(currentUserData.currencies.gameCoins);
         OnDataChanged?.Invoke("coins");
         SaveUserData();
@@ -149,6 +154,9 @@ public class UserDataManager : MonoBehaviour
     public void SetCoins(int amount)
     {
         currentUserData.currencies.gameCoins = amount;
+        currentUserData.currencies.lastCoinChange = UserData.GetCurrentUnixTimestamp();
+        currentUserData.MarkAsModified("coins");
+
         OnGameCoinsChanged?.Invoke(amount);
         OnDataChanged?.Invoke("coins");
         SaveUserData();
@@ -168,6 +176,9 @@ public class UserDataManager : MonoBehaviour
         if (currentUserData.currencies.diamonds >= amount)
         {
             currentUserData.currencies.diamonds -= amount;
+            currentUserData.currencies.lastDiamondChange = UserData.GetCurrentUnixTimestamp();
+            currentUserData.MarkAsModified("diamonds");
+
             OnDiamondsChanged?.Invoke(currentUserData.currencies.diamonds);
             OnDataChanged?.Invoke("diamonds");
             SaveUserData();
@@ -179,6 +190,9 @@ public class UserDataManager : MonoBehaviour
     public void AddDiamonds(int amount)
     {
         currentUserData.currencies.diamonds += amount;
+        currentUserData.currencies.lastDiamondChange = UserData.GetCurrentUnixTimestamp();
+        currentUserData.MarkAsModified("diamonds");
+
         OnDiamondsChanged?.Invoke(currentUserData.currencies.diamonds);
         OnDataChanged?.Invoke("diamonds");
         SaveUserData();
@@ -188,6 +202,9 @@ public class UserDataManager : MonoBehaviour
     public void SetDiamonds(int amount)
     {
         currentUserData.currencies.diamonds = amount;
+        currentUserData.currencies.lastDiamondChange = UserData.GetCurrentUnixTimestamp();
+        currentUserData.MarkAsModified("diamonds");
+
         OnDiamondsChanged?.Invoke(amount);
         OnDataChanged?.Invoke("diamonds");
         SaveUserData();
@@ -341,6 +358,7 @@ public class UserDataManager : MonoBehaviour
     public void SetPlayerName(string name)
     {
         currentUserData.playerInfo.playerName = name;
+        currentUserData.MarkAsModified("player_info");
         OnDataChanged?.Invoke("player_info");
         SaveUserData();
     }
@@ -353,6 +371,7 @@ public class UserDataManager : MonoBehaviour
     public void SetPlayerLevel(int level)
     {
         currentUserData.playerInfo.level = level;
+        currentUserData.MarkAsModified("player_info");
         OnPlayerLevelChanged?.Invoke(level);
         OnDataChanged?.Invoke("player_info");
         SaveUserData();
@@ -366,6 +385,7 @@ public class UserDataManager : MonoBehaviour
     public void SetCurrentStage(int stage)
     {
         currentUserData.playerInfo.currentStage = Mathf.Max(currentUserData.playerInfo.currentStage, stage);
+        currentUserData.MarkAsModified("stage_progress");
         OnDataChanged?.Invoke("stage_progress");
         SaveUserData();
     }
@@ -397,6 +417,7 @@ public class UserDataManager : MonoBehaviour
         }
         currentUserData.stageProgress[stageKey].completed = true;
         currentUserData.stageProgress[stageKey].stageNumber = stage;
+        currentUserData.MarkAsModified("stage_progress");
 
         OnDataChanged?.Invoke("stage_progress");
         SaveUserData();
@@ -432,6 +453,7 @@ public class UserDataManager : MonoBehaviour
         if (score > currentUserData.gameStats.infiniteBestScore)
         {
             currentUserData.gameStats.infiniteBestScore = score;
+            currentUserData.MarkAsModified("infinite_best");
             OnDataChanged?.Invoke("infinite_best");
             SaveUserData();
         }
@@ -447,6 +469,7 @@ public class UserDataManager : MonoBehaviour
         if (time > currentUserData.gameStats.infiniteBestTime)
         {
             currentUserData.gameStats.infiniteBestTime = time;
+            currentUserData.MarkAsModified("infinite_best");
             OnDataChanged?.Invoke("infinite_best");
             SaveUserData();
         }
@@ -464,6 +487,7 @@ public class UserDataManager : MonoBehaviour
     {
         if (currentUserData.settings == null) currentUserData.settings = new GameSettings();
         currentUserData.settings.soundEnabled = enabled;
+        currentUserData.MarkAsModified("settings");
         OnDataChanged?.Invoke("settings");
         SaveUserData();
     }
@@ -472,6 +496,7 @@ public class UserDataManager : MonoBehaviour
     {
         if (currentUserData.settings == null) currentUserData.settings = new GameSettings();
         currentUserData.settings.musicEnabled = enabled;
+        currentUserData.MarkAsModified("settings");
         OnDataChanged?.Invoke("settings");
         SaveUserData();
     }
@@ -480,6 +505,7 @@ public class UserDataManager : MonoBehaviour
     {
         if (currentUserData.settings == null) currentUserData.settings = new GameSettings();
         currentUserData.settings.vibrationEnabled = enabled;
+        currentUserData.MarkAsModified("settings");
         OnDataChanged?.Invoke("settings");
         SaveUserData();
     }
@@ -552,6 +578,8 @@ public class UserDataManager : MonoBehaviour
         }
 
         currentUserData.stageProgress[stageKey] = progress;
+        currentUserData.MarkAsModified("stage_progress");
+
         OnDataChanged?.Invoke("stage_progress");
         SaveUserData();
 
@@ -725,6 +753,9 @@ public class UserDataManager : MonoBehaviour
                     break;
             }
 
+            currentUserData.currencies.lastItemChange = UserData.GetCurrentUnixTimestamp();
+            currentUserData.MarkAsModified("items");
+
             OnItemCountChanged?.Invoke(itemType, GetItemCount(itemType));
             OnDataChanged?.Invoke("items");
             SaveUserData();
@@ -747,6 +778,9 @@ public class UserDataManager : MonoBehaviour
                 currentUserData.currencies.brushCount += amount;
                 break;
         }
+
+        currentUserData.currencies.lastItemChange = UserData.GetCurrentUnixTimestamp();
+        currentUserData.MarkAsModified("items");
 
         OnItemCountChanged?.Invoke(itemType, GetItemCount(itemType));
         OnDataChanged?.Invoke("items");
@@ -832,6 +866,30 @@ public class UserDataManager : MonoBehaviour
         SaveUserData();
 
         Debug.Log($"Stage {stageNumber} cleared with {stars} stars, score: {score}");
+    }
+
+    #endregion
+
+    #region Data Export for Firebase
+
+    /// <summary>
+    /// Get the complete UserData object for Firebase sync
+    /// </summary>
+    public UserData GetCompleteUserData()
+    {
+        return currentUserData;
+    }
+
+    /// <summary>
+    /// Update the complete UserData object from Firebase
+    /// </summary>
+    public void SetCompleteUserData(UserData userData)
+    {
+        if (userData == null) return;
+
+        currentUserData = userData;
+        SaveUserData();
+        InvokeAllEvents();
     }
 
     #endregion

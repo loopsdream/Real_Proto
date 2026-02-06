@@ -8,6 +8,8 @@ public class TitleSceneManager : MonoBehaviour
 {
     [Header("UI 컴포넌트들")]
     public Button loginButton;
+    public Button emailLoginButton;
+    public GameObject loginPanel;
     public TextMeshProUGUI versionText;
     public GameObject loadingPanel;
     public Slider loadingProgressBar;
@@ -39,6 +41,16 @@ public class TitleSceneManager : MonoBehaviour
         if (loginButton != null)
         {
             loginButton.onClick.AddListener(OnLoginButtonClicked);
+        }
+
+        if (emailLoginButton != null)
+        {
+            emailLoginButton.onClick.AddListener(OnEmailLoginButtonClicked);
+        }
+
+        if (loginPanel != null)
+        {
+            loginPanel.SetActive(false);
         }
     }
 
@@ -208,13 +220,42 @@ public class TitleSceneManager : MonoBehaviour
             return;
         }
 
-
-        // 실제 서비스 전에 활성화
-        //Debug.Log("[TitleScene] 🎭 로그인 시작");
-        //StartCoroutine(HandleLoginProcess());
-
+        // 게스트로 플레이 (익명 로그인)
         isProcessingLogin = true;
         StartCoroutine(StartGameSequenceAfterLogin());
+    }
+
+    // ⭐ 추가: 이메일 로그인 버튼 클릭
+    void OnEmailLoginButtonClicked()
+    {
+        if (!isInitialized)
+        {
+            Debug.LogWarning("[TitleScene] 초기화 미완료");
+            return;
+        }
+
+        Debug.Log("[TitleScene] Email login panel opened");
+        ShowLoginPanel();
+    }
+
+    // ⭐ 추가: LoginPanel 열기
+    public void ShowLoginPanel()
+    {
+        if (loginPanel != null)
+        {
+            loginPanel.SetActive(true);
+            Debug.Log("[TitleScene] LoginPanel shown");
+        }
+    }
+
+    // ⭐ 추가: LoginPanel 닫기
+    public void HideLoginPanel()
+    {
+        if (loginPanel != null)
+        {
+            loginPanel.SetActive(false);
+            Debug.Log("[TitleScene] LoginPanel hidden");
+        }
     }
 
     IEnumerator HandleLoginProcess()
@@ -270,6 +311,19 @@ public class TitleSceneManager : MonoBehaviour
     #endregion
 
     #region 게임 시작
+
+    public void StartGameTransition()
+    {
+        if (!isInitialized)
+        {
+            Debug.LogWarning("[TitleScene] Not initialized yet");
+            return;
+        }
+
+        Debug.Log("[TitleScene] 🚀 Starting game transition from email login");
+        isProcessingLogin = true;  // 플래그 설정
+        StartCoroutine(StartGameSequenceAfterLogin());
+    }
 
     IEnumerator StartGameSequenceAfterLogin()
     {
@@ -396,6 +450,11 @@ public class TitleSceneManager : MonoBehaviour
         if (loginButton != null)
         {
             loginButton.interactable = interactable;
+        }
+
+        if (emailLoginButton != null)
+        {
+            emailLoginButton.interactable = interactable;
         }
     }
 
