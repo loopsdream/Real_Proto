@@ -161,6 +161,12 @@ public int GetBlockTypeFromTag(string tag)
             case "GreenBlock": return 4;
             case "PurpleBlock": return 5;
             case "PinkBlock": return 6;
+            case "OrangeBlock": return 7;
+            case "LimeBlock": return 8;
+            case "TealBlock": return 9;
+            case "CyanBlock": return 10;
+            case "IndigoBlock": return 11;
+            case "MagentaBlock": return 12;
             default: return 0;
         }
     }
@@ -192,6 +198,12 @@ public string GetTagFromBlockType(int blockType)
             case 4: return "GreenBlock";
             case 5: return "PurpleBlock";
             case 6: return "PinkBlock";
+            case 7: return "OrangeBlock";
+            case 8: return "LimeBlock";
+            case 9: return "TealBlock";
+            case 10: return "CyanBlock";
+            case 11: return "IndigoBlock";
+            case 12: return "MagentaBlock";
             default: return "EmptyBlock";
         }
     }

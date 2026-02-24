@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 9121515589655606092}
   - component: {fileID: 5899979563805277034}
   m_Layer: 0
-  m_Name: Yellow Block
-  m_TagString: YellowBlock
+  m_Name: Magenta Block
+  m_TagString: MagentaBlock
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -78,7 +78,7 @@ SpriteRenderer:
   m_SortingLayerID: 1523808039
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: 1867431868, guid: 3dcb1b815d1aee84d8752e7fd425ee7a, type: 3}
+  m_Sprite: {fileID: -69800419, guid: 3dcb1b815d1aee84d8752e7fd425ee7a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

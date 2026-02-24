@@ -310,12 +310,18 @@ MonoBehaviour:
   tapPanel: {fileID: 996538034}
   tapCountText: {fileID: 196391349}
   blockColorIcons:
-  - {fileID: -4654982148851973204, guid: 1664a235612fc054caa4eb98acbee76f, type: 3}
-  - {fileID: 2675007419052518763, guid: 1664a235612fc054caa4eb98acbee76f, type: 3}
-  - {fileID: -5546198199626997180, guid: 1664a235612fc054caa4eb98acbee76f, type: 3}
-  - {fileID: -1986195616827006695, guid: 1664a235612fc054caa4eb98acbee76f, type: 3}
-  - {fileID: -4088391959572963866, guid: 1664a235612fc054caa4eb98acbee76f, type: 3}
-  - {fileID: -3699931340949849040, guid: e303555c8c62d7c45afab6f677211457, type: 3}
+  - {fileID: 709920054, guid: 3dcb1b815d1aee84d8752e7fd425ee7a, type: 3}
+  - {fileID: -950751949, guid: 3dcb1b815d1aee84d8752e7fd425ee7a, type: 3}
+  - {fileID: 1867431868, guid: 3dcb1b815d1aee84d8752e7fd425ee7a, type: 3}
+  - {fileID: -680456359, guid: 3dcb1b815d1aee84d8752e7fd425ee7a, type: 3}
+  - {fileID: -85604548, guid: 3dcb1b815d1aee84d8752e7fd425ee7a, type: 3}
+  - {fileID: 813312316, guid: 3dcb1b815d1aee84d8752e7fd425ee7a, type: 3}
+  - {fileID: -1924644166, guid: 3dcb1b815d1aee84d8752e7fd425ee7a, type: 3}
+  - {fileID: -1199905808, guid: 3dcb1b815d1aee84d8752e7fd425ee7a, type: 3}
+  - {fileID: 645691273, guid: 3dcb1b815d1aee84d8752e7fd425ee7a, type: 3}
+  - {fileID: -1330650681, guid: 3dcb1b815d1aee84d8752e7fd425ee7a, type: 3}
+  - {fileID: 1143043152, guid: 3dcb1b815d1aee84d8752e7fd425ee7a, type: 3}
+  - {fileID: -69800419, guid: 3dcb1b815d1aee84d8752e7fd425ee7a, type: 3}
   heartIcon: {fileID: 21300000, guid: 2f35d0b2cb396a445a153588a4d5be9b, type: 3}
   cloverIcon: {fileID: 21300000, guid: cc67e4cf33e6aec479ba66a8ca3f3d38, type: 3}
 --- !u!1 &72329617
@@ -5265,6 +5271,12 @@ MonoBehaviour:
   - {fileID: 5540238821353694471, guid: 61b76ac648e9f464492fde3e019aaa79, type: 3}
   - {fileID: 1398148286085417208, guid: 732562cc323f9b647a2346bdec370cda, type: 3}
   - {fileID: 1398148286085417208, guid: 30a5846316037e54498974e8e2edf1ac, type: 3}
+  - {fileID: 3430643294906128457, guid: 5efbd04d0ab40b04d9c12d815f7a43ed, type: 3}
+  - {fileID: 3430643294906128457, guid: 931803de1acc0384b8f98f3b4c8d681e, type: 3}
+  - {fileID: 3430643294906128457, guid: ff93c75092ec3a1479c8f41df2a31b7d, type: 3}
+  - {fileID: 3430643294906128457, guid: 78043ff5aaf642f41b4133dec8b0bcf5, type: 3}
+  - {fileID: 3430643294906128457, guid: 7b0143d447d688a42b97613daeb8e838, type: 3}
+  - {fileID: 3430643294906128457, guid: ad2108406ee86894a9aee241b5cdc21d, type: 3}
   emptyBlockPrefab: {fileID: 6056026235097416716, guid: 674c6ff5f0b788b4bbf6bce82105ac98, type: 3}
   gridParent: {fileID: 1291168838}
 --- !u!114 &1362635011

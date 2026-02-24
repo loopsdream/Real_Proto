@@ -9,8 +9,14 @@ TagManager:
   - YellowBlock
   - GreenBlock
   - PurpleBlock
-  - EmptyBlock
   - PinkBlock
+  - OrangeBlock
+  - LimeBlock
+  - TealBlock
+  - CyanBlock
+  - IndigoBlock
+  - MagentaBlock
+  - EmptyBlock
   layers:
   - Default
   - TransparentFX

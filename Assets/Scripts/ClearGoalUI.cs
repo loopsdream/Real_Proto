@@ -155,6 +155,12 @@ public class ClearGoalUI : MonoBehaviour
             case 4: return "Green";
             case 5: return "Purple";
             case 6: return "Pink";
+            case 7: return "Orange";
+            case 8: return "Lime";
+            case 9: return "Teal";
+            case 10: return "Cyan";
+            case 11: return "Indigo";
+            case 12: return "Magenta";
             default: return "Unknown";
         }
     }

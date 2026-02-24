@@ -117,8 +117,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 322fcd84d5887264b9518d525403e8ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridManager: {fileID: 0}
   touchAreaMultiplier: 1.2
+  hoverScaleMultiplier: 1.1
 --- !u!61 &2038709641363826478
 BoxCollider2D:
   m_ObjectHideFlags: 0

@@ -629,6 +629,12 @@ public class LevelDesigner : MonoBehaviour
                 case 4: buttonImage.color = Color.green; break;
                 case 5: buttonImage.color = Color.magenta; break;
                 case 6: buttonImage.color = new Color(1f, 0.75f, 0.8f); break;  // NEW: Pink
+                case 7: buttonImage.color = new Color(1f, 0.5f, 0f); break; // Orange
+                case 8: buttonImage.color = new Color(0.67f, 0.93f, 0f); break; // Lime
+                case 9: buttonImage.color = new Color(0f, 0.73f, 0.67f); break; // Teal
+                case 10: buttonImage.color = new Color(0f, 0.8f, 1f); break; // Cyan
+                case 11: buttonImage.color = new Color(0.2f, 0f, 0.8f); break; // Indigo
+                case 12: buttonImage.color = new Color(1f, 0f, 0.8f); break; // Magenta
                 default: buttonImage.color = Color.white; break;
             }
         }
