@@ -618,12 +618,12 @@ private void CheckWinCondition()
         if (AreClearGoalsCompleted())
         {
             Debug.Log("Clear goals completed!");
-            CalculateAndGrantReward();
+            List<RewardItem> pendingRewards = CalculateRewardItems();
 
             StageManager stageManager = FindFirstObjectByType<StageManager>();
             if (stageManager != null)
             {
-                stageManager.OnStageCleared();
+                stageManager.OnStageCleared(pendingRewards);
             }
 
             isCheckingWinCondition = false;
@@ -639,12 +639,12 @@ private void CheckWinCondition()
         {
             // No specific goals defined, fallback to destroy all blocks
             Debug.Log("No goals defined - clearing stage (fallback)");
-            CalculateAndGrantReward();
+            List<RewardItem> pendingRewards = CalculateRewardItems(); ;
 
             StageManager stageManager = FindFirstObjectByType<StageManager>();
             if (stageManager != null)
             {
-                stageManager.OnStageCleared();
+                stageManager.OnStageCleared(pendingRewards);
             }
         }
         else if (remainingBlocks == 0 && currentClearGoals != null && currentClearGoals.Count > 0)
@@ -1065,10 +1065,11 @@ private void CheckWinCondition()
             grid[lastBlockPos.x, lastBlockPos.y] = blockFactory.CreateEmptyBlock(lastBlockPos.x, lastBlockPos.y);
         }
 
+        List<RewardItem> pendingRewards = CalculateRewardItems();
         StageManager stageManager = FindFirstObjectByType<StageManager>();
         if (stageManager != null)
         {
-            stageManager.OnStageCleared();
+            stageManager.OnStageCleared(pendingRewards);
         }
 
         //if (winPanel != null)
@@ -1354,7 +1355,53 @@ private void CheckWinCondition()
         Debug.Log($"Item used. Total items used: {itemsUsed}");
     }
 
-    private void CalculateAndGrantReward()
+    //private void CalculateAndGrantReward()
+    //{
+    //    Debug.Log("=== Calculating Stage Clear Rewards ===");
+
+    //    int stars = StageRewardCalculator.CalculateStars(currentScore, targetScore);
+    //    Debug.Log($"Stars earned: {stars} (Score: {currentScore}/{targetScore})");
+
+    //    bool isFirstClear = StageRewardCalculator.IsFirstClear(currentStageNumber);
+    //    Debug.Log($"First clear: {isFirstClear}");
+
+    //    bool isPerfectClear = StageRewardCalculator.IsPerfectClear(stars, itemsUsed, 0);
+    //    Debug.Log($"Perfect clear: {isPerfectClear}");
+
+    //    UserDataManager userDataManager = UserDataManager.Instance;
+    //    if (userDataManager != null)
+    //    {
+    //        userDataManager.SetStageCleared(currentStageNumber, stars, currentScore);
+    //    }
+
+    //    StageRewardData rewardData = StageRewardCalculator.LoadStageRewardData(currentStageNumber);
+
+    //    if (rewardData != null && rewardData.IsValid())
+    //    {
+    //        List<RewardItem> totalRewards = rewardData.CalculateTotalRewards(stars, isFirstClear, isPerfectClear);
+
+    //        Debug.Log($"Total rewards count: {totalRewards.Count}");
+
+    //        RewardManager rewardManager = RewardManager.Instance;
+    //        if (rewardManager != null)
+    //        {
+    //            rewardManager.GrantRewards(totalRewards);
+    //            Debug.Log("Rewards granted successfully!");
+    //        }
+    //        else
+    //        {
+    //            Debug.LogError("RewardManager not found!");
+    //        }
+    //    }
+    //    else
+    //    {
+    //        Debug.LogWarning($"No reward data found for stage {currentStageNumber}");
+    //    }
+
+    //    Debug.Log("=== Reward Calculation Complete ===");
+    //}
+
+    private List<RewardItem> CalculateRewardItems()
     {
         Debug.Log("=== Calculating Stage Clear Rewards ===");
 
@@ -1367,6 +1414,7 @@ private void CheckWinCondition()
         bool isPerfectClear = StageRewardCalculator.IsPerfectClear(stars, itemsUsed, 0);
         Debug.Log($"Perfect clear: {isPerfectClear}");
 
+        // 스테이지 클리어 상태 저장 (보상 지급과 분리)
         UserDataManager userDataManager = UserDataManager.Instance;
         if (userDataManager != null)
         {
@@ -1378,26 +1426,29 @@ private void CheckWinCondition()
         if (rewardData != null && rewardData.IsValid())
         {
             List<RewardItem> totalRewards = rewardData.CalculateTotalRewards(stars, isFirstClear, isPerfectClear);
+            Debug.Log($"Calculated rewards count: {totalRewards.Count}");
+            return totalRewards;
+        }
 
-            Debug.Log($"Total rewards count: {totalRewards.Count}");
+        Debug.LogWarning($"No reward data for stage {currentStageNumber}, returning empty list.");
+        return new List<RewardItem>();
+    }
 
-            RewardManager rewardManager = RewardManager.Instance;
-            if (rewardManager != null)
-            {
-                rewardManager.GrantRewards(totalRewards);
-                Debug.Log("Rewards granted successfully!");
-            }
-            else
-            {
-                Debug.LogError("RewardManager not found!");
-            }
+    // 보상 실제 지급 (외부에서 호출 가능하도록 public)
+    public void GrantRewardItems(List<RewardItem> rewards)
+    {
+        if (rewards == null || rewards.Count == 0) return;
+
+        RewardManager rewardManager = RewardManager.Instance;
+        if (rewardManager != null)
+        {
+            rewardManager.GrantRewards(rewards);
+            Debug.Log("Rewards granted successfully!");
         }
         else
         {
-            Debug.LogWarning($"No reward data found for stage {currentStageNumber}");
+            Debug.LogError("[StageGridManager] RewardManager not found!");
         }
-
-        Debug.Log("=== Reward Calculation Complete ===");
     }
 
     #endregion
