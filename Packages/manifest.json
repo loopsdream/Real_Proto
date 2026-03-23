@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.coffee.ui-particle": "https://github.com/mob-sakai/ParticleEffectForUGUI.git",
     "com.coplaydev.unity-mcp": "https://github.com/CoplayDev/unity-mcp.git?path=/UnityMcpBridge",
     "com.unity.adaptiveperformance.google.android": "5.1.4",
     "com.unity.adaptiveperformance.samsung.android": "5.0.0",
