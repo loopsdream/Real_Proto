@@ -426,27 +426,25 @@ public class StageManager : MonoBehaviour
     }
 
     // 스테이지 클리어 시 GridManagerRefactored에서 호출할 메서드  
-    public void OnStageCleared()
+    public void OnStageCleared(List<RewardItem> pendingRewards)
     {
         Debug.Log("All blocks destroyed - Stage cleared!");
-        OnStageComplete();  // 기존 메서드 활용
 
-        // 보상 지급
-        if (currentStage != null && UserDataManager.Instance != null)
+        // StageClearRewardPanel에 보상 데이터 전달하고 표시
+        StageClearRewardPanel rewardPanel = Object.FindAnyObjectByType<StageClearRewardPanel>(FindObjectsInactive.Include);
+        if (rewardPanel != null)
         {
-            // 원본
-            //UserDataManager.Instance.AddGameCoins(currentStage.coinReward);
-            //if (currentStage.diamondReward > 0)
-            //{
-            //    UserDataManager.Instance.AddDiamonds(currentStage.diamondReward);
-            //}
-
-            // 테스트 용
-            UserDataManager.Instance.AddGameCoins(1);
-            UserDataManager.Instance.AddDiamonds(1);
-
-            // 경험치 시스템이 있다면
-            // UserDataManager.Instance.AddExperience(currentStage.experienceReward);
+            rewardPanel.Show(pendingRewards);
+        }
+        else
+        {
+            Debug.LogError("[StageManager] StageClearRewardPanel not found! Granting rewards directly.");
+            // 패널이 없으면 바로 지급 (안전장치)
+            StageGridManager gridManager = Object.FindAnyObjectByType<StageGridManager>();
+            if (gridManager != null)
+            {
+                gridManager.GrantRewardItems(pendingRewards);
+            }
         }
     }
 
