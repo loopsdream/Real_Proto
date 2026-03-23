@@ -24,7 +24,7 @@ MonoBehaviour:
   hasTimeLimit: 1
   timeLimit: 180
   maxTaps: 0
-  coinReward: 150
+  coinReward: 40
   diamondReward: 0
   experienceReward: 10
   allowColorTransform: 1

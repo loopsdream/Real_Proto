@@ -25,7 +25,7 @@ MonoBehaviour:
     targetColor: 0
     targetColorCount: 0
     collectibleType: 1
-    targetCollectibleCount: 30
+    targetCollectibleCount: 48
   hasTimeLimit: 0
   timeLimit: 180
   maxTaps: 0
