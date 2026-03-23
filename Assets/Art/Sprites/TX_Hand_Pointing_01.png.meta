@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      TX_Hand_Pointing_01_0: -5236564962478078744
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
