@@ -80,6 +80,11 @@ private void ConvertJSONToStageData()
                 stageData.collectiblePattern = jsonData.collectiblePattern;
             }
 
+            if (jsonData.inactivePattern != null)
+            {
+                stageData.inactivePattern = jsonData.inactivePattern;
+            }
+
             // Clear Goals
             if (jsonData.clearGoals != null && jsonData.clearGoals.Length > 0)
             {
@@ -200,6 +205,7 @@ public class StageDataJSON
     public int gridHeight;
     public int[] blockPattern;
     public int[] collectiblePattern;
+    public int[] inactivePattern;
 
     // Clear Goals
     public ClearGoalDataJSON[] clearGoals;
