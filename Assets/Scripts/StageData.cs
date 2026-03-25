@@ -43,6 +43,18 @@ public class StageData : ScriptableObject
     public int gridWidth = 8;
     public int gridHeight = 8;
 
+    [Header("Visual Settings")]
+    [Tooltip("null이면 씬의 기본 배경 사용")]
+    public Sprite backgroundSprite;
+
+    [Header("Block Set")]
+    [Tooltip("스테이지에서 사용할 블록셋. 반드시 지정 필요")]
+    public BlockSetData blockSetData;
+
+    [Header("Inactive Pattern")]
+    [Tooltip("0 = 일반 셀, 1 = 비활성 셀 (null 처리)")]
+    public int[] inactivePattern;
+
     [Header("Block Pattern")]
     [Tooltip("0 = Empty, 1 = Red, 2 = Blue, 3 = Yellow, 4 = Green, 5 = Purple, 6 = Pink")]
     public int[] blockPattern;
@@ -90,6 +102,12 @@ public class StageData : ScriptableObject
         {
             Debug.LogWarning($"Collectible pattern length ({collectiblePattern.Length}) doesn't match grid size ({gridWidth * gridHeight})");
             System.Array.Resize(ref collectiblePattern, gridWidth * gridHeight);
+        }
+
+        if (inactivePattern != null && inactivePattern.Length != gridWidth * gridHeight)
+        {
+            Debug.LogWarning($"Inactive pattern length ({inactivePattern.Length}) doesn't match grid size ({gridWidth * gridHeight})");
+            System.Array.Resize(ref inactivePattern, gridWidth * gridHeight);
         }
 
         // Time limit minimum value

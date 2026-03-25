@@ -207,4 +207,13 @@ public string GetTagFromBlockType(int blockType)
             default: return "EmptyBlock";
         }
     }
+
+    // 스테이지별 블록셋을 런타임에 교체
+    public void ApplyBlockSet(BlockSetData blockSet)
+    {
+        if (blockSet == null || !blockSet.IsValid()) return;
+        emptyBlockPrefab = blockSet.emptyBlockPrefab;
+        blockPrefabs = blockSet.blockPrefabs;
+        Debug.Log($"[BlockFactory] Applied block set: {blockSet.blockSetName}");
+    }
 }

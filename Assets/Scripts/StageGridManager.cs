@@ -17,6 +17,10 @@ public class StageGridManager : BaseGridManager
     public CollectibleFactory collectibleFactory;
     public ClearGoalUI clearGoalUI;
 
+    [Header("Visual Settings")]
+    public SpriteRenderer backgroundRenderer;
+    public Sprite defaultBackgroundSprite;
+
     [Header("Stage State")]
     public int currentScore = 0;
     private int shuffleAttemptCount = 0;
@@ -77,13 +81,23 @@ public class StageGridManager : BaseGridManager
         width = stageData.gridWidth;
         height = stageData.gridHeight;
 
+        if (stageData.blockSetData != null && blockFactory != null)
+            blockFactory.ApplyBlockSet(stageData.blockSetData);
+
+        if (backgroundRenderer != null)
+        {
+            backgroundRenderer.sprite = stageData.backgroundSprite != null
+                ? stageData.backgroundSprite
+                : defaultBackgroundSprite;
+        }
+
         ClearGrid();
         Debug.Log("[InitializeStageGrid] Grid cleared");
 
         SetupGrid();
         Debug.Log($"[InitializeStageGrid] SetupGrid() called - grid array: {(grid != null ? $"{grid.GetLength(0)}x{grid.GetLength(1)}" : "NULL")}");
 
-        CreateBlocksFromPattern(stageData.blockPattern);
+        CreateBlocksFromPattern(stageData.blockPattern, stageData.inactivePattern);
         Debug.Log("[InitializeStageGrid] Pattern initialized");
 
         int blockCount = 0;
@@ -124,7 +138,7 @@ public class StageGridManager : BaseGridManager
         Debug.Log("[InitializeStageGrid] Completed");
     }
 
-    private void CreateBlocksFromPattern(int[] pattern)
+    private void CreateBlocksFromPattern(int[] pattern, int[] inactivePattern = null)
     {
         if (pattern == null || blockFactory == null) return;
 
@@ -133,15 +147,21 @@ public class StageGridManager : BaseGridManager
             for (int x = 0; x < width; x++)
             {
                 int index = y * width + x;
+
+                bool isInactive = inactivePattern != null
+                    && index < inactivePattern.Length
+                    && inactivePattern[index] == 1;
+
+                if (isInactive)
+                {
+                    grid[x, y] = null;
+                    continue;
+                }
+
                 if (index < pattern.Length)
-                {
-                    int blockType = pattern[index];
-                    grid[x, y] = blockFactory.CreateBlockFromType(blockType, x, y);
-                }
+                    grid[x, y] = blockFactory.CreateBlockFromType(pattern[index], x, y);
                 else
-                {
                     grid[x, y] = blockFactory.CreateEmptyBlock(x, y);
-                }
             }
         }
     }
