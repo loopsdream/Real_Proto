@@ -70,9 +70,11 @@ public class StageClearRewardPanel : MonoBehaviour
             gameObject.SetActive(true);
 
         RegisterButtonListeners();
-
         UpdateRewardUI();
         UpdateAdButtonState();
+
+        SetClaimButtonsVisible(true);
+
         // 다음/메인메뉴 버튼 숨김 (보상 선택 전까지)
         SetNavigationButtonsActive(false);
 
