@@ -14,6 +14,7 @@ public class StageManager : MonoBehaviour
     [Header("UI References")]
     public GameObject pausePanel;
     public GameObject WarningPanel;
+    public GameObject gameOverPanel;
     public TextMeshProUGUI stageNumberText;
     public TextMeshProUGUI stageNameText;
     public TextMeshProUGUI stageDescriptionText;
@@ -303,6 +304,9 @@ public class StageManager : MonoBehaviour
 
         if (stageCompletePanel != null)
             stageCompletePanel.SetActive(false);
+
+        if (gameOverPanel != null)
+            gameOverPanel.SetActive(false);
     }
 
     public void OnBlocksDestroyed()
@@ -310,10 +314,8 @@ public class StageManager : MonoBehaviour
         movesUsed++;
         UpdateMovesUI();
 
-        if (currentStage != null && currentStage.maxTaps > 0 && movesUsed >= currentStage.maxTaps)
-        {
-            CheckGameOver();
-        }
+        // Tap-based game over is handled by StageGridManager.CheckWinCondition()
+        // to ensure goal completion is checked before declaring game over.
     }
 
     void UpdateMovesUI()
@@ -353,6 +355,16 @@ public class StageManager : MonoBehaviour
     {
         Debug.Log("Game Over!");
         isTimerActive = false;
+        isGameActive = false;
+
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(true);
+        }
+        else
+        {
+            Debug.LogWarning("[StageManager] gameOverPanel is not assigned!");
+        }
     }
 
     public void OnStageComplete()

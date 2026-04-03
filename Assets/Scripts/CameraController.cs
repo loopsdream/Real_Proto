@@ -12,11 +12,16 @@ public class CameraController : MonoBehaviour
     public float topUISpacePixels = 200f;
     public float bottomUISpacePixels = 150f;
     public float sideMarginPixels = 100f;
-    
+
+    [Tooltip("true면 카메라 줌을 고정, 그리드 크기에 따라 변하지 않음")]
+    public bool useFixedCameraSize = false;
+    public float fixedOrthographicSize = 8f;
+
     private Camera mainCamera;
     private float pixelsToWorldUnit = 1f;
     private float screenAspectRatio = 1f;
-    
+    private float initialOrthographicSize;
+
     void Awake()
     {
         mainCamera = Camera.main;
@@ -24,13 +29,22 @@ public class CameraController : MonoBehaviour
         {
             Debug.LogError("Main Camera not found!");
         }
+        initialOrthographicSize = mainCamera.orthographicSize;
     }
     
     public void AdjustCameraForGrid(int gridWidth, int gridHeight, float cellSize)
     {
         if (mainCamera == null) return;
-        
+
+        mainCamera.orthographicSize = initialOrthographicSize;
         CalculateScreenMetrics();
+
+        if (useFixedCameraSize)
+        {
+            ApplyCameraSize(fixedOrthographicSize);
+            return;
+        }
+
         float optimalSize = CalculateOptimalCameraSize(gridWidth, gridHeight, cellSize);
         ApplyCameraSize(optimalSize);
         
@@ -40,7 +54,11 @@ public class CameraController : MonoBehaviour
     public void CenterCameraOnGrid(Vector3 gridWorldCenter)
     {
         if (mainCamera == null) return;
-        
+
+        // Recalculate with the correctly set camera size
+        float worldHeight = mainCamera.orthographicSize * 2f;
+        pixelsToWorldUnit = worldHeight / Screen.height;
+
         Vector3 targetPosition = gridWorldCenter;
         
         if (portraitMode)
@@ -74,20 +92,20 @@ public class CameraController : MonoBehaviour
         {
             return Mathf.Max((gridHeight * cellSize) * 0.6f, (gridWidth * cellSize) / screenAspectRatio * 0.6f);
         }
-        
+
         float gridWorldWidth = gridWidth * cellSize + sideMarginPixels * pixelsToWorldUnit * 2f;
         float gridWorldHeight = gridHeight * cellSize;
-        
+
         float topUISpace = topUISpacePixels * pixelsToWorldUnit;
         float bottomUISpace = bottomUISpacePixels * pixelsToWorldUnit;
-        
+
         float cameraHeightFromHeight = (gridWorldHeight + topUISpace + bottomUISpace) * 0.5f;
         float cameraHeightFromWidth = gridWorldWidth / screenAspectRatio * 0.5f;
-        
+
         float requiredCameraSize = Mathf.Max(cameraHeightFromHeight, cameraHeightFromWidth);
         requiredCameraSize = Mathf.Clamp(requiredCameraSize, minCameraSize, maxCameraSize);
         requiredCameraSize *= (1f + cameraMarginPercent);
-        
+
         return requiredCameraSize;
     }
     
