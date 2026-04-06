@@ -106,7 +106,6 @@ public class BlockFactory : MonoBehaviour
     private void ApplyBlockScale(GameObject blockObj)
     {
         if (blockObj == null || layoutManager == null) return;
-        
         float cellSize = layoutManager.cellSize;
         blockObj.transform.localScale = Vector3.one * cellSize;
     }

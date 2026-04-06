@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class StageGridManager : BaseGridManager
@@ -18,8 +19,9 @@ public class StageGridManager : BaseGridManager
     public ClearGoalUI clearGoalUI;
 
     [Header("Visual Settings")]
-    public SpriteRenderer backgroundRenderer;
+    public Image backgroundImage;
     public Sprite defaultBackgroundSprite;
+    public Canvas backgroundCanvas;
 
     [Header("Stage State")]
     public int currentScore = 0;
@@ -84,11 +86,13 @@ public class StageGridManager : BaseGridManager
         if (stageData.blockSetData != null && blockFactory != null)
             blockFactory.ApplyBlockSet(stageData.blockSetData);
 
-        if (backgroundRenderer != null)
+        if (backgroundImage != null)
         {
-            backgroundRenderer.sprite = stageData.backgroundSprite != null
+            backgroundImage.sprite = stageData.backgroundSprite != null
                 ? stageData.backgroundSprite
                 : defaultBackgroundSprite;
+
+            backgroundImage.SetNativeSize();
         }
 
         ClearGrid();
@@ -109,6 +113,7 @@ public class StageGridManager : BaseGridManager
         Debug.Log($"[InitializeStageGrid] Total blocks in scene: {blockCount}");
 
         SetupCameraAndLayout();
+        ApplyBackgroundToGrid();
 
         currentScore = 0;
         UpdateScoreText();
@@ -282,42 +287,27 @@ public class StageGridManager : BaseGridManager
         int dx = end.x - start.x;
         int dy = end.y - start.y;
 
-        // Check if it's horizontal, vertical, or invalid
-        if (dx != 0 && dy != 0)
-        {
-            // Not a straight line - should not happen in this game
-            Debug.LogWarning($"Invalid line from ({start.x},{start.y}) to ({end.x},{end.y}) - not horizontal or vertical");
-            return positions;
-        }
-
+        // Same position
         if (dx == 0 && dy == 0)
         {
-            // Same position
             return positions;
         }
 
-        // Horizontal line (same y)
-        if (dy == 0)
-        {
-            int startX = Mathf.Min(start.x, end.x);
-            int endX = Mathf.Max(start.x, end.x);
+        // Use Bresenham's line algorithm for all directions
+        int steps = Mathf.Max(Mathf.Abs(dx), Mathf.Abs(dy));
 
-            // Start from startX (include click position), end before endX (exclude matched block)
-            for (int x = startX; x < endX; x++)
-            {
-                positions.Add(new Vector2Int(x, start.y));
-            }
-        }
-        // Vertical line (same x)
-        else if (dx == 0)
+        for (int i = 0; i < steps; i++)  // Exclude end position (matched block)
         {
-            int startY = Mathf.Min(start.y, end.y);
-            int endY = Mathf.Max(start.y, end.y);
+            float t = (float)i / steps;
+            int x = Mathf.RoundToInt(start.x + t * dx);
+            int y = Mathf.RoundToInt(start.y + t * dy);
 
-            // Start from startY (include click position), end before endY (exclude matched block)
-            for (int y = startY; y < endY; y++)
+            Vector2Int pos = new Vector2Int(x, y);
+
+            // Avoid duplicates
+            if (positions.Count == 0 || positions[positions.Count - 1] != pos)
             {
-                positions.Add(new Vector2Int(start.x, y));
+                positions.Add(pos);
             }
         }
 
@@ -521,13 +511,6 @@ public class StageGridManager : BaseGridManager
         {
             remainingTaps--;
             UpdateHeaderTapCount();
-
-            if (remainingTaps <= 0)
-            {
-                Debug.Log("No more taps remaining!");
-                // Handle game over - you might want to show a game over panel
-                return;
-            }
         }
 
         List<GameObject> matchedBlocks = matchingSystem.FindMatchingBlocks(x, y, grid);
@@ -542,6 +525,11 @@ public class StageGridManager : BaseGridManager
         else
         {
             Debug.LogWarning("[StageGridManager] No matches found!");
+            // 매칭 없이 마지막 탭을 소진했을 때도 게임오버 체크
+            if (maxTaps > 0 && remainingTaps <= 0)
+            {
+                CheckWinCondition();
+            }
         }
 
         //if (grid == null || x < 0 || x >= grid.GetLength(0) || y < 0 || y >= grid.GetLength(1))
@@ -634,51 +622,55 @@ private void CheckWinCondition()
         if (isCheckingWinCondition) return;
         isCheckingWinCondition = true;
 
-        // Check if clear goals are completed
+        // [Case 1] 클리어 목표 달성 - 스테이지 클리어
         if (AreClearGoalsCompleted())
         {
-            Debug.Log("Clear goals completed!");
-            List<RewardItem> pendingRewards = CalculateRewardItems();
+            Debug.Log("[CheckWin] All goals completed - Stage Clear!");
+            List<RewardItem> rewards = CalculateRewardItems();
 
-            StageManager stageManager = FindFirstObjectByType<StageManager>();
+            StageManager stageManager = FindAnyObjectByType<StageManager>();
             if (stageManager != null)
             {
-                stageManager.OnStageCleared(pendingRewards);
+                stageManager.OnStageCleared(rewards);
             }
 
             isCheckingWinCondition = false;
             return;
         }
 
-        // If goals are NOT completed, check if we can still continue
-        int remainingBlocks = CountRemainingBlocks();
-
-        // IMPORTANT: Only clear if NO goals are defined (fallback behavior)
-        // If goals ARE defined but not completed, do NOT clear even if blocks are gone
-        if (remainingBlocks == 0 && (currentClearGoals == null || currentClearGoals.Count == 0))
+        // [Case 2] 블록이 전부 사라졌는데 목표 미달성 - 게임오버
+        // (수집품 수집 목표처럼 블록 파괴를 통해서만 진행 가능한 경우 해당)
+        if (CountRemainingBlocks() == 0)
         {
-            // No specific goals defined, fallback to destroy all blocks
-            Debug.Log("No goals defined - clearing stage (fallback)");
-            List<RewardItem> pendingRewards = CalculateRewardItems(); ;
+            Debug.Log("[CheckWin] All blocks gone but goals not completed - Game Over!");
 
-            StageManager stageManager = FindFirstObjectByType<StageManager>();
-            if (stageManager != null)
-            {
-                stageManager.OnStageCleared(pendingRewards);
-            }
-        }
-        else if (remainingBlocks == 0 && currentClearGoals != null && currentClearGoals.Count > 0)
-        {
-            // Blocks are gone but goals not completed - GAME OVER
-            Debug.Log("All blocks destroyed but goals not completed - Game Over!");
-            
-            StageManager stageManager = FindFirstObjectByType<StageManager>();
+            StageManager stageManager = FindAnyObjectByType<StageManager>();
             if (stageManager != null)
             {
                 stageManager.OnStageFailed("Goals not completed!");
             }
+
+            isCheckingWinCondition = false;
+            return;
         }
-        else if (!CanMakeAnyMatch())
+
+        // [Case 3] 탭 소진 후에도 목표 미달성 - 게임오버
+        if (maxTaps > 0 && remainingTaps <= 0)
+        {
+            Debug.Log("[CheckWin] No taps remaining and goals not completed - Game Over!");
+
+            StageManager stageManager = FindAnyObjectByType<StageManager>();
+            if (stageManager != null)
+            {
+                stageManager.OnStageFailed("No taps remaining!");
+            }
+
+            isCheckingWinCondition = false;
+            return;
+        }
+
+        // [Case 4] 데드락 - 매칭 가능한 경우 없음 (셔플 등 처리)
+        if (!CanMakeAnyMatch())
         {
             HandleDeadlockSituation();
         }
@@ -731,7 +723,21 @@ private void CheckWinCondition()
 
         if (remainingBlocks == 0)
         {
-            CheckWinCondition();
+            // 블록이 없으면 CheckWinCondition 재호출 대신 직접 판정
+            // (재호출 시 isCheckingWinCondition 플래그 없어도 Case2에서 처리됨)
+            if (AreClearGoalsCompleted())
+            {
+                Debug.Log("[DeadlockFlow] Blocks gone and goals complete - Stage Clear!");
+                List<RewardItem> rewards = CalculateRewardItems();
+                StageManager stageManager = FindAnyObjectByType<StageManager>();
+                if (stageManager != null) stageManager.OnStageCleared(rewards);
+            }
+            else
+            {
+                Debug.Log("[DeadlockFlow] Blocks gone but goals not complete - Game Over!");
+                StageManager stageManager = FindAnyObjectByType<StageManager>();
+                if (stageManager != null) stageManager.OnStageFailed("Goals not completed!");
+            }
             yield break;
         }
         else if (remainingBlocks == 1)
@@ -1469,6 +1475,34 @@ private void CheckWinCondition()
         {
             Debug.LogError("[StageGridManager] RewardManager not found!");
         }
+    }
+
+    private void ApplyBackgroundToGrid()
+    {
+        if (backgroundImage == null || layoutManager == null || Camera.main == null) return;
+
+        float gridWorldWidth = width * layoutManager.cellSize;
+        float gridWorldHeight = height * layoutManager.cellSize;
+
+        // 월드 1유닛 = 몇 스크린 픽셀인지 계산
+        float pixelsPerWorldUnit = Screen.height / (Camera.main.orthographicSize * 2f);
+
+        // 캔버스 스케일로 픽셀 → 캔버스 유닛 변환
+        Canvas canvas = backgroundImage.canvas;
+        float canvasScale = canvas != null ? canvas.scaleFactor : 1f;
+
+        float canvasW = gridWorldWidth * pixelsPerWorldUnit / canvasScale;
+        float canvasH = gridWorldHeight * pixelsPerWorldUnit / canvasScale;
+        backgroundImage.rectTransform.sizeDelta = new Vector2(canvasW, canvasH);
+
+        // 그리드 중심의 월드 좌표 → 스크린 픽셀
+        Vector3 gridCenter = layoutManager.GetGridCenter();
+        Vector3 screenPos = Camera.main.WorldToScreenPoint(gridCenter);
+
+        // 스크린 중심 기준 오프셋 → 캔버스 유닛
+        float offsetX = (screenPos.x - Screen.width * 0.5f) / canvasScale;
+        float offsetY = (screenPos.y - Screen.height * 0.5f) / canvasScale;
+        backgroundImage.rectTransform.anchoredPosition = new Vector2(offsetX, offsetY);
     }
 
     #endregion
