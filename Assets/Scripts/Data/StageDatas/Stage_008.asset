@@ -15,17 +15,23 @@ MonoBehaviour:
   stageNumber: 8
   stageName: Stage 8
   stageDescription: 
+  targetScore: 0
   gridWidth: 6
   gridHeight: 8
+  backgroundSprite: {fileID: 0}
+  blockSetData: {fileID: 0}
+  inactivePattern: 
   blockPattern: 010000000000000000000000000000000000000000000000040000000100000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000300000000000000000000000300000000000000030000000000000003000000030000000000000003000000000000000300000000000000000000000300000000000000000000000000000000000000040000000200000004000000000000000000000000000000000000000000000002000000
-  hasTimeLimit: 1
+  collectiblePattern: 
+  clearGoals: []
+  hasTimeLimit: 0
   timeLimit: 180
-  maxMoves: 0
+  maxTaps: 0
   coinReward: 200
   diamondReward: 0
   experienceReward: 10
   allowColorTransform: 1
-  shuffleAnimationDuration: 1
-  blockConversionDuration: 0.8
+  shuffleAnimationDuration: 0
+  blockConversionDuration: 0
   difficultyLevel: 1
   showHints: 1
