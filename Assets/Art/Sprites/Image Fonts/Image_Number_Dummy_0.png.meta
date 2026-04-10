@@ -1,31 +1,34 @@
 fileFormatVersion: 2
-guid: e3cb3007f1773458abc24a8e39e4af43
+guid: 6064a16f793cd0f4ab300a52fe681c4b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2896872506511407015
-    second: TX_Button_play_01_0
+      213: -3532611272846579965
+    second: Image_Number_Dummy_0_0
   - first:
-      213: 2374224476000958865
-    second: TX_Button_play_01_1
+      213: 7014338726790189629
+    second: Image_Number_Dummy_0_1
   - first:
-      213: 5739812501464268713
-    second: TX_Button_play_01_2
+      213: 8750313228435696603
+    second: Image_Number_Dummy_0_2
   - first:
-      213: 5583259681739948598
-    second: TX_Button_play_01_3
+      213: -7237408300203514428
+    second: Image_Number_Dummy_0_3
   - first:
-      213: 9040446637061546044
-    second: TX_Button_play_01_4
+      213: -8767541140154009387
+    second: Image_Number_Dummy_0_4
   - first:
-      213: -9061801475050124675
-    second: TX_Button_play_01_5
+      213: -8941702373551938857
+    second: Image_Number_Dummy_0_5
   - first:
-      213: -4002234178268643055
-    second: TX_Button_play_01_6
+      213: -4173663444732264688
+    second: Image_Number_Dummy_0_6
   - first:
-      213: -3244213119853107208
-    second: TX_Button_play_01_7
+      213: -7569162480571731378
+    second: Image_Number_Dummy_0_7
+  - first:
+      213: 9085456858058930186
+    second: Image_Number_Dummy_0_8
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -118,19 +121,6 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: iOS
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
     buildTarget: Android
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -147,13 +137,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: TX_Button_play_01_0
+      name: Image_Number_Dummy_0_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 113
-        width: 19
-        height: 63
+        x: 121
+        y: 695
+        width: 152
+        height: 274
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -162,20 +152,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 958cac9bdcd3cc7d0800000000000000
-      internalID: -2896872506511407015
+      spriteID: 307607093c4a9fec0800000000000000
+      internalID: -3532611272846579965
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TX_Button_play_01_1
+      name: Image_Number_Dummy_0_1
       rect:
         serializedVersion: 2
-        x: 5
-        y: 2
-        width: 497
-        height: 216
+        x: 408
+        y: 695
+        width: 205
+        height: 272
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -184,20 +174,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 199331de490f2f020800000000000000
-      internalID: 2374224476000958865
+      spriteID: d32589098efe75160800000000000000
+      internalID: 7014338726790189629
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TX_Button_play_01_2
+      name: Image_Number_Dummy_0_2
       rect:
         serializedVersion: 2
-        x: 478
-        y: 131
-        width: 24
-        height: 51
+        x: 705
+        y: 694
+        width: 201
+        height: 275
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -206,20 +196,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9afbf1b2f09e7af40800000000000000
-      internalID: 5739812501464268713
+      spriteID: bdbaf46258b5f6970800000000000000
+      internalID: 8750313228435696603
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TX_Button_play_01_3
+      name: Image_Number_Dummy_0_3
       rect:
         serializedVersion: 2
-        x: 0
-        y: 51
-        width: 21
-        height: 59
+        x: 91
+        y: 375
+        width: 229
+        height: 272
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -228,20 +218,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 632ced26919bb7d40800000000000000
-      internalID: 5583259681739948598
+      spriteID: 4c5e7e31f7f8f8b90800000000000000
+      internalID: -7237408300203514428
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TX_Button_play_01_4
+      name: Image_Number_Dummy_0_4
       rect:
         serializedVersion: 2
-        x: 490
-        y: 64
-        width: 12
-        height: 32
+        x: 407
+        y: 375
+        width: 206
+        height: 273
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -250,20 +240,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c30adec615e167d70800000000000000
-      internalID: 9040446637061546044
+      spriteID: 5d83f7319cf635680800000000000000
+      internalID: -8767541140154009387
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TX_Button_play_01_5
+      name: Image_Number_Dummy_0_5
       rect:
         serializedVersion: 2
-        x: 58
-        y: 10
-        width: 13
-        height: 8
+        x: 701
+        y: 376
+        width: 212
+        height: 273
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -272,20 +262,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d7ac686e1930e3280800000000000000
-      internalID: -9061801475050124675
+      spriteID: 7d26b210111b8e380800000000000000
+      internalID: -8941702373551938857
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TX_Button_play_01_6
+      name: Image_Number_Dummy_0_6
       rect:
         serializedVersion: 2
-        x: 71
-        y: 5
-        width: 18
-        height: 6
+        x: 107
+        y: 63
+        width: 207
+        height: 267
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -294,20 +284,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 111ce5838353578c0800000000000000
-      internalID: -4002234178268643055
+      spriteID: 01f33b4c53b2416c0800000000000000
+      internalID: -4173663444732264688
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TX_Button_play_01_7
+      name: Image_Number_Dummy_0_7
       rect:
         serializedVersion: 2
-        x: 416
-        y: 4
-        width: 29
-        height: 13
+        x: 401
+        y: 63
+        width: 217
+        height: 272
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -316,8 +306,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8f76e772b5d3af2d0800000000000000
-      internalID: -3244213119853107208
+      spriteID: e42be4ab3dee4f690800000000000000
+      internalID: -7569162480571731378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Image_Number_Dummy_0_8
+      rect:
+        serializedVersion: 2
+        x: 695
+        y: 62
+        width: 225
+        height: 272
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a083db620e6061e70800000000000000
+      internalID: 9085456858058930186
       vertices: []
       indices: 
       edges: []
@@ -335,15 +347,7 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable:
-      TX_Button_play_01_0: -2896872506511407015
-      TX_Button_play_01_1: 2374224476000958865
-      TX_Button_play_01_2: 5739812501464268713
-      TX_Button_play_01_3: 5583259681739948598
-      TX_Button_play_01_4: 9040446637061546044
-      TX_Button_play_01_5: -9061801475050124675
-      TX_Button_play_01_6: -4002234178268643055
-      TX_Button_play_01_7: -3244213119853107208
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

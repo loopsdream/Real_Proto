@@ -47,7 +47,12 @@ public class MainMenuManager : MonoBehaviour
         PlayUISound("ButtonClick");
         AudioManager.Instance.StopBGM();
         Debug.Log("Starting Stage Mode...");
-        SceneManager.LoadScene("StageModeScene");
+
+        GameStarter gameStarter = FindAnyObjectByType<GameStarter>();
+        if (gameStarter != null)
+            gameStarter.StartStageMode();
+        else
+            SceneManager.LoadScene("StageModeScene");
     }
 
     // 게임 모드 메뉴 열기
@@ -180,7 +185,12 @@ public class MainMenuManager : MonoBehaviour
         PlayUISound("ButtonClick");
         AudioManager.Instance.StopBGM();
         Debug.Log("Starting Infinite Mode...");
-        SceneManager.LoadScene("InfiniteModeScene");
+
+        GameStarter gameStarter = FindAnyObjectByType<GameStarter>();
+        if (gameStarter != null)
+            gameStarter.StartInfiniteMode();
+        else
+            SceneManager.LoadScene("InfiniteModeScene");
     }
 
     // 타이틀 씬으로 돌아가기

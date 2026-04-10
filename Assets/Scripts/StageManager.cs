@@ -25,6 +25,13 @@ public class StageManager : MonoBehaviour
     public Button settingButton;
     public GameObject stageCompletePanel;
 
+    [Header("Not Enough Energy Panel")]
+    public GameObject notEnoughEnergyPanel;
+    public TMPro.TextMeshProUGUI notEnoughEnergyText;
+    public Button watchAdButton;
+    public Button goToShopButton;
+    public Button closeEnergyPanelButton;
+
     [Header("Game References")]
     public StageGridManager gridManager;
 
@@ -69,6 +76,8 @@ public class StageManager : MonoBehaviour
         {
             matchingSystemRef = FindFirstObjectByType<MatchingSystem>();
         }
+
+        RegisterEnergyPanelListeners();
     }
 
     void Start()
@@ -92,6 +101,25 @@ public class StageManager : MonoBehaviour
 
         // 씬 재진입 시 강제 초기화
         StartCoroutine(InitializeStageWithDelay());
+    }
+
+    private void RegisterEnergyPanelListeners()
+    {
+        if (watchAdButton != null)
+        {
+            watchAdButton.onClick.RemoveAllListeners();
+            watchAdButton.onClick.AddListener(OnWatchAdForEnergyClicked);
+        }
+        if (goToShopButton != null)
+        {
+            goToShopButton.onClick.RemoveAllListeners();
+            goToShopButton.onClick.AddListener(OnGoToShopClicked);
+        }
+        if (closeEnergyPanelButton != null)
+        {
+            closeEnergyPanelButton.onClick.RemoveAllListeners();
+            closeEnergyPanelButton.onClick.AddListener(CloseEnergyPanel);
+        }
     }
 
     System.Collections.IEnumerator InitializeStageWithDelay()
@@ -385,14 +413,97 @@ public class StageManager : MonoBehaviour
     // 나머지 메서드들...
     public void LoadNextStage()
     {
-        if (currentStageIndex + 1 < allStages.Count)
+        if (currentStageIndex + 1 >= allStages.Count)
         {
+            Debug.Log("All stages completed!");
+            return;
+        }
+
+        if (UserDataManager.Instance == null)
+        {
+            Debug.LogError("[StageManager] UserDataManager not found!");
+            return;
+        }
+
+        if (UserDataManager.Instance.GetEnergy() >= 1)
+        {
+            UserDataManager.Instance.SpendEnergy(1);
+            Debug.Log("[StageManager] Energy spent for next stage.");
             LoadStage(currentStageIndex + 1);
         }
         else
         {
-            Debug.Log("All stages completed!");
+            Debug.Log("[StageManager] Not enough energy for next stage.");
+            ShowEnergyPanel();
         }
+    }
+
+    private void ShowEnergyPanel()
+    {
+        if (notEnoughEnergyPanel == null) return;
+
+        notEnoughEnergyPanel.SetActive(true);
+
+        if (notEnoughEnergyText != null && UserDataManager.Instance != null)
+        {
+            System.TimeSpan timeUntilNext = UserDataManager.Instance.GetTimeUntilNextEnergy();
+            if (timeUntilNext.TotalSeconds > 0)
+            {
+                string timeStr = string.Format("{0:D2}:{1:D2}", timeUntilNext.Minutes, timeUntilNext.Seconds);
+                notEnoughEnergyText.text = $"에너지가 부족합니다.\n다음 에너지 충전까지: {timeStr}";
+            }
+            else
+            {
+                notEnoughEnergyText.text = "에너지가 부족합니다.";
+            }
+        }
+
+        // 광고 버튼 준비 상태 반영
+        if (watchAdButton != null)
+        {
+            bool adReady = AdManager.Instance != null && AdManager.Instance.IsEnergyRewardedAdReady();
+            watchAdButton.interactable = adReady;
+        }
+    }
+
+    private void CloseEnergyPanel()
+    {
+        if (notEnoughEnergyPanel != null)
+            notEnoughEnergyPanel.SetActive(false);
+    }
+
+    private void OnWatchAdForEnergyClicked()
+    {
+        if (AdManager.Instance == null)
+        {
+            Debug.LogError("[StageManager] AdManager not found!");
+            return;
+        }
+
+        if (watchAdButton != null) watchAdButton.interactable = false;
+
+        AdManager.Instance.ShowEnergyRewardedAd(
+            onSuccess: () =>
+            {
+                Debug.Log("[StageManager] Energy ad success - adding energy.");
+                if (UserDataManager.Instance != null)
+                    UserDataManager.Instance.AddEnergy(1);
+
+                CloseEnergyPanel();
+                LoadNextStage();
+            },
+            onFailed: () =>
+            {
+                Debug.Log("[StageManager] Energy ad failed.");
+                if (watchAdButton != null) watchAdButton.interactable = true;
+            }
+        );
+    }
+
+    private void OnGoToShopClicked()
+    {
+        Debug.Log("[StageManager] Go to shop - not yet implemented.");
+        // TODO: 상점 패널 열기
     }
 
     public void RestartCurrentStage()

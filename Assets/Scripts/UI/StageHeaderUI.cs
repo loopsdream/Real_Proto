@@ -12,6 +12,7 @@ public class StageHeaderUI : MonoBehaviour
     [Header("Tap Display")]
     public GameObject tapPanel;
     public TextMeshProUGUI tapCountText;
+    public ImageFontNumber tapCountImageFont;
 
     [Header("Goal Icons")]
     public Sprite[] blockColorIcons;  // 0=Red, 1=Blue, 2=Yellow, 3=Green, 4=Purple, 5=Pink
@@ -99,9 +100,16 @@ public class StageHeaderUI : MonoBehaviour
 
     public void UpdateTapCount(int remainingTaps)
     {
+        // 기존 TMP (일단 병행 유지, 확인 후 제거 가능)
         if (tapCountText != null)
         {
             tapCountText.text = remainingTaps.ToString();
+        }
+
+        // 추가: 이미지 폰트 표시
+        if (tapCountImageFont != null)
+        {
+            tapCountImageFont.SetNumber(remainingTaps);
         }
     }
 

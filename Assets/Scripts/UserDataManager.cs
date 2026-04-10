@@ -240,7 +240,17 @@ public class UserDataManager : MonoBehaviour
     {
         if (currentUserData.currencies.energy >= amount)
         {
+            // 변경: 최대치에서 처음 소비될 때 회복 타이머 시작
+            bool wasAtMax = currentUserData.currencies.energy >= currentUserData.currencies.maxEnergy;
+
             currentUserData.currencies.energy -= amount;
+
+            // 변경: 최대치에서 소비됐으면 lastEnergyTime을 현재로 갱신
+            if (wasAtMax)
+            {
+                currentUserData.currencies.lastEnergyTime = DateTime.Now.ToBinary().ToString();
+            }
+
             OnEnergyChanged?.Invoke(currentUserData.currencies.energy);
             OnDataChanged?.Invoke("energy");
             SaveUserData();
@@ -279,7 +289,10 @@ public class UserDataManager : MonoBehaviour
     public void UpdateEnergyFromTime()
     {
         if (currentUserData.currencies.energy >= currentUserData.currencies.maxEnergy)
+        {
+            Debug.Log("Energy is full");
             return;
+        }
 
         try
         {

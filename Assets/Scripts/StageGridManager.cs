@@ -1488,6 +1488,7 @@ private void CheckWinCondition()
         float pixelsPerWorldUnit = Screen.height / (Camera.main.orthographicSize * 2f);
 
         // 캔버스 스케일로 픽셀 → 캔버스 유닛 변환
+        backgroundImage.gameObject.SetActive(true);
         Canvas canvas = backgroundImage.canvas;
         float canvasScale = canvas != null ? canvas.scaleFactor : 1f;
 

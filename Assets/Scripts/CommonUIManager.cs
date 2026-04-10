@@ -17,6 +17,9 @@ public class CommonUIManager : MonoBehaviour
     public TextMeshProUGUI notificationText;
     public GameObject loadingScreen;
 
+    [Header("Not Enough Energy Panel")]
+    public GameObject notEnoughEnergyPanel;
+
     [Header("Scene-specific Visibility")]
     public bool showTopUIInMainMenu = false;
     public bool showTopUIInGameScene = true;

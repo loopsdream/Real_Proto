@@ -9,18 +9,15 @@ public class StageClearRewardPanel : MonoBehaviour
     [Header("Panel")]
     [SerializeField] private GameObject panelRoot;
 
-    [Header("보상 표시 텍스트")]
-    [SerializeField] private TextMeshProUGUI rewardText;
-    [SerializeField] private TextMeshProUGUI doubleRewardText;
-
     [Header("버튼")]
-    [SerializeField] private Button doubleRewardButton;   // 광고 보고 2배 받기
-    [SerializeField] private Button claimButton;           // 그냥 받기
+    [SerializeField] private Button doubleRewardButton;
     [SerializeField] private Button nextStageButton;
-    [SerializeField] private Button mainMenuButton;
+    [SerializeField] private Button closeButton;
 
     [Header("광고 불가 시 버튼 비활성화 색상")]
     [SerializeField] private Color adNotReadyColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+
+    [SerializeField] private TextMeshProUGUI energyText;
 
     // 현재 보상 데이터 저장
     private List<RewardItem> pendingRewards;
@@ -40,20 +37,15 @@ public class StageClearRewardPanel : MonoBehaviour
             doubleRewardButton.onClick.RemoveAllListeners();
             doubleRewardButton.onClick.AddListener(OnDoubleRewardButtonClicked);
         }
-        if (claimButton != null)
-        {
-            claimButton.onClick.RemoveAllListeners();
-            claimButton.onClick.AddListener(OnClaimButtonClicked);
-        }
         if (nextStageButton != null)
         {
             nextStageButton.onClick.RemoveAllListeners();
             nextStageButton.onClick.AddListener(OnNextStageClicked);
         }
-        if (mainMenuButton != null)
+        if (closeButton != null)
         {
-            mainMenuButton.onClick.RemoveAllListeners();
-            mainMenuButton.onClick.AddListener(OnMainMenuClicked);
+            closeButton.onClick.RemoveAllListeners();
+            closeButton.onClick.AddListener(OnMainMenuClicked);
         }
     }
 
@@ -69,30 +61,21 @@ public class StageClearRewardPanel : MonoBehaviour
         else
             gameObject.SetActive(true);
 
+        // 패널 표시 시점에 호출
+        if (energyText != null && UserDataManager.Instance != null)
+        {
+            int current = UserDataManager.Instance.GetEnergy();
+            int max = UserDataManager.Instance.GetMaxEnergy();
+            energyText.text = $"{current}/{max}";
+        }
+
         RegisterButtonListeners();
-        UpdateRewardUI();
         UpdateAdButtonState();
 
-        SetClaimButtonsVisible(true);
-
-        // 다음/메인메뉴 버튼 숨김 (보상 선택 전까지)
-        SetNavigationButtonsActive(false);
+        // 기본 보상 즉시 지급
+        GrantBaseReward();
 
         Debug.Log("[StageClearRewardPanel] Panel shown.");
-    }
-
-    // 보상 텍스트 업데이트
-    private void UpdateRewardUI()
-    {
-        if (rewardText == null || pendingRewards == null) return;
-
-        string rewardStr = BuildRewardString(pendingRewards, 1);
-        rewardText.text = rewardStr;
-
-        if (doubleRewardText != null)
-        {
-            doubleRewardText.text = BuildRewardString(pendingRewards, 2);
-        }
     }
 
     private string BuildRewardString(List<RewardItem> rewards, int multiplier)
@@ -124,82 +107,53 @@ public class StageClearRewardPanel : MonoBehaviour
         }
     }
 
+    // 패널 열릴 때 기본 보상 즉시 지급
+    private void GrantBaseReward()
+    {
+        if (pendingRewards == null) return;
+
+        StageGridManager gridManager = Object.FindAnyObjectByType<StageGridManager>();
+        if (gridManager != null)
+        {
+            gridManager.GrantRewardItems(pendingRewards);
+        }
+
+        Debug.Log("[StageClearRewardPanel] Base reward granted immediately.");
+    }
+
     // 광고 보고 2배 받기 버튼
     private void OnDoubleRewardButtonClicked()
     {
-        if (rewardGranted) return;
-
         if (AdManager.Instance == null)
         {
             Debug.LogError("[StageClearRewardPanel] AdManager not found!");
-            GrantReward(false);
+            OnNextStageClicked();
             return;
         }
 
-        // 버튼 비활성화 (중복 클릭 방지)
+        // 버튼 비활성화 (광고 시청 중)
         SetAllButtonsInteractable(false);
 
         AdManager.Instance.ShowDoubleRewardedAd(
             onSuccess: () =>
             {
-                Debug.Log("[StageClearRewardPanel] Ad watched - granting double reward.");
-                GrantReward(true);
+                Debug.Log("[StageClearRewardPanel] Ad watched - granting bonus reward.");
+                // 추가 보상(기본 보상 1배 추가 지급)
+                StageGridManager gridManager = Object.FindAnyObjectByType<StageGridManager>();
+                if (gridManager != null)
+                {
+                    gridManager.GrantRewardItems(pendingRewards);
+                }
+                OnNextStageClicked();
             },
             onFailed: () =>
             {
-                Debug.Log("[StageClearRewardPanel] Ad failed - granting normal reward.");
-                GrantReward(false);
+                Debug.Log("[StageClearRewardPanel] Ad failed - going to next stage.");
+                SetAllButtonsInteractable(true);
             }
         );
     }
-
-    // 그냥 받기 버튼
-    private void OnClaimButtonClicked()
-    {
-        if (rewardGranted) return;
-        GrantReward(false);
-    }
-
-    // 실제 보상 지급
-    private void GrantReward(bool isDouble)
-    {
-        if (rewardGranted) return;
-        rewardGranted = true;
-
-        List<RewardItem> rewardsToGrant = pendingRewards;
-
-        // 2배인 경우 amount를 2배로 복사
-        if (isDouble && pendingRewards != null)
-        {
-            rewardsToGrant = new List<RewardItem>();
-            foreach (var item in pendingRewards)
-            {
-                RewardItem doubled = new RewardItem
-                {
-                    rewardType = item.rewardType,
-                    amount = item.amount * 2,
-                    displayName = item.displayName,
-                    icon = item.icon
-                };
-                rewardsToGrant.Add(doubled);
-            }
-            Debug.Log("[StageClearRewardPanel] Double reward applied.");
-        }
-
-        // StageGridManager에 지급 위임
-        StageGridManager gridManager = Object.FindAnyObjectByType<StageGridManager>();
-        if (gridManager != null)
-        {
-            gridManager.GrantRewardItems(rewardsToGrant);
-        }
-
-        // 보상 지급 후 받기 버튼들 숨기고 다음/메인메뉴 버튼 표시
-        SetClaimButtonsVisible(false);
-        SetNavigationButtonsActive(true);
-
-        Debug.Log($"[StageClearRewardPanel] Reward granted. Double: {isDouble}");
-    }
-
+    
     private void OnNextStageClicked()
     {
         Debug.Log("[StageClearRewardPanel] Next stage clicked.");
@@ -217,25 +171,10 @@ public class StageClearRewardPanel : MonoBehaviour
         UnityEngine.SceneManagement.SceneManager.LoadScene("LobbyScene");
     }
 
-    private void SetNavigationButtonsActive(bool active)
-    {
-        if (nextStageButton != null) nextStageButton.gameObject.SetActive(active);
-        if (mainMenuButton != null) mainMenuButton.gameObject.SetActive(active);
-    }
-
-    // 받기/광고 버튼 자체를 숨김/표시
-    private void SetClaimButtonsVisible(bool visible)
-    {
-        if (rewardText != null) rewardText.gameObject.SetActive(visible);
-        if (doubleRewardText != null) doubleRewardText.gameObject.SetActive(visible);
-        if (doubleRewardButton != null) doubleRewardButton.gameObject.SetActive(visible);
-        if (claimButton != null) claimButton.gameObject.SetActive(visible);
-    }
-
-    // 광고 시청 중 중복 클릭 방지용 (버튼은 유지하되 입력만 막음)
+    // 광고 시청 중 모든 버튼 비활성화 (중복 터치 방지)
     private void SetAllButtonsInteractable(bool interactable)
     {
         if (doubleRewardButton != null) doubleRewardButton.interactable = interactable;
-        if (claimButton != null) claimButton.interactable = interactable;
+        if (nextStageButton != null) nextStageButton.interactable = interactable;
     }
 }
