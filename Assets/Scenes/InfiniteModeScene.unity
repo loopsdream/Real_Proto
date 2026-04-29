@@ -451,6 +451,8 @@ MonoBehaviour:
   topUISpacePixels: 200
   bottomUISpacePixels: 150
   sideMarginPixels: 100
+  useFixedCameraSize: 0
+  fixedOrthographicSize: 8
 --- !u!114 &206013276
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1464,7 +1466,7 @@ Canvas:
   m_GameObject: {fileID: 519877698}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
+  m_RenderMode: 1
   m_Camera: {fileID: 344308666}
   m_PlaneDistance: -100
   m_PixelPerfect: 0
