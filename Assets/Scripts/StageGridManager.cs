@@ -18,6 +18,10 @@ public class StageGridManager : BaseGridManager
     public CollectibleFactory collectibleFactory;
     public ClearGoalUI clearGoalUI;
 
+    // Effect system reference for block destroy VFX (shared with InfiniteMode)
+    [Header("Effect System")]
+    public CROxCROBlockEffectSystem blockEffectSystem;
+
     [Header("Visual Settings")]
     public Image backgroundImage;
     public Sprite defaultBackgroundSprite;
@@ -593,6 +597,13 @@ public class StageGridManager : BaseGridManager
             {
                 int x = blockComponent.x;
                 int y = blockComponent.y;
+                
+                // Trigger block destroy effect (mirrors InfiniteModeManager behavior)
+                if (blockEffectSystem != null && blockFactory != null)
+                {
+                    int blockType = blockFactory.GetBlockTypeFromTag(block.tag);
+                    blockEffectSystem.CreateBlockDestroyEffect(x, y, blockType);
+                }
 
                 if (blockFactory != null)
                 {

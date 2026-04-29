@@ -79,6 +79,20 @@ public class TitleSceneManager : MonoBehaviour
             userGO.AddComponent<UserDataManager>();
             Debug.Log("[TitleScene] UserDataManager 생성됨");
         }
+
+        if (UnityMainThreadDispatcher.Instance == null)
+        {
+            var dispatcherGO = new GameObject("UnityMainThreadDispatcher");
+            dispatcherGO.AddComponent<UnityMainThreadDispatcher>();
+            Debug.Log("[TitleScene] UnityMainThreadDispatcher created");
+        }
+
+        if (CloudFunctionsManager.Instance == null)
+        {
+            var functionsGO = new GameObject("CloudFunctionsManager");
+            functionsGO.AddComponent<CloudFunctionsManager>();
+            Debug.Log("[TitleScene] CloudFunctionsManager created");
+        }
     }
 
     IEnumerator LoadingAndInitialization()

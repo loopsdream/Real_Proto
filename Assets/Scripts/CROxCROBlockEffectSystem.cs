@@ -17,13 +17,21 @@ public class CROxCROBlockEffectSystem : MonoBehaviour
     public float particleSize = 15f;    // 파티클 크기
 
     [Header("Block Colors")]
-    public Color[] blockColors = {      // 블록 색상별 이펙트 색상
-        Color.white,    // 빈 블록
-        Color.red,      // 빨간 블록
-        Color.blue,     // 파란 블록  
-        Color.yellow,   // 노란 블록
-        Color.green,    // 초록 블록
-        Color.magenta   // 보라 블록
+    // 13 entries: index 0 = empty/fallback, 1-12 match BlockFactory.GetTagFromBlockType
+    public Color[] blockColors = {
+        Color.white,                                   // 0: empty
+        new Color(1.00f, 0.20f, 0.20f),               // 1: Red
+        new Color(0.20f, 0.40f, 1.00f),               // 2: Blue
+        new Color(1.00f, 0.90f, 0.20f),               // 3: Yellow
+        new Color(0.30f, 0.85f, 0.30f),               // 4: Green
+        new Color(0.65f, 0.30f, 0.90f),               // 5: Purple
+        new Color(1.00f, 0.55f, 0.80f),               // 6: Pink
+        new Color(1.00f, 0.55f, 0.10f),               // 7: Orange
+        new Color(0.70f, 1.00f, 0.25f),               // 8: Lime
+        new Color(0.20f, 0.75f, 0.75f),               // 9: Teal
+        new Color(0.20f, 0.90f, 1.00f),               // 10: Cyan
+        new Color(0.30f, 0.30f, 0.80f),               // 11: Indigo
+        new Color(1.00f, 0.20f, 0.90f)                // 12: Magenta
     };
 
     [Header("GridManager Integration")]
@@ -136,10 +144,16 @@ public class CROxCROBlockEffectSystem : MonoBehaviour
             // 3. Canvas의 RectTransform 좌표로 변환
             RectTransform canvasRect = gameCanvas.GetComponent<RectTransform>();
 
+            // Use canvas camera when render mode is Screen Space - Camera
+            // (null only works for Screen Space - Overlay)
+            Camera uiCam = (gameCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
+                ? null
+                : gameCanvas.worldCamera;
+
             // Canvas가 Screen Space - Overlay인 경우
             Vector2 localPoint;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvasRect, screenPos, null, out localPoint);
+                canvasRect, screenPos, uiCam, out localPoint);
 
             Debug.Log($"Final UI Position: {localPoint}");
             return localPoint;

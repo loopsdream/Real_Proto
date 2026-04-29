@@ -1453,34 +1453,30 @@ public class InfiniteModeManager : MonoBehaviour
     void GameOver(string reason)
     {
         isGameActive = false;
-
-        // Time.timeScale 복원
         Time.timeScale = 1f;
-
-        // 위험 효과 제거
         ClearWarningEffects();
 
         elapsedTime = Time.time - gameStartTime;
-
         Debug.Log($"Game Over: {reason}, Final Score: {currentScore}");
 
-        // UI 업데이트
         if (gameOverPanel != null)
-        {
             gameOverPanel.SetActive(true);
-        }
 
         if (finalScoreText != null)
-        {
             finalScoreText.text = $"Final Score: {currentScore}";
-        }
 
         if (elapsedTimeText != null)
-        {
             elapsedTimeText.text = $"Elapsed Time: {elapsedTime}s";
-        }
 
         SaveHighScore();
+
+        // 재도전 버튼 에너지 체크
+        if (restartButton != null && UserDataManager.Instance != null)
+        {
+            bool hasEnergy = UserDataManager.Instance.GetEnergy() >= 1;
+            restartButton.interactable = hasEnergy;
+            Debug.Log($"[InfiniteModeManager] Restart button interactable: {hasEnergy}");
+        }
     }
 
     void SetupUI()
@@ -1559,8 +1555,50 @@ public class InfiniteModeManager : MonoBehaviour
 
     public void RestartGame()
     {
-        Time.timeScale = 1f; // Time.timeScale 복원
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        Time.timeScale = 1f;
+
+        if (UserDataManager.Instance == null)
+        {
+            Debug.LogError("[InfiniteModeManager] UserDataManager not found!");
+            return;
+        }
+
+        if (UserDataManager.Instance.GetEnergy() >= 1)
+        {
+            UserDataManager.Instance.SpendEnergy(1, (success) =>
+            {
+                if (success)
+                {
+                    Debug.Log("[InfiniteModeManager] Energy spent for restart.");
+                    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                }
+                else
+                {
+                    Debug.LogError("[InfiniteModeManager] SpendEnergy failed.");
+                    ShowNotEnoughEnergyForRestart();
+                }
+            });
+        }
+        else
+        {
+            Debug.Log("[InfiniteModeManager] Not enough energy for restart.");
+            ShowNotEnoughEnergyForRestart();
+        }
+    }
+
+    private void ShowNotEnoughEnergyForRestart()
+    {
+        // CommonUIManager의 NotEnoughEnergyPanel 사용
+        GameObject energyPanel = CommonUIManager.Instance?.notEnoughEnergyPanel;
+        if (energyPanel != null)
+        {
+            energyPanel.SetActive(true);
+            Debug.Log("[InfiniteModeManager] Showing not enough energy panel.");
+        }
+        else
+        {
+            Debug.LogWarning("[InfiniteModeManager] NotEnoughEnergyPanel not found in CommonUIManager.");
+        }
     }
 
     public void ReturnToMenu()

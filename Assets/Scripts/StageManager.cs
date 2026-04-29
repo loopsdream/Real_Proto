@@ -393,6 +393,9 @@ public class StageManager : MonoBehaviour
         {
             Debug.LogWarning("[StageManager] gameOverPanel is not assigned!");
         }
+
+        // 재도전 버튼 에너지 체크
+        UpdateRetryButtonState();
     }
 
     public void OnStageComplete()
@@ -425,17 +428,7 @@ public class StageManager : MonoBehaviour
             return;
         }
 
-        if (UserDataManager.Instance.GetEnergy() >= 1)
-        {
-            UserDataManager.Instance.SpendEnergy(1);
-            Debug.Log("[StageManager] Energy spent for next stage.");
-            LoadStage(currentStageIndex + 1);
-        }
-        else
-        {
-            Debug.Log("[StageManager] Not enough energy for next stage.");
-            ShowEnergyPanel();
-        }
+        LoadStage(currentStageIndex + 1);
     }
 
     private void ShowEnergyPanel()
@@ -490,7 +483,8 @@ public class StageManager : MonoBehaviour
                     UserDataManager.Instance.AddEnergy(1);
 
                 CloseEnergyPanel();
-                LoadNextStage();
+                // 에너지 충전 후 재도전 실행
+                RestartCurrentStage();
             },
             onFailed: () =>
             {
@@ -508,7 +502,34 @@ public class StageManager : MonoBehaviour
 
     public void RestartCurrentStage()
     {
-        LoadStage(currentStageIndex);
+        if (UserDataManager.Instance == null)
+        {
+            Debug.LogError("[StageManager] UserDataManager not found!");
+            return;
+        }
+
+        if (UserDataManager.Instance.GetEnergy() >= 1)
+        {
+            UserDataManager.Instance.SpendEnergy(1, (success) =>
+            {
+                if (success)
+                {
+                    Debug.Log("[StageManager] Energy spent for retry.");
+                    LoadStage(currentStageIndex);
+                }
+                else
+                {
+                    Debug.LogError("[StageManager] SpendEnergy failed on retry.");
+                    ShowEnergyPanel();
+                }
+            });
+        }
+        else
+        {
+            Debug.Log("[StageManager] Not enough energy for retry.");
+            ShowEnergyPanel();
+        }
+
     }
 
     public void GoToMainMenu()
@@ -641,4 +662,14 @@ public class StageManager : MonoBehaviour
         }
     }
 
+    // 새로 추가하는 메서드
+    private void UpdateRetryButtonState()
+    {
+        if (restartStageButton != null && UserDataManager.Instance != null)
+        {
+            bool hasEnergy = UserDataManager.Instance.GetEnergy() >= 1;
+            restartStageButton.interactable = hasEnergy;
+            Debug.Log($"[StageManager] Retry button interactable: {hasEnergy}");
+        }
+    }
 }

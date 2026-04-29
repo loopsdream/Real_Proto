@@ -82,3 +82,6 @@ Thumbs.db
 # IDE files
 .vscode/
 .idea/
+
+# Android build cache
+.utmp/

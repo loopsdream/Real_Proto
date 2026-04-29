@@ -1,0 +1,158 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid && auth != null",
+        "currencies": {
+          ".validate": "newData.hasChildren(['gameCoins', 'diamonds', 'energy'])",
+          "gameCoins": {
+            ".write": false,
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 999999999"
+          },
+          "diamonds": {
+            ".write": false,
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 999999999"
+          },
+          "energy": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10"
+          },
+          "maxEnergy": {
+            ".validate": "newData.isNumber() && newData.val() >= 5 && newData.val() <= 10"
+          },
+          "lastEnergyUpdate": {
+            ".validate": "newData.isNumber()"
+          }
+        },
+        "progress": {
+          "currentStage": {
+            ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 1000"
+          },
+          "highestStage": {
+            ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 1000"
+          },
+          "stagesCompleted": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "totalScore": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          }
+        },
+        "stats": {
+          "totalPlayTime": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "totalGamesPlayed": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "totalBlocksDestroyed": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "infiniteBestScore": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "infiniteBestTime": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "consecutiveWins": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "maxConsecutiveWins": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          }
+        },
+        "settings": {
+          "soundEnabled": {
+            ".validate": "newData.isBoolean()"
+          },
+          "musicEnabled": {
+            ".validate": "newData.isBoolean()"
+          },
+          "vibrationEnabled": {
+            ".validate": "newData.isBoolean()"
+          },
+          "masterVolume": {
+            ".validate": "newData.isNumber() && newData.val() >= 0.0 && newData.val() <= 1.0"
+          },
+          "musicVolume": {
+            ".validate": "newData.isNumber() && newData.val() >= 0.0 && newData.val() <= 1.0"
+          },
+          "sfxVolume": {
+            ".validate": "newData.isNumber() && newData.val() >= 0.0 && newData.val() <= 1.0"
+          },
+          "language": {
+            ".validate": "newData.isString() && (newData.val() === 'ko' || newData.val() === 'en' || newData.val() === 'ja')"
+          },
+          "autoSaveEnabled": {
+            ".validate": "newData.isBoolean()"
+          },
+          "graphicsQuality": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 2"
+          }
+        }
+      }
+    },
+    "leaderboards": {
+      ".read": "auth != null",
+      "$leaderboardType": {
+        "$uid": {
+          ".write": "$uid === auth.uid && auth != null",
+          ".validate": "newData.hasChildren(['userId', 'displayName', 'score', 'timestamp'])",
+          "userId": {
+            ".validate": "newData.val() === $uid"
+          },
+          "displayName": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 20"
+          },
+          "score": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 999999999"
+          },
+          "timestamp": {
+            ".validate": "newData.isNumber() && newData.val() <= now"
+          }
+        }
+      }
+    },
+    "game_stats": {
+      ".read": "auth != null",
+      ".write": false
+    },
+    "server_config": {
+      ".read": "auth != null",
+      ".write": false
+    },
+    "achievements": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid && auth != null",
+        "$achievementId": {
+          ".validate": "newData.hasChildren(['id', 'unlocked', 'unlockedAt'])",
+          "id": {
+            ".validate": "newData.isString()"
+          },
+          "unlocked": {
+            ".validate": "newData.isBoolean()"
+          },
+          "unlockedAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "progress": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          }
+        }
+      }
+    },
+    "events": {
+      ".read": "auth != null",
+      ".write": false
+    },
+    "admin": {
+      ".read": "auth.uid === 'ADMIN_UID_HERE'",
+      ".write": "auth.uid === 'ADMIN_UID_HERE'"
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}
