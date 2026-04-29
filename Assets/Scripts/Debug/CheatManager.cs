@@ -3,11 +3,12 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class CheatManager : MonoBehaviour
 {
     [Header("Cheat Activation")]
-    [SerializeField] private int tapCountToActivate = 5;    // 활성화에 필요한 탭 횟수
+    [SerializeField] private int tapCountToActivate = 3;    // 활성화에 필요한 탭 횟수
     [SerializeField] private float tapTimeWindow = 2f;      // 탭 인식 시간 창 (초)
     [SerializeField] private float cornerSize = 150f;       // 우측 상단 탭 인식 영역 (픽셀)
 
@@ -15,6 +16,8 @@ public class CheatManager : MonoBehaviour
     private int tapCount = 0;
     private float lastTapTime = 0f;
     private string stageInput = "1";
+    private string coinTestAmount = "100";
+    private string gemTestAmount = "5";
     private bool stylesReady = false;
 
     private Texture2D texPanelBg;       // 패널 배경 (짙은 회색)
@@ -27,9 +30,24 @@ public class CheatManager : MonoBehaviour
     private GUIStyle styleLabel;
     private GUIStyle styleField;
 
+    private static CheatManager instance;
+
+    void Awake()
+    {
+        // 씬 이동 후 중복 생성 방지
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
     void Update()
     {
         DetectCornerTap();
+        DetectFiveFingerTouch();
     }
 
     void DetectCornerTap()
@@ -73,6 +91,27 @@ public class CheatManager : MonoBehaviour
             isVisible = !isVisible;
             Debug.Log($"[Cheat] Panel {(isVisible ? "opened" : "closed")}");
         }
+    }
+
+    void DetectFiveFingerTouch()
+    {
+#if !UNITY_EDITOR
+        if (Input.touchCount >= 5)
+        {
+            int newTouchCount = 0;
+            for (int i = 0; i < Input.touchCount; i++)
+            {
+                if (Input.GetTouch(i).phase == TouchPhase.Began)
+                    newTouchCount++;
+            }
+
+            if (newTouchCount >= 5)
+            {
+                isVisible = !isVisible;
+                Debug.Log($"[Cheat] Five-finger touch - Panel {(isVisible ? \"opened\" : \"closed\")}");
+            }
+        }
+#endif
     }
 
     void InitStyles()
@@ -140,7 +179,12 @@ public class CheatManager : MonoBehaviour
         float btnH = 70f;
         float gap = 14f;
         float panelW = Mathf.Min(560f, Screen.width - 40f);
-        float panelH = btnH * 5 + gap * 6 + 80f;
+        
+        bool isStageScene = SceneManager.GetActiveScene().name == "StageModeScene";
+
+        int stageOnlyRows = isStageScene ? 3 : 0;
+        float panelH = btnH * (6 + stageOnlyRows) + gap * (7 + stageOnlyRows) + 80f + 36f * 3f;
+
         float px = (Screen.width - panelW) * 0.5f;
         float py = (Screen.height - panelH) * 0.5f;
 
@@ -152,25 +196,33 @@ public class CheatManager : MonoBehaviour
         float bx = px + 20f;
         float bw = panelW - 40f;
         float cy = py + 70f;
-
-        // --- 강제 스테이지 클리어 ---
-        if (GUI.Button(new Rect(bx, cy, bw, btnH), "Force Clear Stage", styleButton))
-        {
-            ForceClearStage();
-        }
-        cy += btnH + gap;
-
-        // --- 스테이지 점프 ---
-        // 레이블
-        GUI.Label(new Rect(bx, cy, bw, 36f), "Stage Number (1-based):", styleLabel);
-        cy += 36f;
-
         float fieldW = bw * 0.4f;
-        float jumpBtnW = bw - fieldW - 10f;
-        stageInput = GUI.TextField(new Rect(bx, cy, fieldW, btnH), stageInput, 4, styleField);
-        if (GUI.Button(new Rect(bx + fieldW + 10f, cy, jumpBtnW, btnH), "Jump To Stage", styleButton))
+
+        if (isStageScene)
         {
-            JumpToStage();
+            // Force Clear
+            if (GUI.Button(new Rect(bx, cy, bw, btnH), "Force Clear Stage", styleButton))
+            {
+                ForceClearStage();
+            }
+            cy += btnH + gap;
+
+            // Stage Jump
+            GUI.Label(new Rect(bx, cy, bw, 36f), "Stage Number (1-based):", styleLabel);
+            cy += 36f;
+            float jumpBtnW = bw - fieldW - 10f;   // fieldW 그대로 사용
+            stageInput = GUI.TextField(new Rect(bx, cy, fieldW, btnH), stageInput, 4, styleField);
+            if (GUI.Button(new Rect(bx + fieldW + 10f, cy, jumpBtnW, btnH), "Jump To Stage", styleButton))
+            {
+                JumpToStage();
+            }
+            cy += btnH + gap;
+        }
+
+        // --- 공통 치트 (모든 씬) ---
+        if (GUI.Button(new Rect(bx, cy, bw, btnH), "Fill Energy (Max)", styleButton))
+        {
+            FillEnergy();
         }
         cy += btnH + gap;
 
@@ -178,6 +230,46 @@ public class CheatManager : MonoBehaviour
         if (GUI.Button(new Rect(bx, cy, bw, btnH), "Fill Energy (Max)", styleButton))
         {
             FillEnergy();
+        }
+        cy += btnH + gap;
+
+        // --- [추가] 에너지 소비 테스트 ---
+        if (GUI.Button(new Rect(bx, cy, bw, btnH), "Spend 1 Energy (Server)", styleButton))
+        {
+            SpendTestEnergy();
+        }
+        cy += btnH + gap;
+
+        // --- [추가] 골드 테스트 ---
+        float halfW = (bw - 10f) * 0.5f;
+        GUI.Label(new Rect(bx, cy, bw, 36f), "Gold Test Amount:", styleLabel);
+        cy += 36f;
+        coinTestAmount = GUI.TextField(new Rect(bx, cy, fieldW, btnH), coinTestAmount, 8, styleField);
+        if (GUI.Button(new Rect(bx + fieldW + 10f, cy, halfW, btnH), "Add Gold", styleButton))
+        {
+            AddTestGold();
+        }
+        cy += btnH + gap;
+
+        if (GUI.Button(new Rect(bx, cy, bw, btnH), "Spend Gold (same amount)", styleButton))
+        {
+            SpendTestGold();
+        }
+        cy += btnH + gap;
+
+        // --- [추가] 젬 테스트 ---
+        GUI.Label(new Rect(bx, cy, bw, 36f), "Gem Test Amount:", styleLabel);
+        cy += 36f;
+        gemTestAmount = GUI.TextField(new Rect(bx, cy, fieldW, btnH), gemTestAmount, 8, styleField);
+        if (GUI.Button(new Rect(bx + fieldW + 10f, cy, halfW, btnH), "Add Gems", styleButton))
+        {
+            AddTestGems();
+        }
+        cy += btnH + gap;
+
+        if (GUI.Button(new Rect(bx, cy, bw, btnH), "Spend Gems (same amount)", styleButton))
+        {
+            SpendTestGems();
         }
         cy += btnH + gap;
 
@@ -221,6 +313,7 @@ public class CheatManager : MonoBehaviour
         Debug.Log($"[Cheat] Jumped to stage {stageNum} (index {stageIndex})");
     }
 
+    // [수정] 서버 경유 방식으로 변경
     void FillEnergy()
     {
         if (UserDataManager.Instance == null)
@@ -228,8 +321,86 @@ public class CheatManager : MonoBehaviour
             Debug.Log("[Cheat] UserDataManager.Instance not found");
             return;
         }
-        UserDataManager.Instance.SetEnergy(UserDataManager.Instance.maxEnergy);
-        Debug.Log($"[Cheat] Energy filled to {UserDataManager.Instance.maxEnergy}");
+        int current = UserDataManager.Instance.GetEnergy();
+        int max = UserDataManager.Instance.GetMaxEnergy();
+        int needed = max - current;
+        if (needed <= 0)
+        {
+            Debug.Log("[Cheat] Energy already full");
+            return;
+        }
+        Debug.Log($"[Cheat] Adding {needed} energy...");
+        UserDataManager.Instance.AddEnergy(needed, "cheat_fill", (success) =>
+        {
+            Debug.Log($"[Cheat] FillEnergy result: {(success ? "SUCCESS" : "FAILED")} - Energy: {UserDataManager.Instance.GetEnergy()}/{max}");
+        });
+    }
+
+    // [추가] 골드 추가 테스트
+    void AddTestGold()
+    {
+        if (UserDataManager.Instance == null) { Debug.Log("[Cheat] UserDataManager not found"); return; }
+        if (!int.TryParse(coinTestAmount, out int amount) || amount <= 0) { Debug.Log("[Cheat] Invalid gold amount"); return; }
+
+        Debug.Log($"[Cheat] Adding {amount} gold...");
+        UserDataManager.Instance.AddGameCoins(amount, "cheat_test", (success) =>
+        {
+            Debug.Log($"[Cheat] AddGold result: {(success ? "SUCCESS" : "FAILED")} - Balance: {UserDataManager.Instance.GetGameCoins()}");
+        });
+    }
+
+    // [추가] 골드 소비 테스트
+    void SpendTestGold()
+    {
+        if (UserDataManager.Instance == null) { Debug.Log("[Cheat] UserDataManager not found"); return; }
+        if (!int.TryParse(coinTestAmount, out int amount) || amount <= 0) { Debug.Log("[Cheat] Invalid gold amount"); return; }
+
+        Debug.Log($"[Cheat] Spending {amount} gold...");
+        UserDataManager.Instance.SpendGameCoins(amount, (success) =>
+        {
+            Debug.Log($"[Cheat] SpendGold result: {(success ? "SUCCESS" : "FAILED")} - Balance: {UserDataManager.Instance.GetGameCoins()}");
+        });
+    }
+
+    // [추가] 젬 추가 테스트
+    void AddTestGems()
+    {
+        if (UserDataManager.Instance == null) { Debug.Log("[Cheat] UserDataManager not found"); return; }
+        if (!int.TryParse(gemTestAmount, out int amount) || amount <= 0) { Debug.Log("[Cheat] Invalid gem amount"); return; }
+
+        Debug.Log($"[Cheat] Adding {amount} gems...");
+        UserDataManager.Instance.AddDiamonds(amount, "cheat_test", (success) =>
+        {
+            Debug.Log($"[Cheat] AddGems result: {(success ? "SUCCESS" : "FAILED")} - Balance: {UserDataManager.Instance.GetDiamonds()}");
+        });
+    }
+
+    // [추가] 젬 소비 테스트
+    void SpendTestGems()
+    {
+        if (UserDataManager.Instance == null) { Debug.Log("[Cheat] UserDataManager not found"); return; }
+        if (!int.TryParse(gemTestAmount, out int amount) || amount <= 0) { Debug.Log("[Cheat] Invalid gem amount"); return; }
+
+        Debug.Log($"[Cheat] Spending {amount} gems...");
+        UserDataManager.Instance.SpendDiamonds(amount, (success) =>
+        {
+            Debug.Log($"[Cheat] SpendGems result: {(success ? "SUCCESS" : "FAILED")} - Balance: {UserDataManager.Instance.GetDiamonds()}");
+        });
+    }
+
+    // [추가] 에너지 소비 테스트
+    void SpendTestEnergy()
+    {
+        if (UserDataManager.Instance == null)
+        {
+            Debug.Log("[Cheat] UserDataManager.Instance not found");
+            return;
+        }
+        Debug.Log("[Cheat] Spending 1 energy...");
+        UserDataManager.Instance.SpendEnergy(1, (success) =>
+        {
+            Debug.Log($"[Cheat] SpendEnergy result: {(success ? "SUCCESS" : "FAILED")} - Energy: {UserDataManager.Instance.GetEnergy()}/{UserDataManager.Instance.GetMaxEnergy()}");
+        });
     }
 }
 

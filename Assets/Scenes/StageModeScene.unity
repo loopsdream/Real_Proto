@@ -12220,7 +12220,7 @@ RectTransform:
   m_GameObject: {fileID: 460854502}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.0901717, y: 1.0901717, z: 1.0901717}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 437602285}
@@ -18013,6 +18013,72 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 578227840}
   m_CullTransparentMesh: 1
+--- !u!1 &584570166
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 584570168}
+  - component: {fileID: 584570167}
+  m_Layer: 0
+  m_Name: BlockEffectSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &584570167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 584570166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc41e25eb34cc5742b94f727f9432cf3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameCanvas: {fileID: 1038932523}
+  effectCanvas: {fileID: 0}
+  particleCount: 8
+  particleSpeed: 300
+  particleLifetime: 1.5
+  particleSize: 15
+  blockColors:
+  - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 1, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 1, a: 1}
+  - {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  - {r: 0.3, g: 0.85, b: 0.3, a: 1}
+  - {r: 0.65, g: 0.3, b: 0.9, a: 1}
+  - {r: 1, g: 0.55, b: 0.8, a: 1}
+  - {r: 1, g: 0.55, b: 0.1, a: 1}
+  - {r: 0.7, g: 1, b: 0.25, a: 1}
+  - {r: 0.2, g: 0.75, b: 0.75, a: 1}
+  - {r: 0.2, g: 0.9, b: 1, a: 1}
+  - {r: 0.3, g: 0.3, b: 0.8, a: 1}
+  - {r: 1, g: 0.2, b: 0.9, a: 1}
+  gridManager: {fileID: 1362635014}
+  gridCellSize: 1
+--- !u!4 &584570168
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 584570166}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -4.46533, y: 1.10335, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
@@ -36643,6 +36709,7 @@ MonoBehaviour:
   shuffleSystem: {fileID: 1362635013}
   collectibleFactory: {fileID: 1362635015}
   clearGoalUI: {fileID: 0}
+  blockEffectSystem: {fileID: 584570167}
   backgroundImage: {fileID: 460854504}
   defaultBackgroundSprite: {fileID: 8137455847600989182, guid: fb0fbbc429d2f60469a7127ff8832003, type: 3}
   backgroundCanvas: {fileID: 437602284}
@@ -37073,53 +37140,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1423174176}
   m_CullTransparentMesh: 1
---- !u!1 &1434411802
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1434411804}
-  - component: {fileID: 1434411803}
-  m_Layer: 0
-  m_Name: CheatManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1434411803
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1434411802}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf18d43de267fe44dbad54d93ee5170c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tapCountToActivate: 3
-  tapTimeWindow: 2
-  cornerSize: 150
---- !u!4 &1434411804
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1434411802}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.34007, y: -1.50527, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1443947504
 GameObject:
   m_ObjectHideFlags: 0
@@ -37278,7 +37298,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allStages:
-  - {fileID: 11400000, guid: f2238fee8ebd9ed4096f4d541e0748ee, type: 2}
   - {fileID: 11400000, guid: e68257ce9c1264091ab4a57eb15242ec, type: 2}
   - {fileID: 11400000, guid: 75940e9015b443140a9aa99f2c49f9ac, type: 2}
   - {fileID: 11400000, guid: 114f6a6e9139b4c0fa2335274d23bcc8, type: 2}
@@ -40818,4 +40837,4 @@ SceneRoots:
   - {fileID: 2109401453}
   - {fileID: 526544583}
   - {fileID: 496059845}
-  - {fileID: 1434411804}
+  - {fileID: 584570168}

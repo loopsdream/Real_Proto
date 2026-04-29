@@ -10225,10 +10225,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   energyCostPerGame: 1
-  notEnoughEnergyText: {fileID: 640004611}
-  watchAdButton: {fileID: 1488335879}
-  goToShopButton: {fileID: 879107979}
-  closeButton: {fileID: 998878952}
   adNotReadyColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!1 &960135915
 GameObject:
@@ -11011,6 +11007,53 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1100592276}
   m_CullTransparentMesh: 1
+--- !u!1 &1139576260
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1139576262}
+  - component: {fileID: 1139576261}
+  m_Layer: 0
+  m_Name: CheatManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1139576261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1139576260}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf18d43de267fe44dbad54d93ee5170c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tapCountToActivate: 3
+  tapTimeWindow: 2
+  cornerSize: 150
+--- !u!4 &1139576262
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1139576260}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.34007, y: -1.50527, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1184028957
 GameObject:
   m_ObjectHideFlags: 0
@@ -17728,10 +17771,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   energyCostPerGame: 1
-  notEnoughEnergyText: {fileID: 640004611}
-  watchAdButton: {fileID: 1488335879}
-  goToShopButton: {fileID: 879107979}
-  closeButton: {fileID: 998878952}
   adNotReadyColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!1 &1454864600
 GameObject:
@@ -19012,10 +19051,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   energyCostPerGame: 1
-  notEnoughEnergyText: {fileID: 640004611}
-  watchAdButton: {fileID: 1488335879}
-  goToShopButton: {fileID: 879107979}
-  closeButton: {fileID: 998878952}
   adNotReadyColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!114 &1562252033
 MonoBehaviour:
@@ -19258,10 +19293,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   energyCostPerGame: 1
-  notEnoughEnergyText: {fileID: 640004611}
-  watchAdButton: {fileID: 1488335879}
-  goToShopButton: {fileID: 879107979}
-  closeButton: {fileID: 998878952}
   adNotReadyColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!1 &1567959056
 GameObject:
@@ -32702,3 +32733,4 @@ SceneRoots:
   - {fileID: 122172921}
   - {fileID: 841405732}
   - {fileID: 1908992679}
+  - {fileID: 1139576262}

@@ -9,7 +9,7 @@ public class UserDataManager : MonoBehaviour
 
     [Header("Energy Settings")]
     public int maxEnergy = 5;
-    public int energyRechargeTimeMinutes = 30; // 30분마다 1 에너지 충전
+    public int energyRechargeTimeMinutes = 20; // 20분마다 1 에너지 충전
 
     [Header("Firebase Integration")]
     public bool firebaseIntegrationEnabled = true;
@@ -123,32 +123,79 @@ public class UserDataManager : MonoBehaviour
     
     public int GetCoins() => GetGameCoins(); // Firebase 연동용 별칭
 
-    public bool SpendGameCoins(int amount)
+    public void SpendGameCoins(int amount, System.Action<bool> onComplete = null)
     {
-        if (currentUserData.currencies.gameCoins >= amount)
+        if (CloudFunctionsManager.Instance != null && IsConnectedToFirebase())
         {
-            currentUserData.currencies.gameCoins -= amount;
+            // 서버 검증 경로
+            CloudFunctionsManager.Instance.SpendCurrency("gameCoins", amount, "spend",
+                (newBalance) =>
+                {
+                    currentUserData.currencies.gameCoins = newBalance;
+                    currentUserData.currencies.lastCoinChange = UserData.GetCurrentUnixTimestamp();
+                    currentUserData.MarkAsModified("coins");
+                    OnGameCoinsChanged?.Invoke(newBalance);
+                    SaveUserData();
+                    onComplete?.Invoke(true);
+                },
+                (error) =>
+                {
+                    Debug.LogError($"[UserDataManager] SpendGameCoins failed: {error}");
+                    onComplete?.Invoke(false);
+                });
+        }
+        else
+        {
+            // 오프라인 폴백 - 로컬 처리
+            if (currentUserData.currencies.gameCoins >= amount)
+            {
+                currentUserData.currencies.gameCoins -= amount;
+                currentUserData.currencies.lastCoinChange = UserData.GetCurrentUnixTimestamp();
+                currentUserData.MarkAsModified("coins");
+                OnGameCoinsChanged?.Invoke(currentUserData.currencies.gameCoins);
+                OnDataChanged?.Invoke("coins");
+                SaveUserData();
+                onComplete?.Invoke(true);
+            }
+            else
+            {
+                onComplete?.Invoke(false);
+            }
+        }
+    }
+
+    public void AddGameCoins(int amount, string reason = "reward", System.Action<bool> onComplete = null)
+    {
+        if (CloudFunctionsManager.Instance != null && IsConnectedToFirebase())
+        {
+            CloudFunctionsManager.Instance.AddCurrency("gameCoins", amount, reason,
+                (newBalance) =>
+                {
+                    currentUserData.currencies.gameCoins = newBalance;
+                    currentUserData.currencies.lastCoinChange = UserData.GetCurrentUnixTimestamp();
+                    currentUserData.MarkAsModified("coins");
+                    OnGameCoinsChanged?.Invoke(newBalance);
+                    OnDataChanged?.Invoke("coins");
+                    SaveUserData();
+                    onComplete?.Invoke(true);
+                },
+                (error) =>
+                {
+                    Debug.LogError($"[UserDataManager] AddGameCoins failed: {error}");
+                    onComplete?.Invoke(false);
+                });
+        }
+        else
+        {
+            // 오프라인 폴백 - 로컬 처리
+            currentUserData.currencies.gameCoins += amount;
             currentUserData.currencies.lastCoinChange = UserData.GetCurrentUnixTimestamp();
             currentUserData.MarkAsModified("coins");
-
             OnGameCoinsChanged?.Invoke(currentUserData.currencies.gameCoins);
             OnDataChanged?.Invoke("coins");
             SaveUserData();
-            return true;
+            onComplete?.Invoke(true);
         }
-        return false;
-    }
-
-    public void AddGameCoins(int amount)
-    {
-        currentUserData.currencies.gameCoins += amount;
-        currentUserData.currencies.lastCoinChange = UserData.GetCurrentUnixTimestamp();
-        currentUserData.MarkAsModified("coins");
-
-        OnGameCoinsChanged?.Invoke(currentUserData.currencies.gameCoins);
-        OnDataChanged?.Invoke("coins");
-        SaveUserData();
-        Debug.Log($"Added {amount} game coins. Total: {currentUserData.currencies.gameCoins}");
     }
     
     public void SetCoins(int amount)
@@ -171,32 +218,79 @@ public class UserDataManager : MonoBehaviour
         return currentUserData.currencies.diamonds;
     }
 
-    public bool SpendDiamonds(int amount)
+    public void SpendDiamonds(int amount, System.Action<bool> onComplete = null)
     {
-        if (currentUserData.currencies.diamonds >= amount)
+        if (CloudFunctionsManager.Instance != null && IsConnectedToFirebase())
         {
-            currentUserData.currencies.diamonds -= amount;
+            CloudFunctionsManager.Instance.SpendCurrency("diamonds", amount, "spend",
+                (newBalance) =>
+                {
+                    currentUserData.currencies.diamonds = newBalance;
+                    currentUserData.currencies.lastDiamondChange = UserData.GetCurrentUnixTimestamp();
+                    currentUserData.MarkAsModified("diamonds");
+                    OnDiamondsChanged?.Invoke(newBalance);
+                    OnDataChanged?.Invoke("diamonds");
+                    SaveUserData();
+                    onComplete?.Invoke(true);
+                },
+                (error) =>
+                {
+                    Debug.LogError($"[UserDataManager] SpendDiamonds failed: {error}");
+                    onComplete?.Invoke(false);
+                });
+        }
+        else
+        {
+            // 오프라인 폴백 - 로컬 처리
+            if (currentUserData.currencies.diamonds >= amount)
+            {
+                currentUserData.currencies.diamonds -= amount;
+                currentUserData.currencies.lastDiamondChange = UserData.GetCurrentUnixTimestamp();
+                currentUserData.MarkAsModified("diamonds");
+                OnDiamondsChanged?.Invoke(currentUserData.currencies.diamonds);
+                OnDataChanged?.Invoke("diamonds");
+                SaveUserData();
+                onComplete?.Invoke(true);
+            }
+            else
+            {
+                onComplete?.Invoke(false);
+            }
+        }
+    }
+
+    public void AddDiamonds(int amount, string reason = "reward", System.Action<bool> onComplete = null)
+    {
+        if (CloudFunctionsManager.Instance != null && IsConnectedToFirebase())
+        {
+            CloudFunctionsManager.Instance.AddCurrency("diamonds", amount, reason,
+                (newBalance) =>
+                {
+                    currentUserData.currencies.diamonds = newBalance;
+                    currentUserData.currencies.lastDiamondChange = UserData.GetCurrentUnixTimestamp();
+                    currentUserData.MarkAsModified("diamonds");
+                    OnDiamondsChanged?.Invoke(newBalance);
+                    OnDataChanged?.Invoke("diamonds");
+                    SaveUserData();
+                    onComplete?.Invoke(true);
+                },
+                (error) =>
+                {
+                    Debug.LogError($"[UserDataManager] AddDiamonds failed: {error}");
+                    onComplete?.Invoke(false);
+                });
+        }
+        else
+        {
+            // 오프라인 폴백 - 로컬 처리
+            currentUserData.currencies.diamonds += amount;
             currentUserData.currencies.lastDiamondChange = UserData.GetCurrentUnixTimestamp();
             currentUserData.MarkAsModified("diamonds");
-
             OnDiamondsChanged?.Invoke(currentUserData.currencies.diamonds);
             OnDataChanged?.Invoke("diamonds");
             SaveUserData();
-            return true;
+            onComplete?.Invoke(true);
         }
-        return false;
-    }
-
-    public void AddDiamonds(int amount)
-    {
-        currentUserData.currencies.diamonds += amount;
-        currentUserData.currencies.lastDiamondChange = UserData.GetCurrentUnixTimestamp();
-        currentUserData.MarkAsModified("diamonds");
-
-        OnDiamondsChanged?.Invoke(currentUserData.currencies.diamonds);
-        OnDataChanged?.Invoke("diamonds");
-        SaveUserData();
-        Debug.Log($"Added {amount} diamonds. Total: {currentUserData.currencies.diamonds}");
     }
     
     public void SetDiamonds(int amount)
@@ -236,41 +330,98 @@ public class UserDataManager : MonoBehaviour
         }
     }
 
-    public bool SpendEnergy(int amount = 1)
+    // [수정] 서버 검증 방식으로 변경
+    public void SpendEnergy(int amount = 1, System.Action<bool> onComplete = null)
     {
-        if (currentUserData.currencies.energy >= amount)
+        if (CloudFunctionsManager.Instance != null && IsConnectedToFirebase())
         {
-            // 변경: 최대치에서 처음 소비될 때 회복 타이머 시작
-            bool wasAtMax = currentUserData.currencies.energy >= currentUserData.currencies.maxEnergy;
-
-            currentUserData.currencies.energy -= amount;
-
-            // 변경: 최대치에서 소비됐으면 lastEnergyTime을 현재로 갱신
-            if (wasAtMax)
+            CloudFunctionsManager.Instance.SpendEnergy(amount, "stage_play",
+                (newEnergy, maxEng, serverTime) =>
+                {
+                    currentUserData.currencies.energy = newEnergy;
+                    currentUserData.currencies.maxEnergy = maxEng;
+                    // 서버 시간 기준으로 lastEnergyTime 갱신
+                    currentUserData.currencies.lastEnergyTime =
+                        new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                        .AddMilliseconds(serverTime)
+                        .ToLocalTime()
+                        .ToBinary()
+                        .ToString();
+                    OnEnergyChanged?.Invoke(newEnergy);
+                    OnDataChanged?.Invoke("energy");
+                    SaveUserData();
+                    onComplete?.Invoke(true);
+                },
+                (error) =>
+                {
+                    Debug.LogError($"[UserDataManager] SpendEnergy failed: {error}");
+                    onComplete?.Invoke(false);
+                });
+        }
+        else
+        {
+            // 오프라인 폴백
+            if (currentUserData.currencies.energy >= amount)
             {
-                currentUserData.currencies.lastEnergyTime = DateTime.Now.ToBinary().ToString();
+                bool wasAtMax = currentUserData.currencies.energy >= currentUserData.currencies.maxEnergy;
+                currentUserData.currencies.energy -= amount;
+                if (wasAtMax)
+                {
+                    currentUserData.currencies.lastEnergyTime = DateTime.Now.ToBinary().ToString();
+                }
+                OnEnergyChanged?.Invoke(currentUserData.currencies.energy);
+                OnDataChanged?.Invoke("energy");
+                SaveUserData();
+                onComplete?.Invoke(true);
             }
+            else
+            {
+                onComplete?.Invoke(false);
+            }
+        }
+    }
 
+    // [수정] 서버 검증 방식으로 변경
+    public void AddEnergy(int amount, string reason = "reward", System.Action<bool> onComplete = null)
+    {
+        if (CloudFunctionsManager.Instance != null && IsConnectedToFirebase())
+        {
+            CloudFunctionsManager.Instance.AddEnergy(amount, reason,
+                (newEnergy, maxEng, serverTime) =>
+                {
+                    currentUserData.currencies.energy = newEnergy;
+                    currentUserData.currencies.maxEnergy = maxEng;
+                    currentUserData.currencies.lastEnergyTime =
+                        new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                        .AddMilliseconds(serverTime)
+                        .ToLocalTime()
+                        .ToBinary()
+                        .ToString();
+                    OnEnergyChanged?.Invoke(newEnergy);
+                    OnDataChanged?.Invoke("energy");
+                    SaveUserData();
+                    onComplete?.Invoke(true);
+                },
+                (error) =>
+                {
+                    Debug.LogError($"[UserDataManager] AddEnergy failed: {error}");
+                    onComplete?.Invoke(false);
+                });
+        }
+        else
+        {
+            // 오프라인 폴백
+            currentUserData.currencies.energy = Mathf.Min(
+                currentUserData.currencies.energy + amount,
+                currentUserData.currencies.maxEnergy
+            );
             OnEnergyChanged?.Invoke(currentUserData.currencies.energy);
             OnDataChanged?.Invoke("energy");
             SaveUserData();
-            return true;
+            onComplete?.Invoke(true);
         }
-        return false;
     }
 
-    public void AddEnergy(int amount)
-    {
-        currentUserData.currencies.energy = Mathf.Min(
-            currentUserData.currencies.energy + amount,
-            currentUserData.currencies.maxEnergy
-        );
-        OnEnergyChanged?.Invoke(currentUserData.currencies.energy);
-        OnDataChanged?.Invoke("energy");
-        SaveUserData();
-        Debug.Log($"Added {amount} energy. Current: {currentUserData.currencies.energy}");
-    }
-    
     public void SetEnergy(int amount)
     {
         currentUserData.currencies.energy = Mathf.Min(amount, maxEnergy);
@@ -674,14 +825,14 @@ public class UserDataManager : MonoBehaviour
         Debug.Log($"Purchased {amount} diamonds via IAP");
     }
 
-    public bool PurchaseEnergyWithDiamonds(int diamondCost, int energyAmount)
+    public void PurchaseEnergyWithDiamonds(int diamondCost, int energyAmount, System.Action<bool> onComplete = null)
     {
-        if (SpendDiamonds(diamondCost))
+        SpendDiamonds(diamondCost, (success) =>
         {
+            if (!success) { onComplete?.Invoke(false); return; }
             AddEnergy(energyAmount);
-            return true;
-        }
-        return false;
+            onComplete?.Invoke(true);
+        });
     }
 
     #endregion
@@ -813,26 +964,32 @@ public class UserDataManager : MonoBehaviour
         }
     }
 
-    public bool PurchaseItem(ItemData itemData, bool useDiamonds = false)
+    public void PurchaseItem(ItemData itemData, bool useDiamonds, System.Action<bool> onComplete)
     {
         if (!CanPurchaseItem(itemData, useDiamonds))
-            return false;
+        {
+            onComplete?.Invoke(false);
+            return;
+        }
 
-        // 재화 차감
         if (useDiamonds)
         {
-            if (!SpendDiamonds(itemData.diamondPrice))
-                return false;
+            SpendDiamonds(itemData.diamondPrice, (success) =>
+            {
+                if (!success) { onComplete?.Invoke(false); return; }
+                AddItem(itemData.itemType, 1);
+                onComplete?.Invoke(true);
+            });
         }
         else
         {
-            if (!SpendGameCoins(itemData.coinPrice))
-                return false;
+            SpendGameCoins(itemData.coinPrice, (success) =>
+            {
+                if (!success) { onComplete?.Invoke(false); return; }
+                AddItem(itemData.itemType, 1);
+                onComplete?.Invoke(true);
+            });
         }
-
-        // 아이템 추가
-        AddItem(itemData.itemType, 1);
-        return true;
     }
 
     #endregion

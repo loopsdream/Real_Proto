@@ -38,6 +38,7 @@ public class GameStarter : MonoBehaviour
     }
 
     // 에너지 체크 후 씬 전환
+    // [수정] SpendEnergy 콜백 방식으로 변경
     private void TryStartGame(string sceneName)
     {
         if (UserDataManager.Instance == null)
@@ -48,11 +49,20 @@ public class GameStarter : MonoBehaviour
 
         if (UserDataManager.Instance.GetEnergy() >= energyCostPerGame)
         {
-            if (UserDataManager.Instance.SpendEnergy(energyCostPerGame))
+            UserDataManager.Instance.SpendEnergy(energyCostPerGame, (success) =>
             {
-                Debug.Log($"[GameStarter] Energy spent. Loading {sceneName}");
-                SceneManager.LoadScene(sceneName);
-            }
+                if (success)
+                {
+                    Debug.Log($"[GameStarter] Energy spent. Loading {sceneName}");
+                    SceneManager.LoadScene(sceneName);
+                }
+                else
+                {
+                    Debug.LogError("[GameStarter] SpendEnergy failed");
+                    pendingSceneName = sceneName;
+                    ShowNotEnoughEnergyPanel();
+                }
+            });
         }
         else
         {

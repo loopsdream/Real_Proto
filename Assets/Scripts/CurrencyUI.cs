@@ -440,13 +440,16 @@ public class CurrencyUI : MonoBehaviour
             Debug.Log($"[CurrencyUI] {message}");
 
             // 임시: 자동 구매 (실제로는 사용자 확인 필요)
-            if (UserDataManager.Instance.PurchaseEnergyWithDiamonds(diamondCost, energyAmount))
+            UserDataManager.Instance.PurchaseEnergyWithDiamonds(diamondCost, energyAmount, (success) =>
             {
-                if (CommonUIManager.Instance != null)
+                if (success)
                 {
-                    CommonUIManager.Instance.ShowNotification($"에너지 {energyAmount}개 구매 완료!", 2f);
+                    if (CommonUIManager.Instance != null)
+                    {
+                        CommonUIManager.Instance.ShowNotification($"Energy +{energyAmount} recharged!", 2f);
+                    }
                 }
-            }
+            });
         }
         else
         {

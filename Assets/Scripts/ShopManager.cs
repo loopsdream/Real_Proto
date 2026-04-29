@@ -82,34 +82,33 @@ public class ShopManager : MonoBehaviour
         }
 
         // 재화 차감
-        bool paymentSuccess = false;
+        //bool paymentSuccess = false;
         switch (item.priceType)
         {
             case PriceType.Coins:
-                paymentSuccess = UserDataManager.Instance.SpendGameCoins(item.price);
+                UserDataManager.Instance.SpendGameCoins(item.price, (success) =>
+                {
+                    if (!success) { Debug.LogError("ShopManager: Payment failed"); return; }
+                    GiveReward(item);
+                    OnItemPurchased?.Invoke(item);
+                    Debug.Log($"Purchase completed: {item.itemName}");
+                });
                 break;
+
             case PriceType.Diamonds:
-                paymentSuccess = UserDataManager.Instance.SpendDiamonds(item.price);
+                UserDataManager.Instance.SpendDiamonds(item.price, (success) =>
+                {
+                    if (!success) { Debug.LogError("ShopManager: Payment failed"); return; }
+                    GiveReward(item);
+                    OnItemPurchased?.Invoke(item);
+                    Debug.Log($"Purchase completed: {item.itemName}");
+                });
                 break;
+
             case PriceType.RealMoney:
-                // IAP 처리 (나중에 구현)
                 Debug.Log("IAP purchase not implemented yet");
-                return;
+                break;
         }
-
-        if (!paymentSuccess)
-        {
-            Debug.LogError("ShopManager: Payment failed");
-            return;
-        }
-
-        // 보상 지급
-        GiveReward(item);
-
-        // 이벤트 발생
-        OnItemPurchased?.Invoke(item);
-
-        Debug.Log($"Purchase completed: {item.itemName}");
     }
 
     // 4. GiveReward - 보상 지급
