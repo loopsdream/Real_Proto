@@ -568,6 +568,18 @@ public class InfiniteModeManager : MonoBehaviour
                 Block blockComponent = movedBlock.GetComponent<Block>();
                 if (blockComponent != null && !blockComponent.isEmpty)
                 {
+                    // === ADDED: Destroy orphaned empty block at destination ===
+                    if (newGrid[move.toX, move.toY] != null)
+                    {
+                        Block destBlockComp = newGrid[move.toX, move.toY].GetComponent<Block>();
+                        if (destBlockComp != null && destBlockComp.isEmpty)
+                        {
+                            gridManager.blockFactory.DestroyBlock(newGrid[move.toX, move.toY]);
+                            newGrid[move.toX, move.toY] = null;
+                        }
+                    }
+                    // === END ADDED ===
+
                     newGrid[move.toX, move.toY] = movedBlock;
                     blockComponent.x = move.toX;
                     blockComponent.y = move.toY;
