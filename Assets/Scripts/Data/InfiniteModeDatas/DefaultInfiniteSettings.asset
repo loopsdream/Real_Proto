@@ -19,43 +19,43 @@ MonoBehaviour:
   - difficultyName: 1 Phase
     startTime: 0
     moveInterval: 3
+    minSpawnChance: 0.4
+    maxSpawnChance: 0.4
+    cornerMode: 1
+    bonusScoreMultiplier: 1
+  - difficultyName: 2 Phase
+    startTime: 20
+    moveInterval: 3
     minSpawnChance: 0.1
     maxSpawnChance: 0.2
     cornerMode: 1
     bonusScoreMultiplier: 1
-  - difficultyName: 2 Phase
-    startTime: 10
-    moveInterval: 3
-    minSpawnChance: 0.2
-    maxSpawnChance: 0.3
-    cornerMode: 1
-    bonusScoreMultiplier: 1
   - difficultyName: 3 Phase
-    startTime: 20
+    startTime: 40
     moveInterval: 5
     minSpawnChance: 0.2
     maxSpawnChance: 0.3
-    cornerMode: 1
+    cornerMode: 0
     bonusScoreMultiplier: 1.2
   - difficultyName: 4 Phase
-    startTime: 30
+    startTime: 60
     moveInterval: 5
     minSpawnChance: 0.2
     maxSpawnChance: 0.3
     cornerMode: 1
     bonusScoreMultiplier: 1.2
   - difficultyName: 5 Phase
-    startTime: 40
+    startTime: 70
+    moveInterval: 5
+    minSpawnChance: 0.1
+    maxSpawnChance: 0.2
+    cornerMode: 1
+    bonusScoreMultiplier: 1.4
+  - difficultyName: 6 Phase
+    startTime: 90
     moveInterval: 5
     minSpawnChance: 0.3
     maxSpawnChance: 0.4
-    cornerMode: 0
-    bonusScoreMultiplier: 1.4
-  - difficultyName: 4 Phase
-    startTime: 60
-    moveInterval: 5
-    minSpawnChance: 0.4
-    maxSpawnChance: 0.5
     cornerMode: 0
     bonusScoreMultiplier: 1.6
   score2Blocks: 10
