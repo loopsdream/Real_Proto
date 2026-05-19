@@ -18,16 +18,16 @@ MonoBehaviour:
   difficultyLevels:
   - difficultyName: 1 Phase
     startTime: 0
-    moveInterval: 3
+    moveInterval: 5
     minSpawnChance: 0.4
-    maxSpawnChance: 0.4
+    maxSpawnChance: 0.5
     cornerMode: 1
     bonusScoreMultiplier: 1
   - difficultyName: 2 Phase
     startTime: 20
-    moveInterval: 3
-    minSpawnChance: 0.1
-    maxSpawnChance: 0.2
+    moveInterval: 5
+    minSpawnChance: 0.2
+    maxSpawnChance: 0.3
     cornerMode: 1
     bonusScoreMultiplier: 1
   - difficultyName: 3 Phase
@@ -42,7 +42,7 @@ MonoBehaviour:
     moveInterval: 5
     minSpawnChance: 0.2
     maxSpawnChance: 0.3
-    cornerMode: 1
+    cornerMode: 0
     bonusScoreMultiplier: 1.2
   - difficultyName: 5 Phase
     startTime: 70
