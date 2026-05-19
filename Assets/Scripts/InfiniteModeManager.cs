@@ -89,6 +89,7 @@ public class InfiniteModeManager : MonoBehaviour
         SetupUI();
         SetupPauseSystem(); // 일시정지 시스템 초기화
         AudioManager.Instance.PlaySceneBGM("InfiniteModeScene");
+        AdManager.Instance?.ShowBanner();
     }
 
     void SetupPauseSystem()
@@ -1348,6 +1349,7 @@ public class InfiniteModeManager : MonoBehaviour
         Time.timeScale = 1f;
 
         AudioManager.Instance.StopBGM();
+        AdManager.Instance?.DestroyBanner();
 
         // 메뉴로 이동
         SceneManager.LoadScene("LobbyScene");
@@ -1582,6 +1584,7 @@ public class InfiniteModeManager : MonoBehaviour
                 if (success)
                 {
                     Debug.Log("[InfiniteModeManager] Energy spent for restart.");
+                    AdManager.Instance?.DestroyBanner();
                     SceneManager.LoadScene(SceneManager.GetActiveScene().name);
                 }
                 else
@@ -1617,6 +1620,7 @@ public class InfiniteModeManager : MonoBehaviour
     {
         Time.timeScale = 1f; // Time.timeScale 복원
         AudioManager.Instance.StopBGM();
+        AdManager.Instance?.DestroyBanner();
         SceneManager.LoadScene("LobbyScene");
     }
 }

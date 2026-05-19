@@ -245,3 +245,163 @@ exports.addEnergy = onCall({ region: "asia-northeast3" }, async (request) => {
         serverTime: serverNow
     };
 });
+
+// ============================================
+// 스테이지 클리어 검증 Function
+// ============================================
+exports.clearStage = onCall({ region: "asia-northeast3" }, async (request) => {
+    if (!request.auth) {
+        throw new HttpsError("unauthenticated", "Login required");
+    }
+
+    const userId = request.auth.uid;
+    const { stageNumber, score, stars, rewards } = request.data;
+
+    // 입력값 검증
+    if (!Number.isInteger(stageNumber) || stageNumber < 1) {
+        throw new HttpsError("invalid-argument", "Invalid stage number");
+    }
+    if (!Number.isInteger(score) || score < 0) {
+        throw new HttpsError("invalid-argument", "Invalid score");
+    }
+    if (!Number.isInteger(stars) || stars < 0 || stars > 3) {
+        throw new HttpsError("invalid-argument", "Stars must be 0-3");
+    }
+
+    const db = getDatabase();
+    const userRef = db.ref(`users/${userId}`);
+
+    const snapshot = await userRef.once("value");
+    const userData = snapshot.val() || {};
+    const stageProgress = userData.stageProgress || {};
+    const currencies = userData.currencies || {};
+
+    // 현재 스테이지 진행도 확인 - 이전 스테이지를 클리어했는지 검증
+    const currentStage = userData.currentStage || 1;
+
+    // 이전 클리어 기록 확인
+    const stageKey = `stage_${stageNumber}`;
+    const prevProgress = stageProgress[stageKey] || {};
+    const isFirstClear = !prevProgress.completed;
+
+    // 보상 계산 및 지급
+    let coinReward = 0;
+    let diamondReward = 0;
+    let energyReward = 0;
+    const itemRewards = {};
+
+    if (rewards && Array.isArray(rewards)) {
+        for (const reward of rewards) {
+            switch (reward.type) {
+                case "Coins":
+                    coinReward += reward.amount || 0;
+                    break;
+                case "Diamonds":
+                    diamondReward += reward.amount || 0;
+                    break;
+                case "Energy":
+                    energyReward += reward.amount || 0;
+                    break;
+                case "Hammer":
+                case "Tornado":
+                case "Brush":
+                    itemRewards[reward.type] = (itemRewards[reward.type] || 0) + (reward.amount || 0);
+                    break;
+            }
+        }
+    }
+
+    // 보상 상한 체크 (치트 방지)
+    if (coinReward > 5000 || diamondReward > 50 || energyReward > 5) {
+        throw new HttpsError("invalid-argument", "Reward exceeds maximum limit");
+    }
+
+    // 업데이트 데이터 구성
+    const updates = {};
+
+    // 스테이지 진행도 업데이트
+    updates[`stageProgress/${stageKey}/completed`] = true;
+    updates[`stageProgress/${stageKey}/stageNumber`] = stageNumber;
+    updates[`stageProgress/${stageKey}/completedTime`] = Date.now();
+
+    // 최고 기록 갱신
+    if (score > (prevProgress.bestScore || 0)) {
+        updates[`stageProgress/${stageKey}/bestScore`] = score;
+    }
+    if (stars > (prevProgress.bestStars || 0)) {
+        updates[`stageProgress/${stageKey}/bestStars`] = stars;
+    }
+
+    // 다음 스테이지 해금
+    if (stageNumber >= currentStage) {
+        updates["currentStage"] = stageNumber + 1;
+    }
+
+    // 재화 지급
+    if (coinReward > 0) {
+        updates["currencies/gameCoins"] = (currencies.gameCoins || 0) + coinReward;
+    }
+    if (diamondReward > 0) {
+        updates["currencies/diamonds"] = (currencies.diamonds || 0) + diamondReward;
+    }
+    if (energyReward > 0) {
+        const newEnergy = Math.min(
+            (currencies.energy || 0) + energyReward,
+            currencies.maxEnergy || 5
+        );
+        updates["currencies/energy"] = newEnergy;
+    }
+
+    // 아이템 지급
+    if (itemRewards["Hammer"]) {
+        updates["currencies/hammerCount"] = (currencies.hammerCount || 0) + itemRewards["Hammer"];
+    }
+    if (itemRewards["Tornado"]) {
+        updates["currencies/tornadoCount"] = (currencies.tornadoCount || 0) + itemRewards["Tornado"];
+    }
+    if (itemRewards["Brush"]) {
+        updates["currencies/brushCount"] = (currencies.brushCount || 0) + itemRewards["Brush"];
+    }
+
+    await userRef.update(updates);
+
+    const newCoins = (currencies.gameCoins || 0) + coinReward;
+    const newDiamonds = (currencies.diamonds || 0) + diamondReward;
+    const newCurrentStage = stageNumber >= currentStage ? stageNumber + 1 : currentStage;
+
+    console.log(`[clearStage] userId=${userId} stage=${stageNumber} stars=${stars} score=${score} isFirst=${isFirstClear} coins=+${coinReward} diamonds=+${diamondReward}`);
+
+    return {
+        success: true,
+        stageNumber: stageNumber,
+        isFirstClear: isFirstClear,
+        newCurrentStage: newCurrentStage,
+        newCoins: newCoins,
+        newDiamonds: newDiamonds,
+        bestScore: Math.max(score, prevProgress.bestScore || 0),
+        bestStars: Math.max(stars, prevProgress.bestStars || 0)
+    };
+});
+
+// 스테이지 진행도 초기화 Function (디버그용)
+exports.resetStageProgress = onCall({ region: "asia-northeast3" }, async (request) => {
+    if (!request.auth) {
+        throw new HttpsError("unauthenticated", "Login required");
+    }
+
+    const userId = request.auth.uid;
+    const db = getDatabase();
+    const userRef = db.ref(`users/${userId}`);
+
+    await userRef.update({
+        "stageProgress": null,
+        "currentStage": 1
+    });
+
+    console.log(`[resetStageProgress] userId=${userId} - All stage progress reset`);
+
+    return {
+        success: true,
+        message: "Stage progress reset to stage 1"
+    };
+});

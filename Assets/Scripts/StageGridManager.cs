@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -805,7 +806,7 @@ private void CheckWinCondition()
 
         yield return StartCoroutine(RotateBlocksAnimation(blockObjects));
 
-        int sameColor = Random.Range(1, 6);
+        int sameColor = UnityEngine.Random.Range(1, 6);
         foreach (var data in blocks)
         {
             Vector2Int pos = data.position;
@@ -837,7 +838,7 @@ private void CheckWinCondition()
         List<int> colorTypes = new List<int>();
         for (int i = 0; i < colorTypeCount; i++)
         {
-            colorTypes.Add(Random.Range(1, 6));
+            colorTypes.Add(UnityEngine.Random.Range(1, 6));
         }
 
         List<int> finalColors = new List<int>();
@@ -848,7 +849,7 @@ private void CheckWinCondition()
 
         for (int i = finalColors.Count - 1; i > 0; i--)
         {
-            int j = Random.Range(0, i + 1);
+            int j = UnityEngine.Random.Range(0, i + 1);
             int temp = finalColors[i];
             finalColors[i] = finalColors[j];
             finalColors[j] = temp;
@@ -1237,7 +1238,7 @@ private void CheckWinCondition()
         {
             for (int y = 0; y < height; y++)
             {
-                if (Random.value < 0.3f)
+                if (UnityEngine.Random.value < 0.3f)
                 {
                     grid[x, y] = blockFactory.CreateEmptyBlock(x, y);
                 }
@@ -1438,6 +1439,7 @@ private void CheckWinCondition()
     //    Debug.Log("=== Reward Calculation Complete ===");
     //}
 
+    // [수정] 서버 검증 방식으로 변경
     private List<RewardItem> CalculateRewardItems()
     {
         Debug.Log("=== Calculating Stage Clear Rewards ===");
@@ -1451,24 +1453,62 @@ private void CheckWinCondition()
         bool isPerfectClear = StageRewardCalculator.IsPerfectClear(stars, itemsUsed, 0);
         Debug.Log($"Perfect clear: {isPerfectClear}");
 
-        // 스테이지 클리어 상태 저장 (보상 지급과 분리)
+        StageRewardData rewardData = StageRewardCalculator.LoadStageRewardData(currentStageNumber);
+
+        List<RewardItem> totalRewards = new List<RewardItem>();
+        if (rewardData != null && rewardData.IsValid())
+        {
+            totalRewards = rewardData.CalculateTotalRewards(stars, isFirstClear, isPerfectClear);
+            Debug.Log($"Calculated rewards count: {totalRewards.Count}");
+        }
+        else
+        {
+            Debug.LogWarning($"No reward data for stage {currentStageNumber}, returning empty list.");
+        }
+
+        // [추가] 서버 응답과 관계없이 로컬 진행도 즉시 업데이트
         UserDataManager userDataManager = UserDataManager.Instance;
         if (userDataManager != null)
         {
             userDataManager.SetStageCleared(currentStageNumber, stars, currentScore);
+            userDataManager.SetCurrentStage(currentStageNumber + 1);
         }
 
-        StageRewardData rewardData = StageRewardCalculator.LoadStageRewardData(currentStageNumber);
-
-        if (rewardData != null && rewardData.IsValid())
+        // [추가] 서버에 스테이지 클리어 검증 요청
+        if (CloudFunctionsManager.Instance != null &&
+            UserDataManager.Instance != null &&
+            UserDataManager.Instance.IsConnectedToFirebase())
         {
-            List<RewardItem> totalRewards = rewardData.CalculateTotalRewards(stars, isFirstClear, isPerfectClear);
-            Debug.Log($"Calculated rewards count: {totalRewards.Count}");
-            return totalRewards;
+            CloudFunctionsManager.Instance.ClearStage(
+                currentStageNumber, currentScore, stars, totalRewards,
+                (result) =>
+                {
+                    // 서버 응답으로 로컬 데이터 동기화
+                    int newCurrentStage = Convert.ToInt32(result["newCurrentStage"]);
+                    int newCoins = Convert.ToInt32(result["newCoins"]);
+                    int newDiamonds = Convert.ToInt32(result["newDiamonds"]);
+                    int bestScore = Convert.ToInt32(result["bestScore"]);
+                    int bestStars = Convert.ToInt32(result["bestStars"]);
+
+                    UserDataManager.Instance.SetCurrentStage(newCurrentStage);
+                    UserDataManager.Instance.SetCoins(newCoins);
+                    UserDataManager.Instance.SetDiamonds(newDiamonds);
+
+                    Debug.Log($"[StageGrid] Server confirmed clear: stage={currentStageNumber} nextStage={newCurrentStage}");
+                },
+                (error) =>
+                {
+                    Debug.LogError($"[StageGrid] Server clear failed: {error} - using local fallback");
+                    // 서버 실패 시 로컬 폴백
+                });
+        }
+        else
+        {
+            // 오프라인 폴백
+            UserDataManager.Instance?.SetStageCleared(currentStageNumber, stars, currentScore);
         }
 
-        Debug.LogWarning($"No reward data for stage {currentStageNumber}, returning empty list.");
-        return new List<RewardItem>();
+        return totalRewards;
     }
 
     // 보상 실제 지급 (외부에서 호출 가능하도록 public)
