@@ -183,7 +183,10 @@ public class MainMenuManager : MonoBehaviour
     public void StartInfiniteMode()
     {
         PlayUISound("ButtonClick");
-        AudioManager.Instance.StopBGM();
+
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.StopBGM();
+
         Debug.Log("Starting Infinite Mode...");
 
         GameStarter gameStarter = FindAnyObjectByType<GameStarter>();
