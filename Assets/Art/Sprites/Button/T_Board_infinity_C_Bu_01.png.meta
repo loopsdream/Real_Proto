@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 06d527368c5df4a9dbdf4b356cf5ff63
+guid: 4201c3a6047cb40f3b2d6d697874b554
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7569109687437503344
-    second: TX_Jem_01_0
+      213: -8105491352897736404
+    second: T_Board_infinity_C_Bu_01_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: TX_Jem_01_0
+      name: T_Board_infinity_C_Bu_01_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 2048
-        height: 2048
+        width: 427
+        height: 196
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 07b2ea96821ea0960800000000000000
-      internalID: 7569109687437503344
+      spriteID: c21b78c2f82838f80800000000000000
+      internalID: -8105491352897736404
       vertices: []
       indices: 
       edges: []
