@@ -196,6 +196,22 @@ public class MainMenuManager : MonoBehaviour
             SceneManager.LoadScene("InfiniteModeScene");
     }
 
+    public void StartInfiniteV2Mode()
+    {
+        PlayUISound("ButtonClick");
+
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.StopBGM();
+
+        Debug.Log("Starting Infinite Mode...");
+
+        GameStarter gameStarter = FindAnyObjectByType<GameStarter>();
+        if (gameStarter != null)
+            gameStarter.StartInfiniteV2Mode();
+        else
+            SceneManager.LoadScene("InfiniteModeV2Scene");
+    }
+
     // 타이틀 씬으로 돌아가기
     public void GoToTitleScene()
     {

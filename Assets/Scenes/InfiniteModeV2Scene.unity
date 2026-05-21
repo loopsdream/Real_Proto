@@ -328,7 +328,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 206013272}
-  - component: {fileID: 206013271}
+  - component: {fileID: 206013277}
   - component: {fileID: 206013275}
   - component: {fileID: 206013274}
   - component: {fileID: 206013273}
@@ -340,48 +340,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &206013271
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 206013270}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d86ab29898b56e41b9285504e03f7fe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  settings: {fileID: 11400000, guid: f435d368dd42c2742924a9f7a5e55a77, type: 2}
-  gridManager: {fileID: 206013276}
-  timeText: {fileID: 1113651452}
-  scoreText: {fileID: 1647868287}
-  comboText: {fileID: 1947492510}
-  gameOverPanel: {fileID: 424506247}
-  finalScoreText: {fileID: 1721076569}
-  highScoreText: {fileID: 905579538}
-  difficultyText: {fileID: 408199652}
-  elapsedTimeText: {fileID: 1995471960}
-  newHighScoreText: {fileID: 255291003}
-  restartButton: {fileID: 2050278716}
-  menuButton: {fileID: 1893715159}
-  blockPrefabs:
-  - {fileID: 1709279765795626429, guid: 6a4119959ce2ead41bbf9a76bba9f839, type: 3}
-  - {fileID: 1225213266515811927, guid: bc7443b1df9405342ad52b1fbef8e404, type: 3}
-  - {fileID: 3430643294906128457, guid: 242368dc3ce2c354da9ff8444f630e20, type: 3}
-  - {fileID: 1398148286085417208, guid: 732562cc323f9b647a2346bdec370cda, type: 3}
-  - {fileID: 5540238821353694471, guid: 61b76ac648e9f464492fde3e019aaa79, type: 3}
-  emptyBlockPrefab: {fileID: 6056026235097416716, guid: 674c6ff5f0b788b4bbf6bce82105ac98, type: 3}
-  warningBlinkSpeed: 2
-  warningColor: {r: 1, g: 0, b: 0, a: 1}
-  warningBorderPrefab: {fileID: 6580123034139144980, guid: 1a90d6f62a6ecef4eb8ba020f0c6d87b, type: 3}
-  blockMoveAnimationDuration: 0.1
-  pausePanel: {fileID: 2102920697}
-  pauseButton: {fileID: 738876503}
-  resumeButton: {fileID: 397206684}
-  pauseMenuButton: {fileID: 50219006}
-  gridBlocker: {fileID: 0}
-  blockEffectSystem: {fileID: 476897852}
 --- !u!4 &206013272
 Transform:
   m_ObjectHideFlags: 0
@@ -472,6 +430,48 @@ MonoBehaviour:
   layoutManager: {fileID: 206013274}
   blockFactory: {fileID: 206013273}
   matchingSystem: {fileID: 0}
+--- !u!114 &206013277
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 206013270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38af0715e30d77841a2297b71a9d1f4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  settings: {fileID: 11400000, guid: 289375284e437424e92be5f09e7814e2, type: 2}
+  gridManager: {fileID: 206013276}
+  timeText: {fileID: 1113651452}
+  scoreText: {fileID: 1647868287}
+  comboText: {fileID: 1947492510}
+  gameOverPanel: {fileID: 424506247}
+  finalScoreText: {fileID: 1721076569}
+  highScoreText: {fileID: 905579538}
+  difficultyText: {fileID: 408199652}
+  elapsedTimeText: {fileID: 1995471960}
+  newHighScoreText: {fileID: 1399222255}
+  restartButton: {fileID: 2050278716}
+  menuButton: {fileID: 1893715159}
+  blockPrefabs:
+  - {fileID: 1709279765795626429, guid: 6a4119959ce2ead41bbf9a76bba9f839, type: 3}
+  - {fileID: 1225213266515811927, guid: bc7443b1df9405342ad52b1fbef8e404, type: 3}
+  - {fileID: 3430643294906128457, guid: 242368dc3ce2c354da9ff8444f630e20, type: 3}
+  - {fileID: 5540238821353694471, guid: 61b76ac648e9f464492fde3e019aaa79, type: 3}
+  - {fileID: 1398148286085417208, guid: 732562cc323f9b647a2346bdec370cda, type: 3}
+  emptyBlockPrefab: {fileID: 6056026235097416716, guid: 674c6ff5f0b788b4bbf6bce82105ac98, type: 3}
+  warningBlinkSpeed: 3
+  warningColor: {r: 1, g: 0, b: 0, a: 1}
+  warningBorderPrefab: {fileID: 6580123034139144980, guid: 1a90d6f62a6ecef4eb8ba020f0c6d87b, type: 3}
+  blockMoveAnimationDuration: 0.1
+  pausePanel: {fileID: 2102920697}
+  pauseButton: {fileID: 738876503}
+  resumeButton: {fileID: 397206684}
+  pauseMenuButton: {fileID: 50219006}
+  gridBlocker: {fileID: 0}
+  blockEffectSystem: {fileID: 476897852}
 --- !u!1 &225010191
 GameObject:
   m_ObjectHideFlags: 0
