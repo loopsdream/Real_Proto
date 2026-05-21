@@ -10,13 +10,15 @@ public class AdManager : MonoBehaviour
     [Header("Ad Config")]
     [SerializeField] private AdConfig adConfig;
 
-    // 보상형 광고 인스턴스
     private RewardedAd rewardedDoubleAd;
     private RewardedAd rewardedEnergyAd;
+    private BannerView bannerView;
 
     // 광고 로드 상태
     private bool isDoubleAdLoaded = false;
     private bool isEnergyAdLoaded = false;
+
+    private bool isBannerVisible = false;
 
     // 광고 완료/실패 콜백
     private Action onDoubleAdSuccess;
@@ -197,6 +199,73 @@ public class AdManager : MonoBehaviour
         });
     }
 
+    // 배너 광고 생성 및 표시
+    public void ShowBanner()
+    {
+        // 이미 표시 중이면 무시
+        if (isBannerVisible && bannerView != null)
+        {
+            Debug.Log("[AdManager] Banner is already visible.");
+            return;
+        }
+
+        // 기존 배너 정리
+        DestroyBanner();
+
+        // 배너 생성 - 화면 최하단, 가로폭 자동 맞춤
+        bannerView = new BannerView(adConfig.BannerId, AdSize.Banner, AdPosition.Bottom);
+
+        // 이벤트 등록
+        RegisterBannerEvents(bannerView);
+
+        // 광고 요청 및 로드
+        var request = new AdRequest();
+        bannerView.LoadAd(request);
+
+        isBannerVisible = true;
+        Debug.Log("[AdManager] Banner ad requested.");
+    }
+
+    // 배너 광고 숨김 (씬 전환 시 등)
+    public void HideBanner()
+    {
+        if (bannerView != null)
+        {
+            bannerView.Hide();
+            isBannerVisible = false;
+            Debug.Log("[AdManager] Banner hidden.");
+        }
+    }
+
+    // 배너 광고 완전 제거
+    public void DestroyBanner()
+    {
+        if (bannerView != null)
+        {
+            bannerView.Destroy();
+            bannerView = null;
+            isBannerVisible = false;
+            Debug.Log("[AdManager] Banner destroyed.");
+        }
+    }
+
+    // 배너 상태 확인
+    public bool IsBannerVisible() => isBannerVisible;
+
+    private void RegisterBannerEvents(BannerView banner)
+    {
+        banner.OnBannerAdLoaded += () =>
+        {
+            Debug.Log("[AdManager] Banner ad loaded successfully.");
+        };
+
+        banner.OnBannerAdLoadFailed += (LoadAdError error) =>
+        {
+            Debug.LogError($"[AdManager] Banner ad failed to load: {error.GetMessage()}");
+            isBannerVisible = false;
+        };
+    }
+
     // 광고 준비 상태 확인
     public bool IsDoubleRewardedAdReady() => isDoubleAdLoaded && rewardedDoubleAd != null;
     public bool IsEnergyRewardedAdReady() => isEnergyAdLoaded && rewardedEnergyAd != null;
@@ -205,5 +274,6 @@ public class AdManager : MonoBehaviour
     {
         rewardedDoubleAd?.Destroy();
         rewardedEnergyAd?.Destroy();
+        DestroyBanner();
     }
 }

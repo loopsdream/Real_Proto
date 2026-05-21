@@ -267,4 +267,102 @@ public class CloudFunctionsManager : MonoBehaviour
                 });
             });
     }
+
+    /// <summary>
+    /// 스테이지 클리어 서버 검증
+    /// </summary>
+    public void ClearStage(int stageNumber, int score, int stars,
+        List<RewardItem> rewards,
+        Action<Dictionary<object, object>> onSuccess, Action<string> onFail)
+    {
+        if (!isInitialized)
+        {
+            onFail?.Invoke("CloudFunctions not initialized");
+            return;
+        }
+
+        // RewardItem 리스트를 서버 전송용으로 변환
+        var rewardList = new List<Dictionary<string, object>>();
+        if (rewards != null)
+        {
+            foreach (var reward in rewards)
+            {
+                rewardList.Add(new Dictionary<string, object>
+                {
+                    { "type", reward.rewardType.ToString() },
+                    { "amount", reward.amount }
+                });
+            }
+        }
+
+        var data = new Dictionary<string, object>
+        {
+            { "stageNumber", stageNumber },
+            { "score", score },
+            { "stars", stars },
+            { "rewards", rewardList }
+        };
+
+        Debug.Log($"[CloudFunctions] ClearStage request: stage={stageNumber} score={score} stars={stars}");
+
+        functions.GetHttpsCallable("clearStage")
+            .CallAsync(data)
+            .ContinueWith(task =>
+            {
+                UnityMainThreadDispatcher.Enqueue(() =>
+                {
+                    if (task.IsFaulted || task.IsCanceled)
+                    {
+                        string error = task.Exception?.InnerException?.Message ?? "Unknown error";
+                        Debug.LogError($"[CloudFunctions] ClearStage failed: {error}");
+                        onFail?.Invoke(error);
+                        return;
+                    }
+
+                    var result = task.Result.Data as Dictionary<object, object>;
+                    if (result != null && result.ContainsKey("success"))
+                    {
+                        Debug.Log($"[CloudFunctions] ClearStage success - stage {stageNumber}");
+                        onSuccess?.Invoke(result);
+                    }
+                    else
+                    {
+                        onFail?.Invoke("Invalid response from server");
+                    }
+                });
+            });
+    }
+
+    /// <summary>
+    /// 스테이지 진행도 초기화 (디버그용)
+    /// </summary>
+    public void ResetStageProgress(Action<bool> onComplete)
+    {
+        if (!isInitialized)
+        {
+            onComplete?.Invoke(false);
+            return;
+        }
+
+        Debug.Log("[CloudFunctions] ResetStageProgress request");
+
+        functions.GetHttpsCallable("resetStageProgress")
+            .CallAsync(null)
+            .ContinueWith(task =>
+            {
+                UnityMainThreadDispatcher.Enqueue(() =>
+                {
+                    if (task.IsFaulted || task.IsCanceled)
+                    {
+                        string error = task.Exception?.InnerException?.Message ?? "Unknown error";
+                        Debug.LogError($"[CloudFunctions] ResetStageProgress failed: {error}");
+                        onComplete?.Invoke(false);
+                        return;
+                    }
+
+                    Debug.Log("[CloudFunctions] ResetStageProgress success");
+                    onComplete?.Invoke(true);
+                });
+            });
+    }
 }

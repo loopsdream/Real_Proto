@@ -108,7 +108,8 @@ public class CheatManager : MonoBehaviour
             if (newTouchCount >= 5)
             {
                 isVisible = !isVisible;
-                Debug.Log($"[Cheat] Five-finger touch - Panel {(isVisible ? \"opened\" : \"closed\")}");
+                string panelState = isVisible ? "opened" : "closed";
+                Debug.Log("[Cheat] Five-finger touch - Panel " + panelState);
             }
         }
 #endif
@@ -183,7 +184,7 @@ public class CheatManager : MonoBehaviour
         bool isStageScene = SceneManager.GetActiveScene().name == "StageModeScene";
 
         int stageOnlyRows = isStageScene ? 3 : 0;
-        float panelH = btnH * (6 + stageOnlyRows) + gap * (7 + stageOnlyRows) + 80f + 36f * 3f;
+        float panelH = btnH * (7 + stageOnlyRows) + gap * (8 + stageOnlyRows) + 80f + 36f * 3f;
 
         float px = (Screen.width - panelW) * 0.5f;
         float py = (Screen.height - panelH) * 0.5f;
@@ -270,6 +271,13 @@ public class CheatManager : MonoBehaviour
         if (GUI.Button(new Rect(bx, cy, bw, btnH), "Spend Gems (same amount)", styleButton))
         {
             SpendTestGems();
+        }
+        cy += btnH + gap;
+
+        // --- [추가] 스테이지 초기화 ---
+        if (GUI.Button(new Rect(bx, cy, bw, btnH), "Reset Stage Progress", styleButton))
+        {
+            ResetStageProgress();
         }
         cy += btnH + gap;
 
@@ -400,6 +408,34 @@ public class CheatManager : MonoBehaviour
         UserDataManager.Instance.SpendEnergy(1, (success) =>
         {
             Debug.Log($"[Cheat] SpendEnergy result: {(success ? "SUCCESS" : "FAILED")} - Energy: {UserDataManager.Instance.GetEnergy()}/{UserDataManager.Instance.GetMaxEnergy()}");
+        });
+    }
+
+    // [추가] 스테이지 진행도 초기화
+    void ResetStageProgress()
+    {
+        if (CloudFunctionsManager.Instance == null)
+        {
+            Debug.Log("[Cheat] CloudFunctionsManager not found");
+            return;
+        }
+
+        Debug.Log("[Cheat] Resetting stage progress...");
+        CloudFunctionsManager.Instance.ResetStageProgress((success) =>
+        {
+            if (success)
+            {
+                // 로컬 데이터도 초기화
+                if (UserDataManager.Instance != null)
+                {
+                    UserDataManager.Instance.ResetUserData();
+                }
+                Debug.Log("[Cheat] Stage progress reset SUCCESS");
+            }
+            else
+            {
+                Debug.Log("[Cheat] Stage progress reset FAILED");
+            }
         });
     }
 }

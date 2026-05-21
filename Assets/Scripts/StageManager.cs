@@ -124,13 +124,22 @@ public class StageManager : MonoBehaviour
 
     System.Collections.IEnumerator InitializeStageWithDelay()
     {
-        // 한 프레임 대기 (모든 컴포넌트 초기화 대기)
         yield return null;
 
         if (!isTestLevel && PlayerPrefs.GetInt("IsTestLevel", 0) == 0)
         {
-            Debug.Log("[StageManager] Loading first stage after delay");
-            LoadStage(0);
+            // [수정] UserDataManager에서 현재 스테이지 번호를 가져와서 해당 스테이지부터 시작
+            int startStageIndex = 0;
+            if (UserDataManager.Instance != null)
+            {
+                int currentStage = UserDataManager.Instance.GetCurrentStage();
+                // currentStage는 1부터 시작하는 스테이지 번호, LoadStage는 0부터 시작하는 인덱스
+                startStageIndex = Mathf.Clamp(currentStage - 1, 0, allStages.Count - 1);
+                Debug.Log($"[StageManager] Current stage from UserData: {currentStage}, loading index: {startStageIndex}");
+            }
+
+            Debug.Log($"[StageManager] Loading stage index {startStageIndex} after delay");
+            LoadStage(startStageIndex);
         }
     }
 

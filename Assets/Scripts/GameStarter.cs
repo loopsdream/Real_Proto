@@ -37,6 +37,11 @@ public class GameStarter : MonoBehaviour
         TryStartGame("InfiniteModeScene");
     }
 
+    public void StartInfiniteV2Mode()
+    {
+        TryStartGame("InfiniteModeV2Scene");
+    }
+
     // 에너지 체크 후 씬 전환
     // [수정] SpendEnergy 콜백 방식으로 변경
     private void TryStartGame(string sceneName)

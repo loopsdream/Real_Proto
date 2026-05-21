@@ -21,6 +21,9 @@ EditorBuildSettings:
     path: Assets/Scenes/InfiniteModeScene.unity
     guid: 68c7a98a9ef3a9f43bc4eada6d9bbade
   - enabled: 1
+    path: Assets/Scenes/InfiniteModeV2Scene.unity
+    guid: a98188a3df7e20e41946ec26a58f6798
+  - enabled: 1
     path: Assets/Scenes/LevelDesigner.unity
     guid: ec707ffc48408c4458992f336a218487
   m_configObjects:
