@@ -50,7 +50,8 @@ public class MainMenuManager : MonoBehaviour
     public void StartGame()
     {
         PlayUISound("ButtonClick");
-        AudioManager.Instance.StopBGM();
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.StopBGM();
         Debug.Log("Starting Stage Mode...");
 
         GameStarter gameStarter = FindAnyObjectByType<GameStarter>();
