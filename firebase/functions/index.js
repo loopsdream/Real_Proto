@@ -142,11 +142,13 @@ exports.spendEnergy = onCall({ region: "asia-northeast3" }, async (request) => {
     const maxEnergy = currencies.maxEnergy || ENERGY_CONFIG.maxEnergy;
     const lastEnergyUpdate = currencies.lastEnergyUpdateServer || serverNow;
 
+    let recharged = 0;
+
     // 시간 경과에 따른 자동 충전 계산
     if (currentEnergy < maxEnergy) {
         const elapsedMs = serverNow - lastEnergyUpdate;
         const elapsedMinutes = elapsedMs / (1000 * 60);
-        const recharged = Math.floor(elapsedMinutes / ENERGY_CONFIG.rechargeMinutes);
+        recharged = Math.floor(elapsedMinutes / ENERGY_CONFIG.rechargeMinutes);
 
         if (recharged > 0) {
             currentEnergy = Math.min(currentEnergy + recharged, maxEnergy);
