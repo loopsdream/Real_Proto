@@ -333,6 +333,10 @@ public class UserDataManager : MonoBehaviour
     // [수정] 서버 검증 방식으로 변경
     public void SpendEnergy(int amount = 1, System.Action<bool> onComplete = null)
     {
+        // === 추가: 호출 추적 ===
+        Debug.Log($"[SpendEnergy] Called with amount={amount}, energy={currentUserData.currencies.energy}, StackTrace:\n{System.Environment.StackTrace}");
+        // === 추가 끝 ===
+
         if (CloudFunctionsManager.Instance != null && IsConnectedToFirebase())
         {
             CloudFunctionsManager.Instance.SpendEnergy(amount, "stage_play",
@@ -439,6 +443,12 @@ public class UserDataManager : MonoBehaviour
 
     public void UpdateEnergyFromTime()
     {
+        // Firebase 연결 시 서버가 에너지 충전을 계산하므로 로컬 충전 스킵
+        if (IsConnectedToFirebase())
+        {
+            return;
+        }
+
         if (currentUserData.currencies.energy >= currentUserData.currencies.maxEnergy)
         {
             Debug.Log("Energy is full");

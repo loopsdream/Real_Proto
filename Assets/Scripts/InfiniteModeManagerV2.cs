@@ -120,6 +120,7 @@ public class InfiniteModeManagerV2 : MonoBehaviour
         {
             gridManager.width = settings.gridWidth;
             gridManager.height = settings.gridHeight;
+            gridManager.blockSizeScale = settings.blockSizeScale;
             gridManager.InitializeInfiniteGrid();
             gridManager.onEmptyBlockClicked = OnEmptyBlockClicked;
         }
@@ -1087,7 +1088,7 @@ public class InfiniteModeManagerV2 : MonoBehaviour
         if (highScoreText != null)
         {
             int highScore = PlayerPrefs.GetInt("InfiniteModeV2_HighScore", 0); // === V2: º°µµ Å° ===
-            highScoreText.text = $"High Score: {highScore}";
+            highScoreText.text = $"{highScore}";
         }
 
         if (restartButton != null) restartButton.onClick.AddListener(RestartGame);
@@ -1117,7 +1118,7 @@ public class InfiniteModeManagerV2 : MonoBehaviour
         {
             PlayerPrefs.SetInt("InfiniteModeV2_HighScore", currentScore);
             newHighScoreText.SetActive(true);
-            highScoreText.text = $"High Score: {currentScore}";
+            highScoreText.text = $"{currentScore}";
         }
     }
 

@@ -7,6 +7,11 @@ public class InfiniteModeSettings : ScriptableObject
     public int gridWidth = 9;
     public int gridHeight = 9;
 
+    [Header("Block Size")]
+    [Range(0.1f, 2.0f)]
+    [Tooltip("Block size scale multiplier. 1.0 = 9x9 standard size")]
+    public float blockSizeScale = 1.0f;
+
     [Header("Time Settings")]
     public float initialTimeLimit = 60f;           // 초기 제한 시간 (초)
 

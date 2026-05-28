@@ -77,7 +77,7 @@ public class CurrencyUI : MonoBehaviour
         // 기본값으로 초기화
         if (gameCoinsText != null) gameCoinsText.text = "0";
         if (diamondsText != null) diamondsText.text = "0";
-        if (energyText != null) energyText.text = "0/5";
+        if (energyText != null) energyText.text = "0";
         if (playerLevelText != null) playerLevelText.text = "Lv.1";
 
         Debug.Log("[CurrencyUI] 초기화 완료");
@@ -251,12 +251,12 @@ public class CurrencyUI : MonoBehaviour
             float progress = scaleAnimationCurve.Evaluate(elapsedTime / animationDuration);
 
             int currentEnergy = Mathf.RoundToInt(Mathf.Lerp(fromEnergy, toEnergy, progress));
-            energyText.text = $"{currentEnergy}/{maxEnergy}";
+            energyText.text = $"{currentEnergy}";
 
             yield return null;
         }
 
-        energyText.text = $"{toEnergy}/{maxEnergy}";
+        energyText.text = $"{toEnergy}";
     }
 
     void AnimateScale(Transform target)
@@ -507,7 +507,7 @@ public class CurrencyUI : MonoBehaviour
         if (energyText != null)
         {
             int maxEnergy = UserDataManager.Instance.GetMaxEnergy();
-            energyText.text = $"{previousEnergy}/{maxEnergy}";
+            energyText.text = $"{previousEnergy}";
             UpdateEnergyFillBar(previousEnergy, maxEnergy);
         }
 

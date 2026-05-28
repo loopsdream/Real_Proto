@@ -43,6 +43,11 @@ public class StageData : ScriptableObject
     public int gridWidth = 8;
     public int gridHeight = 8;
 
+    [Header("Block Size")]
+    [Range(0.1f, 2.0f)]
+    [Tooltip("Block size scale multiplier. 1.0 = 9x9 standard size")]
+    public float blockSizeScale = 1.0f;
+
     [Header("Visual Settings")]
     [Tooltip("null이면 씬의 기본 배경 사용")]
     public Sprite backgroundSprite;

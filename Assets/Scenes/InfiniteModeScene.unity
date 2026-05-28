@@ -530,6 +530,9 @@ MonoBehaviour:
   cameraMarginPercent: 0.1
   minCameraSize: 3
   maxCameraSize: 15
+  referenceGridWidth: 9
+  referenceGridHeight: 9
+  referenceCellSize: 1
   portraitMode: 1
   topUISpacePixels: 200
   bottomUISpacePixels: 150
@@ -551,6 +554,7 @@ MonoBehaviour:
   width: 8
   height: 8
   gridParent: {fileID: 1242816597}
+  blockSizeScale: 1
   cameraController: {fileID: 206013275}
   layoutManager: {fileID: 206013274}
   blockFactory: {fileID: 206013273}
@@ -3485,8 +3489,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New High Score!!!
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: e6deee2ba13bb46568084760fc6ffe50, type: 2}
-  m_sharedMaterial: {fileID: 7596809303714685496, guid: e6deee2ba13bb46568084760fc6ffe50, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
