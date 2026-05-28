@@ -9,6 +9,9 @@ public abstract class BaseGridManager : MonoBehaviour
     public int height = 8;
     public Transform gridParent;
 
+    [HideInInspector]
+    public float blockSizeScale = 1.0f;
+
     [Header("Components")]
     public CameraController cameraController;
     public GridLayoutManager layoutManager;
@@ -44,7 +47,7 @@ public abstract class BaseGridManager : MonoBehaviour
 
         if (layoutManager != null)
         {
-            layoutManager.SetupLayout(width, height, 1.0f);
+            layoutManager.SetupLayout(width, height, blockSizeScale);
         }
 
         if (blockFactory != null)

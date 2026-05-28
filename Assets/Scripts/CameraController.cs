@@ -6,7 +6,13 @@ public class CameraController : MonoBehaviour
     public float cameraMarginPercent = 0.1f;
     public float minCameraSize = 3f;
     public float maxCameraSize = 15f;
-    
+
+    [Header("Reference Grid (fixed camera base)")]
+    [Tooltip("Camera zoom is always calculated for this reference grid size")]
+    public int referenceGridWidth = 9;
+    public int referenceGridHeight = 9;
+    public float referenceCellSize = 1.0f;
+
     [Header("Portrait Mode Settings")]
     public bool portraitMode = true;
     public float topUISpacePixels = 200f;
@@ -45,7 +51,7 @@ public class CameraController : MonoBehaviour
             return;
         }
 
-        float optimalSize = CalculateOptimalCameraSize(gridWidth, gridHeight, cellSize);
+        float optimalSize = CalculateOptimalCameraSize(referenceGridWidth, referenceGridHeight, referenceCellSize);
         ApplyCameraSize(optimalSize);
         
         Debug.Log($"Camera adjusted for grid {gridWidth}x{gridHeight}, cell size {cellSize}");

@@ -128,6 +128,7 @@ public class InfiniteModeManager : MonoBehaviour
         {
             gridManager.width = settings.gridWidth;
             gridManager.height = settings.gridHeight;
+            gridManager.blockSizeScale = settings.blockSizeScale;
 
             // InfiniteGridManager의 그리드 초기화
             gridManager.InitializeInfiniteGrid();
@@ -1498,7 +1499,7 @@ public class InfiniteModeManager : MonoBehaviour
         if (highScoreText != null)
         {
             int highScore = PlayerPrefs.GetInt("InfiniteMode_HighScore", 0);
-            highScoreText.text = $"High Score: {highScore}";
+            highScoreText.text = $"{highScore}";
         }
 
         if (restartButton != null)
@@ -1546,7 +1547,7 @@ public class InfiniteModeManager : MonoBehaviour
             PlayerPrefs.SetInt("InfiniteMode_HighScore", currentScore);
             // 새 기록 달성 UI 표시
             newHighScoreText.SetActive(true);
-            highScoreText.text = $"High Score: {currentScore}";
+            highScoreText.text = $"{currentScore}";
         }
     }
 

@@ -176,6 +176,7 @@ exports.spendEnergy = onCall({ region: "asia-northeast3" }, async (request) => {
         nextRechargeMs = ENERGY_CONFIG.rechargeMinutes * 60 * 1000;
     }
 
+    console.log(`[spendEnergy] DB energy=${currencies.energy}, lastUpdate=${lastEnergyUpdate}, recharged=${recharged || 0}, afterRecharge=${currentEnergy}, newEnergy=${newEnergy}`);
     console.log(`[spendEnergy] userId=${userId} amount=${amount} reason=${reason} newEnergy=${newEnergy}`);
 
     return {

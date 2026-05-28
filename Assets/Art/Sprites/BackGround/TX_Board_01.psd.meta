@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<< HEAD
 guid: 1f32c12bba3d44c2281c7b795d408b55
+=======
+guid: 5147959844d2f2243b0fa4663c2f8d38
+>>>>>>> 85d4e25 (블록 크기 조절 가능하게 구조 개편.)
 TextureImporter:
   internalIDToNameTable:
   - first:
@@ -97,7 +101,11 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
+<<<<<<< HEAD
     buildTarget: iOS
+=======
+    buildTarget: Android
+>>>>>>> 85d4e25 (블록 크기 조절 가능하게 구조 개편.)
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1

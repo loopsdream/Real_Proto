@@ -87,6 +87,7 @@ public class StageGridManager : BaseGridManager
 
         width = stageData.gridWidth;
         height = stageData.gridHeight;
+        blockSizeScale = stageData.blockSizeScale;
 
         if (stageData.blockSetData != null && blockFactory != null)
             blockFactory.ApplyBlockSet(stageData.blockSetData);
