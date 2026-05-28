@@ -39,6 +39,11 @@ public class MainMenuManager : MonoBehaviour
         {
             AudioManager.Instance.PlaySceneBGM("LobbyScene");
         }
+
+        if (UserDataManager.Instance != null)
+        {
+            UserDataManager.Instance.RefreshEnergyFromServer();
+        }
     }
 
     // 스테이지 모드 시작 버튼

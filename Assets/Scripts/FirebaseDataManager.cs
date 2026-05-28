@@ -187,10 +187,19 @@ void OnUserSignedIn(bool success)
 
     void OnLocalDataChanged(string dataType)
     {
-        // 로컬 데이터 변경 시 자동 저장 (연결된 경우)
+        // 서버가 관리하는 데이터는 Cloud Function 결과로만 갱신
+        // 로컬 변경을 서버에 다시 올리지 않음
+        if (dataType == "energy" || dataType == "energy_time" ||
+            dataType == "coins" || dataType == "diamonds" ||
+            dataType == "items" || dataType == "stage_progress")
+        {
+            return;
+        }
+
+        // 서버가 관리하지 않는 데이터만 동기화 (playerName, settings 등)
         if (isConnected)
         {
-            Debug.Log($"[DataManager] 로컬 데이터 변경 감지: {dataType}");
+            Debug.Log($"[DataManager] Syncing non-server-managed data: {dataType}");
             SyncUserData();
         }
     }

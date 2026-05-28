@@ -1,4 +1,5 @@
 // UserDataManager.cs - Firebase 연동이 포함된 사용자 데이터 관리 시스템
+using Firebase.Extensions;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -1000,6 +1001,64 @@ public class UserDataManager : MonoBehaviour
                 onComplete?.Invoke(true);
             });
         }
+    }
+
+    /// <summary>
+    /// Fetch latest energy from server and update local
+    /// Called when returning to lobby
+    /// </summary>
+    public void RefreshEnergyFromServer()
+    {
+        if (!IsConnectedToFirebase()) return;
+        if (CleanFirebaseManager.Instance == null) return;
+
+        string userId = CleanFirebaseManager.Instance.CurrentUserId;
+        if (string.IsNullOrEmpty(userId)) return;
+
+        var db = Firebase.Database.FirebaseDatabase.GetInstance(
+    "https://croxcro-default-rtdb.asia-southeast1.firebasedatabase.app");
+        db.GetReference($"users/{userId}/currencies")
+            .GetValueAsync()
+            .ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted || !task.IsCompleted) return;
+
+                var snapshot = task.Result;
+                if (!snapshot.Exists) return;
+
+                // energy
+                if (snapshot.HasChild("energy"))
+                {
+                    int serverEnergy = System.Convert.ToInt32(snapshot.Child("energy").Value);
+                    int serverMax = snapshot.HasChild("maxEnergy")
+                        ? System.Convert.ToInt32(snapshot.Child("maxEnergy").Value)
+                        : maxEnergy;
+
+                    currentUserData.currencies.energy = serverEnergy;
+                    currentUserData.currencies.maxEnergy = serverMax;
+                    OnEnergyChanged?.Invoke(serverEnergy);
+                    SaveUserData();
+
+                    Debug.Log($"[UserDataManager] Server energy synced: {serverEnergy}/{serverMax}");
+                }
+
+                // coins, diamonds 도 같은 방식
+                if (snapshot.HasChild("gameCoins"))
+                {
+                    int coins = System.Convert.ToInt32(snapshot.Child("gameCoins").Value);
+                    currentUserData.currencies.gameCoins = coins;
+                    OnGameCoinsChanged?.Invoke(coins);
+                }
+
+                if (snapshot.HasChild("diamonds"))
+                {
+                    int diamonds = System.Convert.ToInt32(snapshot.Child("diamonds").Value);
+                    currentUserData.currencies.diamonds = diamonds;
+                    OnDiamondsChanged?.Invoke(diamonds);
+                }
+
+                SaveUserData();
+            });
     }
 
     #endregion
