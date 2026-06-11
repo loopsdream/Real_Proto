@@ -7,7 +7,6 @@ using TMPro;
 public class CommonUIManager : MonoBehaviour
 {
     [Header("Common UI References")]
-    public GameObject commonUICanvas;
     public GameObject topUIPanel;
     public CurrencyUI currencyUI;
     public Button settingsButton;
@@ -42,15 +41,6 @@ public class CommonUIManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            
-            // Application.isPlaying 체크로 DontDestroyOnLoad 오류 방지
-            if (Application.isPlaying)
-            {
-                DontDestroyOnLoad(gameObject);
-            }
-
-            // Canvas 설정
-            SetupCanvas();
 
             // 씬 로드 이벤트 등록
             SceneManager.sceneLoaded += OnSceneLoaded;
@@ -81,20 +71,6 @@ public class CommonUIManager : MonoBehaviour
         if (Instance == this)
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
-        }
-    }
-
-    void SetupCanvas()
-    {
-        if (commonUICanvas != null)
-        {
-            commonCanvas = commonUICanvas.GetComponent<Canvas>();
-            if (commonCanvas != null)
-            {
-                // 최상위 레이어 순서 설정
-                commonCanvas.sortingOrder = 100;
-                commonCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            }
         }
     }
 

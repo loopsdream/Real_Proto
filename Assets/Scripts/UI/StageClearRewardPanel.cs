@@ -19,6 +19,10 @@ public class StageClearRewardPanel : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI energyText;
 
+    [Header("Input Guard")]
+    // Grace time after the triggering touch is released before buttons accept input
+    [SerializeField] private float postShowInputLock = 0.25f;
+
     // 현재 보상 데이터 저장
     private List<RewardItem> pendingRewards;
 
@@ -70,10 +74,13 @@ public class StageClearRewardPanel : MonoBehaviour
         }
 
         RegisterButtonListeners();
-        UpdateAdButtonState();
+        LockButtons();
 
         // 기본 보상 즉시 지급
         GrantBaseReward();
+
+        // Re-enable buttons only after the triggering input is released + grace
+        StartCoroutine(UnlockButtonsAfterInputRelease());
 
         Debug.Log("[StageClearRewardPanel] Panel shown.");
     }
@@ -176,5 +183,34 @@ public class StageClearRewardPanel : MonoBehaviour
     {
         if (doubleRewardButton != null) doubleRewardButton.interactable = interactable;
         if (nextStageButton != null) nextStageButton.interactable = interactable;
+    }
+
+    // Disable every interactive button on the panel
+    private void LockButtons()
+    {
+        if (doubleRewardButton != null) doubleRewardButton.interactable = false;
+        if (nextStageButton != null) nextStageButton.interactable = false;
+        if (closeButton != null) closeButton.interactable = false;
+    }
+
+    // Wait until the player fully releases the triggering input, then add a
+    // short grace delay, before letting the panel buttons respond
+    private System.Collections.IEnumerator UnlockButtonsAfterInputRelease()
+    {
+        // Hold while any touch or the mouse button is still pressed
+        // (mouse check keeps this working when testing in the Editor)
+        while (Input.touchCount > 0 || Input.GetMouseButton(0))
+        {
+            yield return null;
+        }
+
+        // Extra grace window to absorb the up-event of the triggering tap
+        yield return new WaitForSeconds(postShowInputLock);
+
+        if (nextStageButton != null) nextStageButton.interactable = true;
+        if (closeButton != null) closeButton.interactable = true;
+
+        // Double-reward button still depends on ad readiness
+        UpdateAdButtonState();
     }
 }
