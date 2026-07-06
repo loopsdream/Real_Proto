@@ -1,0 +1,1716 @@
+fileFormatVersion: 2
+guid: 3745441e809f74d9a8b81b82961e3bbb
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8459506943703919207
+    second: T_Spark_03_0
+  - first:
+      213: 3048470595892261155
+    second: T_Spark_03_1
+  - first:
+      213: 3839120528984122784
+    second: T_Spark_03_2
+  - first:
+      213: 8466925360979757236
+    second: T_Spark_03_3
+  - first:
+      213: 8708160236872272962
+    second: T_Spark_03_4
+  - first:
+      213: 1074350182368999948
+    second: T_Spark_03_5
+  - first:
+      213: 4712107919701542305
+    second: T_Spark_03_6
+  - first:
+      213: -4324491829748242379
+    second: T_Spark_03_7
+  - first:
+      213: 728546959871032975
+    second: T_Spark_03_8
+  - first:
+      213: -4609636720325794688
+    second: T_Spark_03_9
+  - first:
+      213: 8288939813181055591
+    second: T_Spark_03_10
+  - first:
+      213: -1503020502689447470
+    second: T_Spark_03_11
+  - first:
+      213: 4255292882598862858
+    second: T_Spark_03_12
+  - first:
+      213: 2127459713970436293
+    second: T_Spark_03_13
+  - first:
+      213: 1922564680749469884
+    second: T_Spark_03_14
+  - first:
+      213: 906556459722303794
+    second: T_Spark_03_15
+  - first:
+      213: -5454438616047331188
+    second: T_Spark_03_16
+  - first:
+      213: 5557319991636343062
+    second: T_Spark_03_17
+  - first:
+      213: 4182948754657474819
+    second: T_Spark_03_18
+  - first:
+      213: 9056475126581528646
+    second: T_Spark_03_19
+  - first:
+      213: 7742642949030797204
+    second: T_Spark_03_20
+  - first:
+      213: 6821296121836470256
+    second: T_Spark_03_21
+  - first:
+      213: 6612556830898739259
+    second: T_Spark_03_22
+  - first:
+      213: 7162844794041230870
+    second: T_Spark_03_23
+  - first:
+      213: -4978752520110673142
+    second: T_Spark_03_24
+  - first:
+      213: -5402834854105613650
+    second: T_Spark_03_25
+  - first:
+      213: -3265277600752851008
+    second: T_Spark_03_26
+  - first:
+      213: -6363745501824184124
+    second: T_Spark_03_27
+  - first:
+      213: -7963833090411570012
+    second: T_Spark_03_28
+  - first:
+      213: -9217731076584236176
+    second: T_Spark_03_29
+  - first:
+      213: -2001354774163877370
+    second: T_Spark_03_30
+  - first:
+      213: -9188526981990204841
+    second: T_Spark_03_31
+  - first:
+      213: -2319610200713630989
+    second: T_Spark_03_32
+  - first:
+      213: 5979387245524796282
+    second: T_Spark_03_33
+  - first:
+      213: 5800220578357460587
+    second: T_Spark_03_34
+  - first:
+      213: -6910287495676326801
+    second: T_Spark_03_35
+  - first:
+      213: -1273502786274716175
+    second: T_Spark_03_36
+  - first:
+      213: -2325508385744433462
+    second: T_Spark_03_37
+  - first:
+      213: -1149498256329477616
+    second: T_Spark_03_38
+  - first:
+      213: -7263637672696364340
+    second: T_Spark_03_39
+  - first:
+      213: 6023944913858563738
+    second: T_Spark_03_40
+  - first:
+      213: 7464006483195018477
+    second: T_Spark_03_41
+  - first:
+      213: 4462451449520034783
+    second: T_Spark_03_42
+  - first:
+      213: 4318453770411156597
+    second: T_Spark_03_43
+  - first:
+      213: 1269599726639563166
+    second: T_Spark_03_44
+  - first:
+      213: 1910207814205574041
+    second: T_Spark_03_45
+  - first:
+      213: -6254915859971485997
+    second: T_Spark_03_46
+  - first:
+      213: -2926680129032677019
+    second: T_Spark_03_47
+  - first:
+      213: 5907915383687205499
+    second: T_Spark_03_48
+  - first:
+      213: -4623031340140272743
+    second: T_Spark_03_49
+  - first:
+      213: 3242372916774196828
+    second: T_Spark_03_50
+  - first:
+      213: 5519653901214334731
+    second: T_Spark_03_51
+  - first:
+      213: -8698662418580467181
+    second: T_Spark_03_52
+  - first:
+      213: 3521685368008554596
+    second: T_Spark_03_53
+  - first:
+      213: 8314392871344652639
+    second: T_Spark_03_54
+  - first:
+      213: 3668005801475259794
+    second: T_Spark_03_55
+  - first:
+      213: -3959976287506216187
+    second: T_Spark_03_56
+  - first:
+      213: 4230531178517631537
+    second: T_Spark_03_57
+  - first:
+      213: 6789847987505794024
+    second: T_Spark_03_58
+  - first:
+      213: 7971167564786811770
+    second: T_Spark_03_59
+  - first:
+      213: 6745173751837287303
+    second: T_Spark_03_60
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: T_Spark_03_0
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 9
+        width: 305
+        height: 305
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76a2c62beb4366570800000000000000
+      internalID: 8459506943703919207
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_1
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 300
+        width: 13
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 321b1600bd75e4a20800000000000000
+      internalID: 3048470595892261155
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_2
+      rect:
+        serializedVersion: 2
+        x: 23
+        y: 308
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a52204d7cb474530800000000000000
+      internalID: 3839120528984122784
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_3
+      rect:
+        serializedVersion: 2
+        x: 52
+        y: 302
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b8c1f091cf808570800000000000000
+      internalID: 8466925360979757236
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_4
+      rect:
+        serializedVersion: 2
+        x: 141
+        y: 304
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24c04fdf89999d870800000000000000
+      internalID: 8708160236872272962
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_5
+      rect:
+        serializedVersion: 2
+        x: 162
+        y: 304
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c0afa787ccbd8ee00800000000000000
+      internalID: 1074350182368999948
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_6
+      rect:
+        serializedVersion: 2
+        x: 258
+        y: 307
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a58d19ef25c46140800000000000000
+      internalID: 4712107919701542305
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_7
+      rect:
+        serializedVersion: 2
+        x: 263
+        y: 302
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 538e6cdc7915cf3c0800000000000000
+      internalID: -4324491829748242379
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_8
+      rect:
+        serializedVersion: 2
+        x: 264
+        y: 307
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8ebd4999915c1a00800000000000000
+      internalID: 728546959871032975
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_9
+      rect:
+        serializedVersion: 2
+        x: 274
+        y: 307
+        width: 15
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 084626563d74700c0800000000000000
+      internalID: -4609636720325794688
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_10
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 296
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 762ef39e7da380370800000000000000
+      internalID: 8288939813181055591
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_11
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 300
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d1011fe0d2342be0800000000000000
+      internalID: -1503020502689447470
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_12
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 283
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a00ad8ac456dd0b30800000000000000
+      internalID: 4255292882598862858
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_13
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 268
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c8792d8651468d10800000000000000
+      internalID: 2127459713970436293
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_14
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 265
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cb0d8c514625eaa10800000000000000
+      internalID: 1922564680749469884
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_15
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 259
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 23965960c4cb49c00800000000000000
+      internalID: 906556459722303794
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_16
+      rect:
+        serializedVersion: 2
+        x: 12
+        y: 244
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c8853514af0fd44b0800000000000000
+      internalID: -5454438616047331188
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_17
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 243
+        width: 9
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 61939a4a6119f1d40800000000000000
+      internalID: 5557319991636343062
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_18
+      rect:
+        serializedVersion: 2
+        x: 294
+        y: 232
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 309750beab1dc0a30800000000000000
+      internalID: 4182948754657474819
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_19
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 223
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6488d05f4201fad70800000000000000
+      internalID: 9056475126581528646
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_20
+      rect:
+        serializedVersion: 2
+        x: 301
+        y: 209
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 49fd9a76db4637b60800000000000000
+      internalID: 7742642949030797204
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_21
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 196
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0ffffc99eac1aae50800000000000000
+      internalID: 6821296121836470256
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_22
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 201
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b385dc2276584cb50800000000000000
+      internalID: 6612556830898739259
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_23
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 193
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 616651ac369876360800000000000000
+      internalID: 7162844794041230870
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_24
+      rect:
+        serializedVersion: 2
+        x: 308
+        y: 191
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a03f83626fae7eab0800000000000000
+      internalID: -4978752520110673142
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_25
+      rect:
+        serializedVersion: 2
+        x: 12
+        y: 173
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eaa7fec53564505b0800000000000000
+      internalID: -5402834854105613650
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_26
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 157
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c7261282576fa2d0800000000000000
+      internalID: -3265277600752851008
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_27
+      rect:
+        serializedVersion: 2
+        x: 12
+        y: 164
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c097c2ce2f6fa7a0800000000000000
+      internalID: -6363745501824184124
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_28
+      rect:
+        serializedVersion: 2
+        x: 302
+        y: 159
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ac548b9ff7ca7190800000000000000
+      internalID: -7963833090411570012
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_29
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 146
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07b1e196c6a041080800000000000000
+      internalID: -9217731076584236176
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_30
+      rect:
+        serializedVersion: 2
+        x: 304
+        y: 137
+        width: 8
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6021e60cf62c934e0800000000000000
+      internalID: -2001354774163877370
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_31
+      rect:
+        serializedVersion: 2
+        x: 296
+        y: 135
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 75ab16d846bcb7080800000000000000
+      internalID: -9188526981990204841
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_32
+      rect:
+        serializedVersion: 2
+        x: 301
+        y: 118
+        width: 10
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3fa6711ffc61fcfd0800000000000000
+      internalID: -2319610200713630989
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_33
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 106
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a73c108050d0bf250800000000000000
+      internalID: 5979387245524796282
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_34
+      rect:
+        serializedVersion: 2
+        x: 296
+        y: 109
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b6e38e792e58e7050800000000000000
+      internalID: 5800220578357460587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_35
+      rect:
+        serializedVersion: 2
+        x: 289
+        y: 94
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f6c836c822ab910a0800000000000000
+      internalID: -6910287495676326801
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_36
+      rect:
+        serializedVersion: 2
+        x: 301
+        y: 87
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f510a396fb935ee0800000000000000
+      internalID: -1273502786274716175
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_37
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 80
+        width: 9
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: acec289b1722abfd0800000000000000
+      internalID: -2325508385744433462
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_38
+      rect:
+        serializedVersion: 2
+        x: 12
+        y: 56
+        width: 15
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 012fc891d692c00f0800000000000000
+      internalID: -1149498256329477616
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_39
+      rect:
+        serializedVersion: 2
+        x: 299
+        y: 62
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cc2c9c56500623b90800000000000000
+      internalID: -7263637672696364340
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_40
+      rect:
+        serializedVersion: 2
+        x: 296
+        y: 50
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a9e8f01abf9599350800000000000000
+      internalID: 6023944913858563738
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_41
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 33
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dec3d08b95a759760800000000000000
+      internalID: 7464006483195018477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_42
+      rect:
+        serializedVersion: 2
+        x: 301
+        y: 32
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd3911443ffcded30800000000000000
+      internalID: 4462451449520034783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_43
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 12
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 574ad44f2da3eeb30800000000000000
+      internalID: 4318453770411156597
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_44
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 13
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e91c84989368e9110800000000000000
+      internalID: 1269599726639563166
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_45
+      rect:
+        serializedVersion: 2
+        x: 166
+        y: 14
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 99b06e4e2eb628a10800000000000000
+      internalID: 1910207814205574041
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_46
+      rect:
+        serializedVersion: 2
+        x: 198
+        y: 12
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3de41725a231239a0800000000000000
+      internalID: -6254915859971485997
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_47
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 12
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56910d9cde75267d0800000000000000
+      internalID: -2926680129032677019
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_48
+      rect:
+        serializedVersion: 2
+        x: 277
+        y: 17
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b72ddbf6db12df150800000000000000
+      internalID: 5907915383687205499
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_49
+      rect:
+        serializedVersion: 2
+        x: 289
+        y: 19
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 993e0717d71b7dfb0800000000000000
+      internalID: -4623031340140272743
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_50
+      rect:
+        serializedVersion: 2
+        x: 291
+        y: 15
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c565cad2df83ffc20800000000000000
+      internalID: 3242372916774196828
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_51
+      rect:
+        serializedVersion: 2
+        x: 300
+        y: 14
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b0fbaf09affb99c40800000000000000
+      internalID: 5519653901214334731
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_52
+      rect:
+        serializedVersion: 2
+        x: 304
+        y: 19
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 31298772e94284780800000000000000
+      internalID: -8698662418580467181
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_53
+      rect:
+        serializedVersion: 2
+        x: 13
+        y: 12
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46837dafe2a8fd030800000000000000
+      internalID: 3521685368008554596
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_54
+      rect:
+        serializedVersion: 2
+        x: 69
+        y: 11
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f51c983d348a26370800000000000000
+      internalID: 8314392871344652639
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_55
+      rect:
+        serializedVersion: 2
+        x: 95
+        y: 9
+        width: 12
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 29d310fa7df57e230800000000000000
+      internalID: 3668005801475259794
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_56
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 10
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 50bc8302c865b09c0800000000000000
+      internalID: -3959976287506216187
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_57
+      rect:
+        serializedVersion: 2
+        x: 147
+        y: 9
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 13212ca41bdd5ba30800000000000000
+      internalID: 4230531178517631537
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_58
+      rect:
+        serializedVersion: 2
+        x: 186
+        y: 10
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8eb0f2e35c26a3e50800000000000000
+      internalID: 6789847987505794024
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_59
+      rect:
+        serializedVersion: 2
+        x: 208
+        y: 9
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a73cb38caa64f9e60800000000000000
+      internalID: 7971167564786811770
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_Spark_03_60
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 11
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 783ec823acbab9d50800000000000000
+      internalID: 6745173751837287303
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      T_Spark_03_0: 8459506943703919207
+      T_Spark_03_1: 3048470595892261155
+      T_Spark_03_10: 8288939813181055591
+      T_Spark_03_11: -1503020502689447470
+      T_Spark_03_12: 4255292882598862858
+      T_Spark_03_13: 2127459713970436293
+      T_Spark_03_14: 1922564680749469884
+      T_Spark_03_15: 906556459722303794
+      T_Spark_03_16: -5454438616047331188
+      T_Spark_03_17: 5557319991636343062
+      T_Spark_03_18: 4182948754657474819
+      T_Spark_03_19: 9056475126581528646
+      T_Spark_03_2: 3839120528984122784
+      T_Spark_03_20: 7742642949030797204
+      T_Spark_03_21: 6821296121836470256
+      T_Spark_03_22: 6612556830898739259
+      T_Spark_03_23: 7162844794041230870
+      T_Spark_03_24: -4978752520110673142
+      T_Spark_03_25: -5402834854105613650
+      T_Spark_03_26: -3265277600752851008
+      T_Spark_03_27: -6363745501824184124
+      T_Spark_03_28: -7963833090411570012
+      T_Spark_03_29: -9217731076584236176
+      T_Spark_03_3: 8466925360979757236
+      T_Spark_03_30: -2001354774163877370
+      T_Spark_03_31: -9188526981990204841
+      T_Spark_03_32: -2319610200713630989
+      T_Spark_03_33: 5979387245524796282
+      T_Spark_03_34: 5800220578357460587
+      T_Spark_03_35: -6910287495676326801
+      T_Spark_03_36: -1273502786274716175
+      T_Spark_03_37: -2325508385744433462
+      T_Spark_03_38: -1149498256329477616
+      T_Spark_03_39: -7263637672696364340
+      T_Spark_03_4: 8708160236872272962
+      T_Spark_03_40: 6023944913858563738
+      T_Spark_03_41: 7464006483195018477
+      T_Spark_03_42: 4462451449520034783
+      T_Spark_03_43: 4318453770411156597
+      T_Spark_03_44: 1269599726639563166
+      T_Spark_03_45: 1910207814205574041
+      T_Spark_03_46: -6254915859971485997
+      T_Spark_03_47: -2926680129032677019
+      T_Spark_03_48: 5907915383687205499
+      T_Spark_03_49: -4623031340140272743
+      T_Spark_03_5: 1074350182368999948
+      T_Spark_03_50: 3242372916774196828
+      T_Spark_03_51: 5519653901214334731
+      T_Spark_03_52: -8698662418580467181
+      T_Spark_03_53: 3521685368008554596
+      T_Spark_03_54: 8314392871344652639
+      T_Spark_03_55: 3668005801475259794
+      T_Spark_03_56: -3959976287506216187
+      T_Spark_03_57: 4230531178517631537
+      T_Spark_03_58: 6789847987505794024
+      T_Spark_03_59: 7971167564786811770
+      T_Spark_03_6: 4712107919701542305
+      T_Spark_03_60: 6745173751837287303
+      T_Spark_03_7: -4324491829748242379
+      T_Spark_03_8: 728546959871032975
+      T_Spark_03_9: -4609636720325794688
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
