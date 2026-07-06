@@ -365,4 +365,109 @@ public class CloudFunctionsManager : MonoBehaviour
                 });
             });
     }
+
+    /// <summary>
+    /// 계정 정보 통합 조회 (로그인 + 로비 복귀 공용)
+    /// </summary>
+    public void GetAccountData(Action<AccountDataResult> onSuccess, Action<string> onFail)
+    {
+        if (!isInitialized)
+        {
+            onFail?.Invoke("CloudFunctions not initialized");
+            return;
+        }
+
+        functions.GetHttpsCallable("getAccountData")
+            .CallAsync(new Dictionary<string, object>())
+            .ContinueWith(task =>
+            {
+                UnityMainThreadDispatcher.Enqueue(() =>
+                {
+                    if (task.IsFaulted || task.IsCanceled)
+                    {
+                        string error = task.Exception?.InnerException?.Message ?? "Unknown error";
+                        Debug.LogError($"[CloudFunctions] GetAccountData failed: {error}");
+                        onFail?.Invoke(error);
+                        return;
+                    }
+
+                    var result = task.Result.Data as Dictionary<object, object>;
+                    if (result == null)
+                    {
+                        onFail?.Invoke("Invalid response from server");
+                        return;
+                    }
+
+                    var acc = new AccountDataResult();
+                    if (result.ContainsKey("userDataJson")) acc.userDataJson = result["userDataJson"] as string;
+                    if (result.ContainsKey("serverTime")) acc.serverTime = Convert.ToInt64(result["serverTime"]);
+                    if (result.ContainsKey("energy")) acc.energy = Convert.ToInt32(result["energy"]);
+                    if (result.ContainsKey("maxEnergy")) acc.maxEnergy = Convert.ToInt32(result["maxEnergy"]);
+                    if (result.ContainsKey("gameCoins")) acc.gameCoins = Convert.ToInt32(result["gameCoins"]);
+                    if (result.ContainsKey("diamonds")) acc.diamonds = Convert.ToInt32(result["diamonds"]);
+                    if (result.ContainsKey("hammerCount")) acc.hammerCount = Convert.ToInt32(result["hammerCount"]);
+                    if (result.ContainsKey("tornadoCount")) acc.tornadoCount = Convert.ToInt32(result["tornadoCount"]);
+                    if (result.ContainsKey("brushCount")) acc.brushCount = Convert.ToInt32(result["brushCount"]);
+                    acc.attendance = AttendanceStatus.FromDict(
+                        result.ContainsKey("attendance") ? result["attendance"] as Dictionary<object, object> : null);
+
+                    Debug.Log($"[CloudFunctions] GetAccountData success - energy:{acc.energy} canClaimDaily:{acc.attendance.canClaimDaily} todaySlot:{acc.attendance.todaySlot}");
+                    onSuccess?.Invoke(acc);
+                });
+            });
+    }
+
+    /// <summary>
+    /// 출석 보상 수령 (daily 또는 milestone)
+    /// </summary>
+    /// <param name="claimType">"daily" 또는 "milestone"</param>
+    /// <param name="milestoneIndex">milestone일 때만 사용 (0~3)</param>
+    public void ClaimAttendance(string claimType, int milestoneIndex,
+        Action<AttendanceClaimResult> onSuccess, Action<string> onFail)
+    {
+        if (!isInitialized)
+        {
+            onFail?.Invoke("CloudFunctions not initialized");
+            return;
+        }
+
+        var data = new Dictionary<string, object> { { "claimType", claimType } };
+        if (claimType == "milestone") data["milestoneIndex"] = milestoneIndex;
+
+        Debug.Log($"[CloudFunctions] ClaimAttendance request: type={claimType} index={milestoneIndex}");
+
+        functions.GetHttpsCallable("claimAttendance")
+            .CallAsync(data)
+            .ContinueWith(task =>
+            {
+                UnityMainThreadDispatcher.Enqueue(() =>
+                {
+                    if (task.IsFaulted || task.IsCanceled)
+                    {
+                        string error = task.Exception?.InnerException?.Message ?? "Unknown error";
+                        Debug.LogError($"[CloudFunctions] ClaimAttendance failed: {error}");
+                        onFail?.Invoke(error);
+                        return;
+                    }
+
+                    var result = task.Result.Data as Dictionary<object, object>;
+                    if (result == null)
+                    {
+                        onFail?.Invoke("Invalid response from server");
+                        return;
+                    }
+
+                    var claim = new AttendanceClaimResult();
+                    if (result.ContainsKey("newCoins")) claim.newCoins = Convert.ToInt32(result["newCoins"]);
+                    if (result.ContainsKey("newDiamonds")) claim.newDiamonds = Convert.ToInt32(result["newDiamonds"]);
+                    claim.attendance = AttendanceStatus.FromDict(
+                        result.ContainsKey("attendance") ? result["attendance"] as Dictionary<object, object> : null);
+                    claim.grantedRewards = AttendanceClaimResult.ParseRewards(
+                        result.ContainsKey("grantedRewards") ? result["grantedRewards"] : null);
+
+                    Debug.Log($"[CloudFunctions] ClaimAttendance success - newCoins:{claim.newCoins} rewards:{claim.grantedRewards.Count}");
+                    onSuccess?.Invoke(claim);
+                });
+            });
+    }
 }

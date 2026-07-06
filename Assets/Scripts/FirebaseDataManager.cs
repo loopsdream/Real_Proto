@@ -316,9 +316,37 @@ void OnUserSignedIn(bool success)
                 return;
             }
 
-            Debug.Log($"[DataManager] 데이터 로드 시작: {userId}");
-            CleanFirebaseManager.Instance.LoadUserData(userId, OnDataLoaded);
-            
+            Debug.Log($"[DataManager] Load account data start: {userId}");
+
+            if (CloudFunctionsManager.Instance != null)
+            {
+                CloudFunctionsManager.Instance.GetAccountData(
+                    acc =>
+                    {
+                        bool hasCloudData = !string.IsNullOrEmpty(acc.userDataJson) && acc.userDataJson != "{}";
+
+                        // 1) 전체 계정 병합 (기존 경로 재사용). 신규 계정이면 null -> 기존 새사용자 초기화 경로
+                        OnDataLoaded(hasCloudData ? acc.userDataJson : null);
+
+                        // 2) 서버 권위 필드 직접 적용 (신규 계정은 로컬 기본값 유지)
+                        if (UserDataManager.Instance != null)
+                        {
+                            if (hasCloudData)
+                                UserDataManager.Instance.ApplyServerCurrencies(acc);
+                            UserDataManager.Instance.SetAttendanceStatus(acc.attendance);
+                        }
+                    },
+                    err =>
+                    {
+                        Debug.LogError($"[DataManager] getAccountData failed: {err} - fallback to raw load");
+                        CleanFirebaseManager.Instance.LoadUserData(userId, OnDataLoaded);
+                    });
+            }
+            else
+            {
+                CleanFirebaseManager.Instance.LoadUserData(userId, OnDataLoaded); // 폴백
+            }
+
             lastSyncTime = Time.time;
         }
         catch (Exception ex)

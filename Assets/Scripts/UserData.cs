@@ -12,6 +12,7 @@ public class UserData
     public GameStats gameStats;
     public GameSettings settings;
     public SyncMetadata syncMetadata;
+    public DailyReward dailyReward;
 
     public UserData()
     {
@@ -21,6 +22,7 @@ public class UserData
         gameStats = new GameStats();
         settings = new GameSettings();
         syncMetadata = new SyncMetadata();
+        dailyReward = new DailyReward();
         syncMetadata.createdTimestamp = GetCurrentUnixTimestamp();
         syncMetadata.lastModifiedTimestamp = GetCurrentUnixTimestamp();
     }
@@ -189,14 +191,20 @@ public class GameSettings
 }
 
 /// <summary>
-/// 일일 보상 데이터 구조 (추후 확장용)
+/// 출석(일일 보상) 데이터 구조 - 서버 권위.
+/// 클라이언트는 읽기 전용. 쓰기는 claimAttendance Cloud Function만 수행한다.
 /// </summary>
 [System.Serializable]
 public class DailyReward
 {
-    public string lastClaimDate = "";       // 마지막 보상 수령 날짜
-    public int consecutiveDays = 0;         // 연속 접속 일수
-    public bool todayClaimedAlready = false; // 오늘 이미 수령했는지
+    // 7일 순환 트랙
+    public string lastClaimDate = "";   // 마지막 일일보상 수령 날짜 "yyyy-MM-dd" (KST)
+    public int consecutiveDays = 0;     // 현재 연속 출석 일수 (하루 빠지면 1로 리셋)
+                                        // 7일 슬롯 = ((consecutiveDays - 1) % 7) + 1
+
+    // 누적 트랙
+    public int totalAttendanceDays = 0; // 평생 누적 출석 일수 (리셋되지 않음)
+    public List<int> claimedMilestones = new List<int>(); // 수령 완료한 누적 보상 인덱스 (0~3)
 }
 
 /// <summary>

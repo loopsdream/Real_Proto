@@ -49,10 +49,15 @@ public class SafeAreaManager : MonoBehaviour
 
         rectTransform.anchorMin = anchorMin;
         rectTransform.anchorMax = anchorMax;
+        // Ensure the container exactly fills the safe-area rect
+        rectTransform.offsetMin = Vector2.zero;
+        rectTransform.offsetMax = Vector2.zero;
 
         lastSafeArea = Screen.safeArea;
         lastScreenSize = new Vector2(Screen.width, Screen.height);
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         Debug.Log($"Safe area applied: {safeArea}, Anchors: {anchorMin} - {anchorMax}");
+#endif
     }
 }

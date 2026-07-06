@@ -25,6 +25,10 @@ public class UserDataManager : MonoBehaviour
     public event Action<string> OnDataChanged;
     public System.Action<ItemType, int> OnItemCountChanged;
 
+    // 출석 상태 (서버 계산값, 런타임 전용 - 직렬화/동기화 안 함)
+    public AttendanceStatus CurrentAttendance { get; private set; } = new AttendanceStatus();
+    public event Action<AttendanceStatus> OnAttendanceUpdated;
+
     private UserData currentUserData;
     private const string SAVE_KEY = "UserData";
 
@@ -565,6 +569,13 @@ public class UserDataManager : MonoBehaviour
         SaveUserData();
     }
 
+    public void SetAttendanceStatus(AttendanceStatus status)
+    {
+        if (status == null) return;
+        CurrentAttendance = status;
+        OnAttendanceUpdated?.Invoke(status);
+    }
+
     #endregion
 
     #region Firebase 연동 추가 메서드들
@@ -1058,6 +1069,61 @@ public class UserDataManager : MonoBehaviour
                 }
 
                 SaveUserData();
+            });
+    }
+
+    /// <summary>
+    /// 서버 계정 데이터를 로컬에 직접 적용 (서버 권위 - 병합/업로드 우회).
+    /// RefreshEnergyFromServer와 동일 사상. MarkAsModified/OnDataChanged는 호출 안 함(업로드 방지).
+    /// </summary>
+    public void ApplyServerCurrencies(AccountDataResult acc)
+    {
+        if (acc == null || currentUserData == null) return;
+
+        currentUserData.currencies.energy = acc.energy;
+        currentUserData.currencies.maxEnergy = acc.maxEnergy;
+        currentUserData.currencies.gameCoins = acc.gameCoins;
+        currentUserData.currencies.diamonds = acc.diamonds;
+        currentUserData.currencies.hammerCount = acc.hammerCount;
+        currentUserData.currencies.tornadoCount = acc.tornadoCount;
+        currentUserData.currencies.brushCount = acc.brushCount;
+
+        OnEnergyChanged?.Invoke(acc.energy);
+        OnGameCoinsChanged?.Invoke(acc.gameCoins);
+        OnDiamondsChanged?.Invoke(acc.diamonds);
+        OnItemCountChanged?.Invoke(ItemType.Hammer, acc.hammerCount);
+        OnItemCountChanged?.Invoke(ItemType.Tornado, acc.tornadoCount);
+        OnItemCountChanged?.Invoke(ItemType.Brush, acc.brushCount);
+
+        SaveUserData();
+        Debug.Log($"[UserDataManager] Server account applied: energy={acc.energy} coins={acc.gameCoins} diamonds={acc.diamonds}");
+    }
+
+    /// <summary>
+    /// 서버에서 계정 정보(재화+출석)를 받아 적용. 로비 진입/복귀 시 사용.
+    /// RefreshEnergyFromServer를 대체 (출석까지 한 번에 받음).
+    /// </summary>
+    public void RefreshAccountFromServer(Action onComplete = null)
+    {
+        if (CloudFunctionsManager.Instance == null || !IsConnectedToFirebase())
+        {
+            RefreshEnergyFromServer(); // 폴백
+            onComplete?.Invoke();
+            return;
+        }
+
+        CloudFunctionsManager.Instance.GetAccountData(
+            acc =>
+            {
+                ApplyServerCurrencies(acc);
+                SetAttendanceStatus(acc.attendance);
+                onComplete?.Invoke();
+            },
+            err =>
+            {
+                Debug.LogError($"[UserDataManager] RefreshAccountFromServer failed: {err}");
+                RefreshEnergyFromServer(); // 폴백
+                onComplete?.Invoke();
             });
     }
 

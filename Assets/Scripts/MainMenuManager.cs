@@ -42,7 +42,18 @@ public class MainMenuManager : MonoBehaviour
 
         if (UserDataManager.Instance != null)
         {
-            UserDataManager.Instance.RefreshEnergyFromServer();
+            UserDataManager.Instance.RefreshAccountFromServer(() =>
+            {
+                var att = UserDataManager.Instance.CurrentAttendance;
+                if (att != null && (att.canClaimDaily || att.availableMilestones.Count > 0))
+                {
+                    // TODO (Step 4): 출석 팝업 자동 표시 (세션 1회 가드 포함)
+                    Debug.Log($"[MainMenu] Attendance available - canClaimDaily={att.canClaimDaily} milestones={att.availableMilestones.Count}");
+
+                    var t = AttendanceTableLoader.Get();
+                    Debug.Log($"[TEST] dailyRows={t.dailyRewards.Count}, day7 rewards={AttendanceTableLoader.GetDailyRewards(7).Count}");
+                }
+            });
         }
     }
 

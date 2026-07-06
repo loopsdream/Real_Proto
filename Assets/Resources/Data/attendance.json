@@ -1,0 +1,125 @@
+{
+  "dailyRewards": [
+    {
+      "slot": 1,
+      "rewards": [
+        {
+          "type": "Energy",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "slot": 2,
+      "rewards": [
+        {
+          "type": "Coins",
+          "amount": 30
+        }
+      ]
+    },
+    {
+      "slot": 3,
+      "rewards": [
+        {
+          "type": "Hammer",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "slot": 4,
+      "rewards": [
+        {
+          "type": "Coins",
+          "amount": 50
+        },
+        {
+          "type": "Energy",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "slot": 5,
+      "rewards": [
+        {
+          "type": "Tornado",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "slot": 6,
+      "rewards": [
+        {
+          "type": "Brush",
+          "amount": 1
+        },
+        {
+          "type": "Coins",
+          "amount": 100
+        }
+      ]
+    },
+    {
+      "slot": 7,
+      "rewards": [
+        {
+          "type": "Diamonds",
+          "amount": 10
+        },
+        {
+          "type": "Coins",
+          "amount": 200
+        }
+      ]
+    }
+  ],
+  "milestones": [
+    {
+      "index": 0,
+      "days": 8,
+      "rewards": [
+        {
+          "type": "Coins",
+          "amount": 100
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "days": 15,
+      "rewards": [
+        {
+          "type": "Diamonds",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "days": 23,
+      "rewards": [
+        {
+          "type": "Hammer",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "days": 30,
+      "rewards": [
+        {
+          "type": "Diamonds",
+          "amount": 30
+        },
+        {
+          "type": "Coins",
+          "amount": 300
+        }
+      ]
+    }
+  ]
+}

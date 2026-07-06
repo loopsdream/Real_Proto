@@ -4,6 +4,86 @@ const { getDatabase } = require("firebase-admin/database");
 
 initializeApp();
 
+// ============================================
+// 출석(일일 보상) 시스템
+// ============================================
+
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// KST 자정 경계 기준 "며칠째"를 정수로 (비교용)
+function kstDayNumber(utcMs) {
+    return Math.floor((utcMs + KST_OFFSET_MS) / DAY_MS);
+}
+// KST 날짜 문자열 "yyyy-MM-dd" (저장/디버깅용)
+function kstDateString(utcMs) {
+    const d = new Date(utcMs + KST_OFFSET_MS);
+    const y = d.getUTCFullYear();
+    const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(d.getUTCDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+}
+function kstDayNumberFromDateString(s) {
+    if (!s) return null;
+    const p = s.split("-").map(Number);
+    if (p.length !== 3) return null;
+    return Math.floor(Date.UTC(p[0], p[1] - 1, p[2]) / DAY_MS);
+}
+
+// attendance.json에서 보상 테이블 로드 (서버 = 실제 지급 기준)
+const ATTENDANCE = require("./attendance.json");
+
+// 기존 코드와 동일한 형태로 가공 (claimAttendance/computeAttendanceStatus 그대로 사용)
+const ATTENDANCE_DAILY_REWARDS = ATTENDANCE.dailyRewards
+    .slice()
+    .sort((a, b) => a.slot - b.slot)
+    .map(d => d.rewards);
+
+const ATTENDANCE_MILESTONES = ATTENDANCE.milestones
+    .slice()
+    .sort((a, b) => a.index - b.index)
+    .map(m => ({ days: m.days, rewards: m.rewards }));
+
+// 출석 보상 상한 (방어용)
+const ATTENDANCE_MAX = { Coins: 1000, Diamonds: 50, Energy: 5 };
+
+// 출석 상태 계산 (읽기 전용). daily = users/{uid}/dailyReward
+function computeAttendanceStatus(daily, serverNow) {
+    daily = daily || {};
+    const todayNum = kstDayNumber(serverNow);
+    const consecutiveDays = daily.consecutiveDays || 0;
+    const totalAttendanceDays = daily.totalAttendanceDays || 0;
+    const claimedMap = daily.claimedMilestones || {};
+    const lastNum = kstDayNumberFromDateString(daily.lastClaimDate || "");
+
+    let claimedToday = false;
+    let prospectiveStreak = 1;
+    if (lastNum !== null) {
+        const diff = todayNum - lastNum;
+        if (diff <= 0) { claimedToday = true; prospectiveStreak = consecutiveDays; }
+        else if (diff === 1) { prospectiveStreak = consecutiveDays + 1; }
+        else { prospectiveStreak = 1; }
+    }
+    const todaySlot = ((Math.max(prospectiveStreak, 1) - 1) % 7) + 1;
+
+    const claimedMilestones = [];
+    const availableMilestones = [];
+    for (let i = 0; i < ATTENDANCE_MILESTONES.length; i++) {
+        if (claimedMap[String(i)] === true) claimedMilestones.push(i);
+        else if (totalAttendanceDays >= ATTENDANCE_MILESTONES[i].days) availableMilestones.push(i);
+    }
+
+    return {
+        canClaimDaily: !claimedToday,
+        claimedToday: claimedToday,
+        todaySlot: todaySlot,                 // 오늘 받을 7일 슬롯 (1~7)
+        consecutiveDays: consecutiveDays,
+        totalAttendanceDays: totalAttendanceDays,
+        claimedMilestones: claimedMilestones,
+        availableMilestones: availableMilestones
+    };
+}
+
 // 재화 종류 유효성 체크
 const VALID_CURRENCIES = ["gameCoins", "diamonds"];
 
@@ -406,5 +486,147 @@ exports.resetStageProgress = onCall({ region: "asia-northeast3" }, async (reques
     return {
         success: true,
         message: "Stage progress reset to stage 1"
+    };
+});
+
+// 계정 정보 통합 조회 (로그인 + 로비 복귀 공용, 읽기 전용)
+exports.getAccountData = onCall({ region: "asia-northeast3" }, async (request) => {
+    if (!request.auth) throw new HttpsError("unauthenticated", "Login required");
+
+    const userId = request.auth.uid;
+    const db = getDatabase();
+    const userRef = db.ref(`users/${userId}`);
+    const serverNow = Date.now();
+
+    const snapshot = await userRef.once("value");
+    const userData = snapshot.val() || {};
+    const currencies = userData.currencies || {};
+
+    // 에너지 시간 회복 (표시용, DB 쓰기 안 함)
+    const maxEnergy = currencies.maxEnergy || ENERGY_CONFIG.maxEnergy;
+    let energy = currencies.energy || 0;
+    const lastEnergyUpdate = currencies.lastEnergyUpdateServer || serverNow;
+    if (energy < maxEnergy) {
+        const recharged = Math.floor((serverNow - lastEnergyUpdate) / (ENERGY_CONFIG.rechargeMinutes * 60 * 1000));
+        if (recharged > 0) energy = Math.min(energy + recharged, maxEnergy);
+    }
+
+    const attendance = computeAttendanceStatus(userData.dailyReward, serverNow);
+
+    console.log(`[getAccountData] userId=${userId} energy=${energy} canClaimDaily=${attendance.canClaimDaily}`);
+
+    return {
+        success: true,
+        serverTime: serverNow,
+        userDataJson: JSON.stringify(userData),
+        energy: energy,
+        maxEnergy: maxEnergy,
+        gameCoins: currencies.gameCoins || 0,
+        diamonds: currencies.diamonds || 0,
+        hammerCount: currencies.hammerCount || 0,
+        tornadoCount: currencies.tornadoCount || 0,
+        brushCount: currencies.brushCount || 0,
+        attendance: attendance
+    };
+});
+
+// 출석 보상 수령 (서버 검증, 보상 금액은 서버 테이블에서 결정)
+exports.claimAttendance = onCall({ region: "asia-northeast3" }, async (request) => {
+    if (!request.auth) throw new HttpsError("unauthenticated", "Login required");
+
+    const userId = request.auth.uid;
+    const { claimType, milestoneIndex } = request.data || {};
+    if (claimType !== "daily" && claimType !== "milestone") {
+        throw new HttpsError("invalid-argument", "Invalid claim type");
+    }
+
+    const db = getDatabase();
+    const userRef = db.ref(`users/${userId}`);
+    const serverNow = Date.now();
+
+    const snapshot = await userRef.once("value");
+    const userData = snapshot.val() || {};
+    const currencies = userData.currencies || {};
+    const daily = userData.dailyReward || {};
+
+    const todayNum = kstDayNumber(serverNow);
+    const todayStr = kstDateString(serverNow);
+    const lastNum = kstDayNumberFromDateString(daily.lastClaimDate || "");
+
+    let rewardsToGrant = [];
+    const updates = {};
+
+    if (claimType === "daily") {
+        if (lastNum !== null && todayNum - lastNum <= 0) {
+            throw new HttpsError("failed-precondition", "Already claimed today");
+        }
+        let newStreak = (lastNum !== null && todayNum - lastNum === 1)
+            ? (daily.consecutiveDays || 0) + 1 : 1;
+        rewardsToGrant = ATTENDANCE_DAILY_REWARDS[(newStreak - 1) % 7];
+
+        updates["dailyReward/lastClaimDate"] = todayStr;
+        updates["dailyReward/consecutiveDays"] = newStreak;
+        updates["dailyReward/totalAttendanceDays"] = (daily.totalAttendanceDays || 0) + 1;
+    } else {
+        if (!Number.isInteger(milestoneIndex) || milestoneIndex < 0 || milestoneIndex >= ATTENDANCE_MILESTONES.length) {
+            throw new HttpsError("invalid-argument", "Invalid milestone index");
+        }
+        const claimedMap = daily.claimedMilestones || {};
+        if (claimedMap[String(milestoneIndex)] === true) {
+            throw new HttpsError("failed-precondition", "Milestone already claimed");
+        }
+        if ((daily.totalAttendanceDays || 0) < ATTENDANCE_MILESTONES[milestoneIndex].days) {
+            throw new HttpsError("failed-precondition", "Milestone not reached");
+        }
+        rewardsToGrant = ATTENDANCE_MILESTONES[milestoneIndex].rewards;
+        updates[`dailyReward/claimedMilestones/${milestoneIndex}`] = true;
+    }
+
+    // 보상 합산
+    let coinReward = 0, diamondReward = 0, energyReward = 0;
+    const itemRewards = {};
+    for (const r of rewardsToGrant) {
+        switch (r.type) {
+            case "Coins": coinReward += r.amount || 0; break;
+            case "Diamonds": diamondReward += r.amount || 0; break;
+            case "Energy": energyReward += r.amount || 0; break;
+            case "Hammer": case "Tornado": case "Brush":
+                itemRewards[r.type] = (itemRewards[r.type] || 0) + (r.amount || 0); break;
+        }
+    }
+    if (coinReward > ATTENDANCE_MAX.Coins || diamondReward > ATTENDANCE_MAX.Diamonds || energyReward > ATTENDANCE_MAX.Energy) {
+        throw new HttpsError("internal", "Reward table exceeds limit");
+    }
+
+    if (coinReward > 0) updates["currencies/gameCoins"] = (currencies.gameCoins || 0) + coinReward;
+    if (diamondReward > 0) updates["currencies/diamonds"] = (currencies.diamonds || 0) + diamondReward;
+    if (energyReward > 0) {
+        updates["currencies/energy"] = Math.min((currencies.energy || 0) + energyReward, currencies.maxEnergy || ENERGY_CONFIG.maxEnergy);
+    }
+    if (itemRewards["Hammer"]) updates["currencies/hammerCount"] = (currencies.hammerCount || 0) + itemRewards["Hammer"];
+    if (itemRewards["Tornado"]) updates["currencies/tornadoCount"] = (currencies.tornadoCount || 0) + itemRewards["Tornado"];
+    if (itemRewards["Brush"]) updates["currencies/brushCount"] = (currencies.brushCount || 0) + itemRewards["Brush"];
+
+    await userRef.update(updates);
+
+    // 갱신 후 상태 재계산
+    const newDaily = Object.assign({}, daily);
+    if (claimType === "daily") {
+        newDaily.lastClaimDate = todayStr;
+        newDaily.consecutiveDays = updates["dailyReward/consecutiveDays"];
+        newDaily.totalAttendanceDays = updates["dailyReward/totalAttendanceDays"];
+    } else {
+        newDaily.claimedMilestones = Object.assign({}, daily.claimedMilestones || {});
+        newDaily.claimedMilestones[String(milestoneIndex)] = true;
+    }
+
+    console.log(`[claimAttendance] userId=${userId} type=${claimType} coins=+${coinReward} diamonds=+${diamondReward}`);
+
+    return {
+        success: true,
+        grantedRewards: rewardsToGrant,
+        newCoins: (currencies.gameCoins || 0) + coinReward,
+        newDiamonds: (currencies.diamonds || 0) + diamondReward,
+        attendance: computeAttendanceStatus(newDaily, serverNow)
     };
 });
