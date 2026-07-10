@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 72b4ca97f9a1321408e2bb023aeeeda4
+guid: 4426f3b4ab30143adb2e4d0208d9bd56
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4532283185169570496
-    second: KakaoTalk_20250907_233516292_0
+      213: 6761108874354008759
+    second: T_Board_Reward_01_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -97,7 +97,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: Android
+    buildTarget: iOS
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: KakaoTalk_20250907_233516292_0
+      name: T_Board_Reward_01_0
       rect:
         serializedVersion: 2
-        x: 9
-        y: 10
-        width: 277
-        height: 276
+        x: 0
+        y: 13
+        width: 936
+        height: 1319
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 045ed76c4781a11c0800000000000000
-      internalID: -4532283185169570496
+      spriteID: 7b2ac9703b844dd50800000000000000
+      internalID: 6761108874354008759
       vertices: []
       indices: 
       edges: []
@@ -147,8 +147,7 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable:
-      KakaoTalk_20250907_233516292_0: -4532283185169570496
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
