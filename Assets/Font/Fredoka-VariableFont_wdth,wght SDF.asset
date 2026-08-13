@@ -2715,7 +2715,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Fredoka-VariableFont_wdth,wght SDF Material
   m_Shader: {fileID: 4800000, guid: fe393ace9b354375a9cb14cdbbc28be4, type: 3}
-  m_Parent: {fileID: 2100000, guid: 36c6475c17d304108b4d1cd6602d1e53, type: 2}
+  m_Parent: {fileID: 2100000, guid: 4438e684e71a242a1b2e78fe020c6ef0, type: 2}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - OUTLINE_ON
