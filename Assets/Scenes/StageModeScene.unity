@@ -49847,9 +49847,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cameraMarginPercent: 0.1
   minCameraSize: 3
-  maxCameraSize: 15
-  referenceGridWidth: 9
-  referenceGridHeight: 9
+  maxCameraSize: 20
+  referenceGridWidth: 10
+  referenceGridHeight: 12
   referenceCellSize: 1
   portraitMode: 1
   topUISpacePixels: 200
