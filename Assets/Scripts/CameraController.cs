@@ -5,12 +5,12 @@ public class CameraController : MonoBehaviour
     [Header("Camera Settings")]
     public float cameraMarginPercent = 0.1f;
     public float minCameraSize = 3f;
-    public float maxCameraSize = 15f;
+    public float maxCameraSize = 20f;
 
     [Header("Reference Grid (fixed camera base)")]
     [Tooltip("Camera zoom is always calculated for this reference grid size")]
-    public int referenceGridWidth = 9;
-    public int referenceGridHeight = 9;
+    public int referenceGridWidth = 10;
+    public int referenceGridHeight = 12;
     public float referenceCellSize = 1.0f;
 
     [Header("Portrait Mode Settings")]
